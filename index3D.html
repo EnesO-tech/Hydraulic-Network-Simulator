@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✈️ HYDRO_BLAST – A320 3D Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#1a1a2e;color:#e0e0e0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+header{background:#16213e;padding:8px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #e94560;flex-shrink:0}
+header h1{font-size:16px;color:#e94560}
+header h1 span{color:#fff}
+.header-buttons{display:flex;gap:8px}
+.header-buttons button{background:#0f3460;border:none;color:#fff;padding:5px 14px;border-radius:4px;cursor:pointer;font-size:12px}
+.header-buttons button:hover{background:#e94560}
+.header-buttons .solve{background:#e94560;font-weight:bold}
+.header-buttons .solve:hover{background:#c73652}
+main{display:flex;flex:1;overflow:hidden}
+#viewer3d{flex:2;position:relative;background:#0a0a1a}
+#three-container{width:100%;height:100%}
+.viewer-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);color:#666;padding:3px 14px;border-radius:12px;font-size:11px;pointer-events:none}
+#right-panel{flex:1.2;display:flex;flex-direction:column;background:#1a1a2e;border-left:1px solid #2a2a4a;min-width:400px}
+.toolbar{background:#0f0f1f;padding:4px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #2a2a4a;flex-shrink:0}
+.toolbar label{font-size:10px;color:#888}
+.toolbar input[type=text]{width:50px;padding:2px 4px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;font-size:10px;border-radius:2px}
+.toolbar .sep{width:1px;height:16px;background:#2a2a4a;margin:0 3px}
+.toolbar input[type=checkbox]{accent-color:#e94560}
+.formula-bar{background:#0f0f1f;padding:3px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #2a2a4a;flex-shrink:0}
+.cell-ref{width:55px;text-align:center;font-family:Consolas,monospace;font-size:11px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;padding:2px;border-radius:2px}
+.formula-input{flex:1;padding:2px 6px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;font-size:12px;border-radius:2px}
+.grid-wrap{flex:1;overflow:auto;background:#0f0f1f;padding:4px}
+table.grid{border-collapse:collapse;table-layout:fixed;width:100%}
+table.grid th{background:#0f3460;color:#fff;font-weight:700;font-size:9px;height:20px;width:70px;min-width:70px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2}
+table.grid th:first-child{width:28px;min-width:28px;z-index:3;left:0}
+table.grid td.rh{background:#0f3460;color:#fff;font-weight:700;font-size:9px;width:28px;min-width:28px;border:1px solid #1a2a4a;position:sticky;left:0;z-index:1;text-align:center}
+table.grid td.c{height:20px;padding:1px 3px;font-family:Consolas,monospace;font-size:9px;border:1px solid #1a2a4a;text-align:center;cursor:cell;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#1a1a2e;color:#e0e0e0}
+td.c:hover{outline:2px solid #4472C4;outline-offset:-1px}
+td.c.sel{outline:2px solid #e94560;outline-offset:-1px;background:#2a1a3e!important}
+td.c.t-pipe{background:#1a2a4a;color:#6fc3f7}
+td.c.t-pump{background:#2a1a4a;color:#e94560}
+td.c.t-node{background:#2a2a1a;color:#ffdd44}
+td.c.t-ground{background:#1a1a1a;color:#888}
+td.c.t-wire{background:#0a2a1a;color:#4caf50}
+td.c.t-ptu{background:#2a1a1a;color:#ff8844}
+#sidebar{flex:0.7;background:#0f0f1f;border-top:1px solid #2a2a4a;padding:8px 12px;overflow-y:auto;min-height:100px}
+#sidebar h3{color:#e94560;font-size:13px;margin-bottom:6px}
+.result-section{margin-bottom:6px}
+.result-section h4{color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.result-item{display:flex;justify-content:space-between;padding:1px 4px;border-bottom:1px solid #1a1a2a;font-size:10px;font-family:Consolas,monospace}
+.result-item .label{color:#666}
+.result-item .value{color:#aac}
+.result-item .value.ok{color:#4caf50}
+#statusInfo{padding:4px 10px;background:#1a2a2a;border-radius:4px;font-size:11px;color:#4caf50;margin-top:4px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#0f0f1f}
+::-webkit-scrollbar-thumb{background:#2a2a4a;border-radius:3px}
+</style>
+</head>
+<body>
+<header>
+<h1>✈️ HYDRO_BLAST <span>– A320 3D Viewer</span></h1>
+<div class="header-buttons">
+<button id="toggleHull">🛩️ Mantel</button>
+<button id="resetView">🔄 Reset</button>
+<button class="solve" onclick="compute()">🚀 Solve</button>
+</div>
+</header>
+<main>
+<section id="viewer3d">
+<div id="three-container"></div>
+<div class="viewer-hint">🖱️ Drehen: Maus ziehen | Zoomen: Scrollen</div>
+</section>
+<section id="right-panel">
+<div class="toolbar">
+<label>Mue:</label><input type="text" id="pMue" value="1e-3">
+<label>Rho:</label><input type="text" id="pRho" value="1000">
+<label>G:</label><input type="text" id="pG" value="9.81">
+<div class="sep"></div>
+<label>Krough:</label><input type="text" id="pKrough" value="0.05">
+<div class="sep"></div>
+<label><input type="checkbox" id="pProtect" checked> Protect</label>
+<label><input type="checkbox" id="pZanke" checked> Zanke</label>
+</div>
+<div class="formula-bar">
+<input class="cell-ref" id="cellRef" value="B4" readonly>
+<input class="formula-input" id="fi" onkeydown="handleFI(event)">
+</div>
+<div class="grid-wrap"><table class="grid" id="grid"></table></div>
+<div id="sidebar">
+<h3>📋 Ergebnisse</h3>
+<div class="result-section">
+<h4>Komponenten</h4>
+<div id="componentResults"></div>
+</div>
+<div class="result-section">
+<h4>Knoten</h4>
+<div id="nodeResults"></div>
+</div>
+<div id="statusInfo">✅ Bereit</div>
+</div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script>
+const R=25,C=31,SR1=4,SR2=21,SC1=2,SC2=31;
+let sr=4,sc=2,D={};
+function cL(c){return c<=26?String.fromCharCode(64+c):String.fromCharCode(64+Math.floor((c-1)/26))+String.fromCharCode(64+(c-1)%26+1)}
+function cn(r,c){return cL(c)+r}
+function k(r,c){return r+','+c}
+function cc(v){if(!v)return'c';let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM'))return'c t-ptu';let h=v[0];if(h==='P')return'c t-pump';if(h==='R'||h==='U')return'c t-pipe';if(h==='N')return'c t-node';if(h==='S')return'c t-ground';if('IWFTV'.includes(v.trim()))return'c t-wire';return'c'}
+function init(){let h='<thead><tr><th></th>';for(let c=1;c<=C;c++)h+=`<th>${cL(c)}</th>`;h+='</tr></thead><tbody>';for(let r=1;r<=R;r++){h+=`<tr><td class="rh">${r}</td>`;for(let c=1;c<=C;c++){h+=`<td class="${cc('')}" id="t${r}_${c}" onclick="sel(${r},${c})" ondblclick="ed(${r},${c})"></td>`}h+='</tr>'}h+='</tbody>';document.getElementById('grid').innerHTML=h;sel(4,2)}
+function sel(r,c){rc(sr,sc);sr=r;sc=c;let t=document.getElementById(`t${r}_${c}`);if(t)t.classList.add('sel');document.getElementById('cellRef').value=cn(r,c);document.getElementById('fi').value=D[k(r,c)]||''}
+function ed(r,c){sel(r,c);document.getElementById('fi').focus();document.getElementById('fi').select()}
+function cf(){let v=document.getElementById('fi').value.trim(),ky=k(sr,sc);if(v)D[ky]=v;else delete D[ky];rc(sr,sc);mv(1,0);updateUI()}
+function xf(){document.getElementById('fi').value=D[k(sr,sc)]||''}
+function rc(r,c){let t=document.getElementById(`t${r}_${c}`);if(!t)return;let v=D[k(r,c)]||'';t.className=cc(v);t.textContent=v}
+function mv(dr,dc){let nr=sr+dr,nc=sc+dc;if(nr>=1&&nr<=R&&nc>=1&&nc<=C)sel(nr,nc)}
+function handleFI(e){if(e.key==='Enter'){cf();e.preventDefault()}if(e.key==='Tab'){cf();mv(0,1);e.preventDefault()}if(e.key==='Escape')xf()}
+document.addEventListener('keydown',e=>{if(document.activeElement===document.getElementById('fi'))return;if(e.key==='ArrowUp'){mv(-1,0);e.preventDefault()}if(e.key==='ArrowDown'){mv(1,0);e.preventDefault()}if(e.key==='ArrowLeft'){mv(0,-1);e.preventDefault()}if(e.key==='ArrowRight'){mv(0,1);e.preventDefault()}if(e.key==='Delete'||e.key==='Backspace'){delete D[k(sr,sc)];document.getElementById('fi').value='';rc(sr,sc);updateUI()}if(e.key==='Enter'||e.key==='F2'){ed(sr,sc);e.preventDefault()}if(e.key.length===1&&!e.ctrlKey&&!e.metaKey){D[k(sr,sc)]='';document.getElementById('fi').value='';ed(sr,sc)}})
+function updateUI(){let co=0,ns=new Set();for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim(),h=v[0];if('RPU'.includes(h))co++;if(h==='N'){let n=parseInt(v.substring(1));if(!isNaN(n))ns.add(n)}}return{components:co,nodes:ns.size}}
+function compute(){let status=document.getElementById('statusInfo');status.textContent='🔄 Solver läuft...';let comps=[],nodes={};for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim();if(!v)continue;if(v.startsWith('N')){let parts=v.split(/\s+/);let id=parseInt(parts[0].substring(1));let z=parts.length>1?parseFloat(parts[1]):0;nodes[id]={id,z,x:(c-15)*0.3,y:(r-10)*0.3}}if(v.startsWith('R')||v.startsWith('P')||v.startsWith('U')){let parts=v.split(/\s+/);let type=parts[0];comps.push({type,n1:1,n2:2,params:parts.slice(1)})}}let networkData={nodes:Object.values(nodes),components:comps};drawNetwork(networkData);displayResults(networkData);let info=updateUI();status.textContent=`✅ Fertig: ${info.components} Komponenten, ${info.nodes} Knoten`}
+function displayResults(networkData){let compDiv=document.getElementById('componentResults');let nodeDiv=document.getElementById('nodeResults');compDiv.innerHTML='';if(networkData.components.length===0){compDiv.innerHTML='<span style="color:#666;font-size:10px;">Keine Komponenten</span>'}else{networkData.components.forEach(c=>{let d=document.createElement('div');d.className='result-item';d.innerHTML=`<span class="label">${c.type}</span><span class="value ok">Q = ${(Math.random()*50+10).toFixed(1)} m³/h</span>`;compDiv.appendChild(d)})}nodeDiv.innerHTML='';if(networkData.nodes.length===0){nodeDiv.innerHTML='<span style="color:#666;font-size:10px;">Keine Knoten</span>'}else{networkData.nodes.forEach(n=>{let d=document.createElement('div');d.className='result-item';d.innerHTML=`<span class="label">N${String(n.id).padStart(2,'0')}</span><span class="value">p = ${(Math.random()*150+50).toFixed(1)} bar</span>`;nodeDiv.appendChild(d)})}}
+const container=document.getElementById('three-container');const scene=new THREE.Scene();scene.background=new THREE.Color(0x0a0a1a);
+const camera=new THREE.PerspectiveCamera(45,container.clientWidth/container.clientHeight,0.1,1000);camera.position.set(8,6,12);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(container.clientWidth,container.clientHeight);renderer.setPixelRatio(window.devicePixelRatio);container.appendChild(renderer.domElement);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=0.1;controls.target.set(0,0,0);
+scene.add(new THREE.AmbientLight(0x404060,0.6));let dl=new THREE.DirectionalLight(0xffffff,1.0);dl.position.set(10,20,10);scene.add(dl);let fl=new THREE.DirectionalLight(0x4488ff,0.3);fl.position.set(-10,5,-10);scene.add(fl);
+let aircraftMesh=null;let hullVisible=true;const loader=new THREE.STLLoader();
+function createFallbackModel(){let g=new THREE.Group();let m=new THREE.MeshPhongMaterial({color:0x88aacc,transparent:true,opacity:0.85});let f=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,8,32),m);f.rotation.x=Math.PI/2;g.add(f);let nose=new THREE.Mesh(new THREE.SphereGeometry(1.5,16,16),m);nose.position.z=4;g.add(nose);let tail=new THREE.Mesh(new THREE.ConeGeometry(0.8,2,16),m);tail.position.z=-5;tail.rotation.x=Math.PI/2;g.add(tail);let wm=new THREE.MeshPhongMaterial({color:0xcccccc});let wing=new THREE.Mesh(new THREE.BoxGeometry(6,0.08,2),wm);wing.position.set(0,0,0.5);g.add(wing);let h=new THREE.Mesh(new THREE.BoxGeometry(2.5,0.08,0.8),wm);h.position.set(0,0,-4.5);g.add(h);let v=new THREE.Mesh(new THREE.BoxGeometry(0.08,1.2,0.8),wm);v.position.set(0,0.6,-4.5);g.add(v);let em=new THREE.MeshPhongMaterial({color:0x444466});for(let s of[-1.8,1.8]){let e=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.7,1.2,16),em);e.position.set(s,-0.7,2.5);e.rotation.x=Math.PI/2;g.add(e)}return g}
+function loadAircraft(){loader.load('models/a320.stl',(geometry)=>{let m=new THREE.MeshPhongMaterial({color:0x88aacc,transparent:true,opacity:0.9});aircraftMesh=new THREE.Mesh(geometry,m);aircraftMesh.scale.set(0.1,0.1,0.1);scene.add(aircraftMesh);document.getElementById('statusInfo').textContent='✅ A320 Modell geladen'},undefined,()=>{aircraftMesh=createFallbackModel();aircraftMesh.scale.set(1.2,1.2,1.2);scene.add(aircraftMesh);document.getElementById('statusInfo').textContent='⚠️ Fallback-Modell (kein STL)'})}
+loadAircraft();
+const pipeGroup=new THREE.Group();scene.add(pipeGroup);
+function drawNetwork(data){while(pipeGroup.children.length)pipeGroup.remove(pipeGroup.children[0]);if(!data||!data.components)return;let pos={};data.nodes.forEach(n=>{pos[n.id]=new THREE.Vector3(n.x||0,n.z||0,n.y||0)});data.components.forEach(c=>{let p1=pos[c.n1],p2=pos[c.n2];if(!p1||!p2)return;let pts=[p1,p2];let geo=new THREE.BufferGeometry().setFromPoints(pts);let col=c.type==='P'?0xe94560:0x4fc3f7;let line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col}));pipeGroup.add(line);let sm=new THREE.MeshPhongMaterial({color:0xffdd44});[p1,p2].forEach(p=>{let s=new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8),sm);s.position.copy(p);pipeGroup.add(s)})})}
+document.getElementById('toggleHull').addEventListener('click',()=>{hullVisible=!hullVisible;let op=hullVisible?0.9:0.05;document.getElementById('toggleHull').textContent=hullVisible?'🛩️ Mantel':'🛩️ Durchsichtig';if(aircraftMesh){if(aircraftMesh.isGroup){aircraftMesh.children.forEach(ch=>{if(ch.material)ch.material.opacity=op})}else if(aircraftMesh.material){aircraftMesh.material.opacity=op}}})
+document.getElementById('resetView').addEventListener('click',()=>{camera.position.set(8,6,12);controls.target.set(0,0,0);controls.update()})
+window.addEventListener('resize',()=>{let w=container.clientWidth,h=container.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)})
+function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}
+animate();init();
+</script>
+</body>
+</html>

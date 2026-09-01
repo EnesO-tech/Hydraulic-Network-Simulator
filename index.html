@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HYDRO_BLAST – Hydraulic Network Solver</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Calibri,Arial,sans-serif;font-size:13px;background:#e8e8e8;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.toolbar{background:#F0F0F0;padding:4px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #ccc;flex-wrap:wrap}
+.toolbar label{font-size:11px;color:#333}
+.toolbar input[type=text]{width:60px;padding:2px 4px;border:1px solid #B4C6E7;font-size:11px;border-radius:2px}
+.toolbar input[type=checkbox]{margin-right:2px}
+.toolbar .sep{width:1px;height:20px;background:#ccc;margin:0 4px}
+.toolbar button.compute{background:#2F5496;color:#fff;border:none;padding:5px 16px;font-size:12px;font-weight:700;border-radius:3px;cursor:pointer}
+.toolbar button.compute:hover{background:#3A66B5}
+.formula-bar{background:#fff;padding:3px 8px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #ccc}
+.cell-ref{width:55px;text-align:center;font-family:Consolas,monospace;font-size:12px;border:1px solid #B4C6E7;padding:2px;background:#F0F0F0;border-radius:2px}
+.formula-input{flex:1;padding:2px 6px;border:1px solid #B4C6E7;font-size:13px;border-radius:2px}
+.grid-wrap{flex:1;overflow:auto;background:#fff}
+table.grid{border-collapse:collapse;table-layout:fixed}
+table.grid th{background:#4472C4;color:#fff;font-weight:700;font-size:10px;height:22px;width:90px;min-width:90px;border:1px solid #2F5496;position:sticky;top:0;z-index:2}
+table.grid th:first-child{width:32px;min-width:32px;z-index:3;left:0}
+table.grid td.rh{background:#4472C4;color:#fff;font-weight:700;font-size:10px;width:32px;min-width:32px;border:1px solid #2F5496;position:sticky;left:0;z-index:1;text-align:center}
+table.grid td.c{height:22px;padding:1px 3px;font-family:Consolas,'Courier New',monospace;font-size:10px;border:1px solid #B4C6E7;text-align:center;cursor:cell;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td.c:hover{outline:2px solid #4472C4;outline-offset:-1px}
+td.c.sel{outline:2px solid #2F5496;outline-offset:-1px;background:#D6E4F0!important}
+td.c.sch{background:#F2F7FC}
+td.c.t-pipe{background:#DEEAF6;color:#1a3a5c}
+td.c.t-pump{background:#BDD7EE;color:#0c447c}
+td.c.t-node{background:#FFF2CC;color:#5a5000}
+td.c.t-ground{background:#F2F2F2;color:#444}
+td.c.t-wire{background:#E2EFDA;color:#888}
+td.c.t-ptu{background:#FCE4D6;color:#712b13}
+.tab-bar{background:#4472C4;display:flex;align-items:end;padding:0 4px;height:28px}
+.tab{padding:3px 14px;font-size:11px;cursor:pointer;border-radius:4px 4px 0 0;margin-right:1px;background:#D6E4F0;color:#1a1a1a}
+.tab.active{background:#fff}
+.tab-info{margin-left:auto;color:#fff;font-size:11px;padding-right:10px;align-self:center}
+.status{background:#2F5496;color:#fff;padding:3px 10px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="toolbar">
+<label>Mue:</label><input type="text" id="pMue" value="1e-3">
+<label>Rho:</label><input type="text" id="pRho" value="1000">
+<label>G:</label><input type="text" id="pG" value="9.81">
+<label>Krough:</label><input type="text" id="pKrough" value="0.05">
+<div class="sep"></div>
+<label>DUcrit:</label><input type="text" id="pDUcrit" value="0.01">
+<label>Niter:</label><input type="text" id="pNiter" value="100">
+<label>LambdaU:</label><input type="text" id="pLambdaU" value="0.5">
+<div class="sep"></div>
+<label><input type="checkbox" id="pProtect" checked> Protect</label>
+<label><input type="checkbox" id="pZanke" checked> Zanke</label>
+<div class="sep"></div>
+<button class="compute" onclick="compute()">🚀 COMPUTE</button>
+</div>
+<div class="formula-bar">
+<input class="cell-ref" id="cellRef" value="B4" readonly>
+<input class="formula-input" id="fi" onkeydown="handleFI(event)">
+</div>
+<div class="grid-wrap"><table class="grid" id="grid"></table></div>
+<div class="tab-bar">
+<div class="tab active" onclick="swTab(this,'Schematic')">Schematic</div>
+<div class="tab" onclick="swTab(this,'Results')">Results</div>
+<div class="tab" onclick="swTab(this,'QuickRef')">QuickRef</div>
+<span class="tab-info" id="ti">0 Komponenten, 0 Knoten</span>
+</div>
+<div class="status" id="st">✅ Bereit</div>
+<script>
+const R=25,C=31,SR1=4,SR2=21,SC1=2,SC2=31;
+let sr=4,sc=2,D={};
+function cL(c){return c<=26?String.fromCharCode(64+c):String.fromCharCode(64+Math.floor((c-1)/26))+String.fromCharCode(64+(c-1)%26+1)}
+function cn(r,c){return cL(c)+r}
+function k(r,c){return r+','+c}
+function cc(v,s){let l=s?'c sch':'c';if(!v)return l;let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM'))return l+' t-ptu';let h=v[0];if(h==='P')return l+' t-pump';if(h==='R'||h==='U')return l+' t-pipe';if(h==='N')return l+' t-node';if(h==='S')return l+' t-ground';if('IWFTV'.includes(v.trim()))return l+' t-wire';return l}
+function init(){let h='<thead><tr><th></th>';for(let c=1;c<=C;c++)h+=`<th>${cL(c)}</th>`;h+='</tr></thead><tbody>';for(let r=1;r<=R;r++){h+=`<tr><td class="rh">${r}</td>`;for(let c=1;c<=C;c++){let s=r>=SR1&&r<=SR2&&c>=SC1&&c<=SC2;h+=`<td class="${cc('',s)}" id="t${r}_${c}" onclick="sel(${r},${c})" ondblclick="ed(${r},${c})"></td>`}h+='</tr>'}h+='</tbody>';document.getElementById('grid').innerHTML=h;sel(4,2)}
+function sel(r,c){rc(sr,sc);sr=r;sc=c;let t=document.getElementById(`t${r}_${c}`);if(t)t.classList.add('sel');document.getElementById('cellRef').value=cn(r,c);document.getElementById('fi').value=D[k(r,c)]||''}
+function ed(r,c){sel(r,c);let i=document.getElementById('fi');i.focus();i.select()}
+function cf(){let v=document.getElementById('fi').value.trim(),ky=k(sr,sc);if(v)D[ky]=v;else delete D[ky];rc(sr,sc);mv(1,0);ui()}
+function xf(){document.getElementById('fi').value=D[k(sr,sc)]||''}
+function rc(r,c){let t=document.getElementById(`t${r}_${c}`);if(!t)return;let v=D[k(r,c)]||'',s=r>=SR1&&r<=SR2&&c>=SC1&&c<=SC2;t.className=cc(v,s);t.textContent=v}
+function mv(dr,dc){let nr=sr+dr,nc=sc+dc;if(nr>=1&&nr<=R&&nc>=1&&nc<=C)sel(nr,nc)}
+function handleFI(e){if(e.key==='Enter'){cf();e.preventDefault()}if(e.key==='Tab'){cf();mv(0,1);e.preventDefault()}if(e.key==='Escape')xf()}
+document.addEventListener('keydown',e=>{if(document.activeElement===document.getElementById('fi'))return;if(e.key==='ArrowUp'){mv(-1,0);e.preventDefault()}if(e.key==='ArrowDown'){mv(1,0);e.preventDefault()}if(e.key==='ArrowLeft'){mv(0,-1);e.preventDefault()}if(e.key==='ArrowRight'){mv(0,1);e.preventDefault()}if(e.key==='Delete'||e.key==='Backspace'){delete D[k(sr,sc)];document.getElementById('fi').value='';rc(sr,sc);ui()}if(e.key==='Enter'||e.key==='F2'){ed(sr,sc);e.preventDefault()}if(e.key.length===1&&!e.ctrlKey&&!e.metaKey){D[k(sr,sc)]='';document.getElementById('fi').value='';ed(sr,sc)}})
+function swTab(el,n){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('st').textContent='Sheet: '+n}
+function ui(){let co=0,ns=new Set();for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim(),h=v[0];if('RPU'.includes(h))co++;if(h==='N'){let n=parseInt(v.substring(1));if(!isNaN(n))ns.add(n)}}document.getElementById('ti').textContent=`${co} Komponenten, ${ns.size} Knoten`}
+function compute(){let co=0,ns=new Set();for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim(),h=v[0];if('RPU'.includes(h))co++;if(h==='N'){let n=parseInt(v.substring(1));if(!isNaN(n))ns.add(n)}}let mx=ns.size>0?Math.max(...ns):0;alert(`🚀 Schematic:\n\n${co} Komponenten\n${ns.size} Knoten (N01–N${String(mx).padStart(2,'0')})\n\nSolver: Desktop-Version (GUI.py)`);document.getElementById('st').textContent=`🚀 ${co} Komp., ${ns.size} Knoten`}
+init()
+</script>
+</body>
+</html>

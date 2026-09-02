@@ -13,9 +13,12 @@
 <header>
 <h1>HYDRO_BLAST <span>– A320 3D Viewer</span></h1>
 <div class="header-buttons">
-<button id="toggleHull">Mantel</button>
-<button id="resetView">Reset</button>
-<button class="solve" onclick="compute()">Solve</button>
+    <button id="toggleHull">Mantel</button>
+    <button onclick="setView('front')">Vorne</button>
+    <button onclick="setView('top')">Oben</button>
+    <button onclick="setView('side')">Seite</button>
+    <button id="resetView">Reset</button>
+    <button class="solve" onclick="compute()">Solve</button>
 </div>
 </header>
 <main>

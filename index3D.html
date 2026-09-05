@@ -125,25 +125,25 @@ td.c.custom-color{color:#fff}
 <div class="comp-top">
 <div class="comp-left">
 <h4>Toggle Buttons</h4>
-<div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1"></div>
-<div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="999"></div>
-<div class="toggle-item"><span class="key">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1"></div>
-<div class="toggle-item"><span class="key">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54"></div>
-<div class="toggle-item"><span class="key">Rk_off</span><input class="val off" id="tglRkOff" value="0.001"></div>
+<div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="999" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rk_off</span><input class="val off" id="tglRkOff" value="0.001" onchange="applyToggle(this)"></div>
 <h4>Iteration Controls</h4>
-<div class="toggle-item"><span class="key">lambdaU</span><input class="val" id="itLambda" value="0.6"></div>
-<div class="toggle-item"><span class="key">dUcrit</span><input class="val" id="itDUcrit" value="1E-07"></div>
-<div class="toggle-item"><span class="key">niter</span><input class="val" id="itNiter" value="999"></div>
-<div class="toggle-item"><span class="key">kReD</span><input class="val" id="itKReD" value="0.2"></div>
-<div class="toggle-item"><span class="key">boolProtect</span><input class="val off" id="itProtect" value="FALSCH"></div>
-<div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSCH"></div>
+<div class="toggle-item"><span class="key">lambdaU</span><input class="val" id="itLambda" value="0.6" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">dUcrit</span><input class="val" id="itDUcrit" value="1E-07" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">niter</span><input class="val" id="itNiter" value="999" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">kReD</span><input class="val" id="itKReD" value="0.2" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">boolProtect</span><input class="val off" id="itProtect" value="FALSCH" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSCH" onchange="applyToggle(this)"></div>
 <h4>Nodes</h4>
-<div class="toggle-item"><span class="key">Node: S</span><input class="val" id="nodeS" value="3.438E-01"></div>
-<div class="toggle-item"><span class="key">Node: H</span><input class="val" id="nodeH" value="1.01325"></div>
-<div class="toggle-item"><span class="key">Pamb</span><input class="val" id="pamb" value="1.01325"></div>
-<div class="toggle-item"><span class="key">g</span><input class="val" id="grav" value="9.80665"></div>
-<div class="toggle-item"><span class="key">krough</span><input class="val" id="krough" value="0.0015"></div>
-<div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320"></div>
+<div class="toggle-item"><span class="key">Node: S</span><input class="val" id="nodeS" value="3.438E-01" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Node: H</span><input class="val" id="nodeH" value="1.01325" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Pamb</span><input class="val" id="pamb" value="1.01325" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">g</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">krough</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320" onchange="applyToggle(this)"></div>
 </div>
 <div class="comp-center">
 <div class="toolbar">
@@ -368,14 +368,44 @@ let loadedResults = null;
 function applyToggle(el){
     let key = el.id;
     let val = el.value;
-    console.log("Toggle " + key + " = " + val);
     localStorage.setItem('boheme_toggle_' + key, val);
+    
+    const cellMap = {
+        'tglRlOn': [2,4],
+        'tglRlOff': [2,5],
+        'tglRkOn1': [2,6],
+        'tglRkOn54': [2,7],
+        'tglRkOff': [2,8],
+        'itLambda': [3,4],
+        'itDUcrit': [3,5],
+        'itNiter': [3,6],
+        'itKReD': [3,7],
+        'itProtect': [3,8],
+        'itZanke': [3,9],
+        'nodeS': [4,4],
+        'nodeH': [4,5],
+        'pamb': [4,6],
+        'grav': [4,7],
+        'krough': [4,8],
+        'redcrit': [4,9]
+    };
+    if(cellMap[key]){
+        let r = cellMap[key][0];
+        let c = cellMap[key][1];
+        let cell = getCell(r, c);
+        if(cell){
+            cell.textContent = val;
+            D[k(r,c)] = val;
+            updateCellStyle(cell, val);
+            saveToLocalStorage();
+            updateUI();
+        }
+    }
 }
 
 function applyCompDesc(el){
     let key = el.parentElement.querySelector('.type').textContent;
     let val = el.value;
-    console.log("Component " + key + " = " + val);
     localStorage.setItem('boheme_comp_' + key, val);
 }
 
@@ -634,10 +664,7 @@ function insertComponent(){let type=prompt('Komponententyp (R, P, U, RZ, RK, RL,
 function insertNode(){let id=prompt('Knoten-Nummer (z.B. 01):','01');if(!id)return;let z=prompt('Höhe (m):','0');if(z===null)return;let text='N'+id+' '+z;let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
 function insertWire(){let text='I';let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
 
-// 🔥 BUG 1 FIX: getCell() verwendet jetzt die ID statt querySelectorAll
-function getCell(r,c){
-    return document.getElementById(`t${r}_${c}`);
-}
+function getCell(r,c){return document.getElementById(`t${r}_${c}`);}
 
 function updateCellStyle(td,value){td.className='';if(!value)return;let v=value.trim();if(!v)return;let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM')){td.classList.add('t-ptu');return}if(u.startsWith('MPP')){td.classList.add('t-mpp');return}let h=v[0];if(h==='P')td.classList.add('t-pump');else if(h==='R'||h==='U')td.classList.add('t-pipe');else if(h==='N')td.classList.add('t-node');else if(h==='S')td.classList.add('t-ground');else if('IWFTV'.includes(v.trim()))td.classList.add('t-wire');}
 

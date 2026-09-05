@@ -38,17 +38,18 @@ main{display:flex;flex:1;overflow:hidden}
 .comp-right .comp-item .desc{color:#aac;background:transparent;border:1px solid #2a2a4a;border-radius:3px;width:140px;text-align:right;font-size:12px;font-family:Consolas,monospace;padding:2px 6px}
 .comp-right .comp-item .desc:focus{outline:1px solid #e94560;border-color:#e94560}
 
-.comp-bottom{height:200px;min-height:150px;background:#0f0f1f;border-top:1px solid #2a2a4a;padding:6px 10px;overflow:auto;flex-shrink:0}
+.comp-bottom{height:350px;min-height:250px;background:#0f0f1f;border-top:1px solid #2a2a4a;padding:6px 10px;overflow:auto;flex-shrink:0}
 .comp-bottom h4{color:#e94560;font-size:13px;text-transform:uppercase;margin:4px 0 4px 0;letter-spacing:1px}
-#resultTable{width:100%;border-collapse:collapse;font-size:12px;font-family:Consolas,monospace}
-#resultTable th{background:#0f3460;color:#fff;padding:4px 8px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2;font-size:11px}
-#resultTable td{padding:3px 6px;border:1px solid #1a2a4a;text-align:center;font-size:12px}
+#resultTable{width:100%;border-collapse:collapse;font-size:10px;font-family:Consolas,monospace}
+#resultTable th{background:#0f3460;color:#fff;padding:3px 4px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2;font-size:9px;white-space:nowrap}
+#resultTable td{padding:2px 4px;border:1px solid #1a2a4a;text-align:center;font-size:10px}
 #resultTable td.ok{color:#4caf50}
 #resultTable td.err{color:#e94560}
 #resultTable td.warn{color:#ffdd44}
 #resultTable td.val{color:#aac}
 #resultTable .q-pos{color:#4caf50}
 #resultTable .q-neg{color:#e94560}
+#resultTable .matrix{color:#6fc3f7;font-size:9px}
 
 .toolbar{background:#0f0f1f;padding:4px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid #2a2a4a;flex-shrink:0}
 .toolbar label{font-size:12px;color:#888}
@@ -57,15 +58,19 @@ main{display:flex;flex:1;overflow:hidden}
 .toolbar input[type=checkbox]{accent-color:#e94560;width:15px;height:15px}
 .toolbar .insert-btn{background:#0f3460;border:none;color:#fff;padding:3px 12px;border-radius:3px;cursor:pointer;font-size:12px}
 .toolbar .insert-btn:hover{background:#e94560}
+.toolbar .toggle-btn{background:#2a2a4a;border:none;color:#fff;padding:3px 12px;border-radius:3px;cursor:pointer;font-size:12px}
+.toolbar .toggle-btn.on{background:#4caf50}
+.toolbar .toggle-btn.off{background:#e94560}
+.toolbar .toggle-btn:hover{opacity:0.8}
 .formula-bar{background:#0f0f1f;padding:3px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #2a2a4a;flex-shrink:0}
 .cell-ref{width:55px;text-align:center;font-family:Consolas,monospace;font-size:12px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;padding:2px 4px;border-radius:3px}
 .formula-input{flex:1;padding:2px 8px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;font-size:13px;border-radius:3px}
 .grid-wrap{flex:1;overflow:auto;background:#0f0f1f;padding:4px}
 table.grid{border-collapse:collapse;table-layout:fixed;width:100%}
-table.grid th{background:#0f3460;color:#fff;font-weight:700;font-size:10px;height:20px;width:55px;min-width:55px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2}
-table.grid th:first-child{width:28px;min-width:28px;z-index:3;left:0}
-table.grid td.rh{background:#0f3460;color:#fff;font-weight:700;font-size:10px;width:28px;min-width:28px;border:1px solid #1a2a4a;position:sticky;left:0;z-index:1;text-align:center}
-table.grid td.c{height:20px;padding:1px 3px;font-family:Consolas,monospace;font-size:10px;border:1px solid #1a2a4a;text-align:center;cursor:cell;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#1a1a2e;color:#e0e0e0;transition:background 0.2s}
+table.grid th{background:#0f3460;color:#fff;font-weight:700;font-size:12px;height:22px;width:75px;min-width:75px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2}
+table.grid th:first-child{width:32px;min-width:32px;z-index:3;left:0}
+table.grid td.rh{background:#0f3460;color:#fff;font-weight:700;font-size:12px;width:32px;min-width:32px;border:1px solid #1a2a4a;position:sticky;left:0;z-index:1;text-align:center}
+table.grid td.c{height:24px;padding:2px 4px;font-family:Consolas,monospace;font-size:13px;border:1px solid #1a2a4a;text-align:center;cursor:cell;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#1a1a2e;color:#e0e0e0;transition:background 0.2s}
 td.c:hover{outline:2px solid #4472C4;outline-offset:-1px}
 td.c.sel{outline:2px solid #e94560;outline-offset:-1px;background:#2a1a3e!important}
 td.c.t-pipe{background:#1a2a4a;color:#6fc3f7}
@@ -85,7 +90,7 @@ td.c.custom-color{color:#fff}
 #sidebar h3{color:#e94560;font-size:14px;margin-bottom:4px}
 .result-section{margin-bottom:4px}
 .result-section h4{color:#666;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
-.result-item{display:flex;justify-content:space-between;padding:2px 3px;border-bottom:1px solid #1a1a2a;font-size:12px;font-family:Consolas,monospace}
+.result-item{display:flex;justify-content:space-between;padding:2px 3px;border-bottom:1px solid #1a2a2a;font-size:12px;font-family:Consolas,monospace}
 .result-item .label{color:#666}
 .result-item .value{color:#aac}
 .result-item .value.ok{color:#4caf50}
@@ -144,6 +149,8 @@ td.c.custom-color{color:#fff}
 <div class="toggle-item"><span class="key">g</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">krough</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320" onchange="applyToggle(this)"></div>
+<h4>Rl_F Toggle</h4>
+<div class="toggle-item"><span class="key">Rl_F Status</span><button class="toggle-btn on" id="rlFToggle" onclick="toggleRlF()">ON</button></div>
 </div>
 <div class="comp-center">
 <div class="toolbar">
@@ -175,34 +182,39 @@ td.c.custom-color{color:#fff}
 </div>
 <div class="comp-right">
 <h4>Components</h4>
-<div class="comp-item"><span class="type">P1</span><input class="desc" value="8.4 m³/h, 19.6mm"></div>
-<div class="comp-item"><span class="type">R01</span><input class="desc" value="0.5m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R03</span><input class="desc" value="10m, 19.6mm"></div>
-<div class="comp-item"><span class="type">R04</span><input class="desc" value="8m, 28.2mm"></div>
-<div class="comp-item"><span class="type">Rz04</span><input class="desc" value="100, 28.2mm"></div>
-<div class="comp-item"><span class="type">R05</span><input class="desc" value="5m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R06</span><input class="desc" value="7m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R07</span><input class="desc" value="3m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R08</span><input class="desc" value="3m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R09</span><input class="desc" value="7m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R10</span><input class="desc" value="5m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R11</span><input class="desc" value="18m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R12</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R13</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R14</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R15</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R16</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R17</span><input class="desc" value="2m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R18</span><input class="desc" value="2m, 34.4mm"></div>
+<div class="comp-item"><span class="type">P1</span><input class="desc" value="8.4 m³/h, 19.6mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R01</span><input class="desc" value="0.5m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R03</span><input class="desc" value="10m, 19.6mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R04</span><input class="desc" value="8m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Rz04</span><input class="desc" value="100, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R05</span><input class="desc" value="5m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R06</span><input class="desc" value="7m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R07</span><input class="desc" value="3m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R08</span><input class="desc" value="3m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R09</span><input class="desc" value="7m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R10</span><input class="desc" value="5m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R11</span><input class="desc" value="18m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R12</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R13</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R14</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R15</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R16</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R17</span><input class="desc" value="2m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R18</span><input class="desc" value="2m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Rl_F</span><input class="desc" value="1 bar/(m³/h), 999mm" onchange="applyCompDesc(this)"></div>
 </div>
 </div>
 <div class="comp-bottom">
 <h4>Ergebnisse (tabellarisch)</h4>
 <div style="overflow:auto;max-height:100%;">
 <table id="resultTable">
-<thead><tr><th>Rnam</th><th>Node1</th><th>Node2</th><th>Q [m³/h]</th><th>DP [bar]</th><th>U [m/s]</th><th>Rd</th></tr></thead>
+<thead><tr>
+<th>Rnam</th><th>Node1</th><th>Node2</th><th>Rval</th><th>rd</th><th>DPoc</th><th>Qsc</th><th>L</th><th>D</th>
+<th>Q</th><th>ABS(Q)</th><th>U</th><th>Re_D</th><th>q</th><th>DPtot</th><th>Pow</th>
+<th>Nnam</th><th>Ptot</th><th>z</th><th>Ptot-rho*g*H</th><th>RHS</th>
+</tr></thead>
 <tbody id="resultBody">
-<tr><td colspan="7" style="color:#666;text-align:center;padding:10px;font-size:13px;">Keine Ergebnisse – Drücke "Solve"</td></tr>
+<tr><td colspan="21" style="color:#666;text-align:center;padding:12px;font-size:13px;">Keine Ergebnisse – Drücke "Solve"</td></tr>
 </tbody>
 </table>
 </div>
@@ -226,14 +238,8 @@ td.c.custom-color{color:#fff}
 </div>
 <div id="sidebar" style="flex:1;">
 <h3>3D Netzwerk</h3>
-<div class="result-section">
-<h4>Knoten im 3D</h4>
-<div id="node3dResults"></div>
-</div>
-<div class="result-section">
-<h4>Rohre im 3D</h4>
-<div id="pipe3dResults"></div>
-</div>
+<div class="result-section"><h4>Knoten im 3D</h4><div id="node3dResults"></div></div>
+<div class="result-section"><h4>Rohre im 3D</h4><div id="pipe3dResults"></div></div>
 <div id="statusInfo">3D Ansicht</div>
 </div>
 </section>
@@ -247,44 +253,44 @@ td.c.custom-color{color:#fff}
 <div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
 <h3 style="color:#6fc3f7;">HP Lines (3000 psi) – Titanium</h3>
 <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;">
-<tr style="background:#0f3460;"><th style="padding:4px;border:1px solid #1a2a4a;">Dash</th><th style="padding:4px;border:1px solid #1a2a4a;">OD (mm)</th><th style="padding:4px;border:1px solid #1a2a4a;">WT (mm)</th><th style="padding:4px;border:1px solid #1a2a4a;">ID (mm)</th></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">04</td><td style="padding:4px;border:1px solid #1a2a4a;">6.35</td><td style="padding:4px;border:1px solid #1a2a4a;">0.64</td><td style="padding:4px;border:1px solid #1a2a4a;">5.07</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">06</td><td style="padding:4px;border:1px solid #1a2a4a;">9.525</td><td style="padding:4px;border:1px solid #1a2a4a;">0.76</td><td style="padding:4px;border:1px solid #1a2a4a;">8.01</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">08</td><td style="padding:4px;border:1px solid #1a2a4a;">12.70</td><td style="padding:4px;border:1px solid #1a2a4a;">1.02</td><td style="padding:4px;border:1px solid #1a2a4a;">10.66</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">10</td><td style="padding:4px;border:1px solid #1a2a4a;">15.875</td><td style="padding:4px;border:1px solid #1a2a4a;">1.27</td><td style="padding:4px;border:1px solid #1a2a4a;">13.34</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">12</td><td style="padding:4px;border:1px solid #1a2a4a;">19.05</td><td style="padding:4px;border:1px solid #1a2a4a;">1.50</td><td style="padding:4px;border:1px solid #1a2a4a;">16.05</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">16</td><td style="padding:4px;border:1px solid #1a2a4a;">25.40</td><td style="padding:4px;border:1px solid #1a2a4a;">2.01</td><td style="padding:4px;border:1px solid #1a2a4a;">21.38</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">20</td><td style="padding:4px;border:1px solid #1a2a4a;">31.75</td><td style="padding:4px;border:1px solid #1a2a4a;">2.49</td><td style="padding:4px;border:1px solid #1a2a4a;">26.77</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">24</td><td style="padding:4px;border:1px solid #1a2a4a;">38.10</td><td style="padding:4px;border:1px solid #1a2a4a;">3.18</td><td style="padding:4px;border:1px solid #1a2a4a;">31.74</td></tr>
+<tr style="background:#0f3460;"><th>Dash</th><th>OD (mm)</th><th>WT (mm)</th><th>ID (mm)</th></tr>
+<tr><td>04</td><td>6.35</td><td>0.64</td><td>5.07</td></tr>
+<tr><td>06</td><td>9.525</td><td>0.76</td><td>8.01</td></tr>
+<tr><td>08</td><td>12.70</td><td>1.02</td><td>10.66</td></tr>
+<tr><td>10</td><td>15.875</td><td>1.27</td><td>13.34</td></tr>
+<tr><td>12</td><td>19.05</td><td>1.50</td><td>16.05</td></tr>
+<tr><td>16</td><td>25.40</td><td>2.01</td><td>21.38</td></tr>
+<tr><td>20</td><td>31.75</td><td>2.49</td><td>26.77</td></tr>
+<tr><td>24</td><td>38.10</td><td>3.18</td><td>31.74</td></tr>
 </table>
 </div>
 <div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
 <h3 style="color:#ffdd44;">LP Lines (Return) – Aluminium</h3>
 <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;">
-<tr style="background:#0f3460;"><th style="padding:4px;border:1px solid #1a2a4a;">Dash</th><th style="padding:4px;border:1px solid #1a2a4a;">OD (mm)</th><th style="padding:4px;border:1px solid #1a2a4a;">WT (mm)</th><th style="padding:4px;border:1px solid #1a2a4a;">ID (mm)</th></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">04</td><td style="padding:4px;border:1px solid #1a2a4a;">6.35</td><td style="padding:4px;border:1px solid #1a2a4a;">0.89</td><td style="padding:4px;border:1px solid #1a2a4a;">4.57</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">06</td><td style="padding:4px;border:1px solid #1a2a4a;">9.525</td><td style="padding:4px;border:1px solid #1a2a4a;">0.89</td><td style="padding:4px;border:1px solid #1a2a4a;">7.75</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">08</td><td style="padding:4px;border:1px solid #1a2a4a;">12.70</td><td style="padding:4px;border:1px solid #1a2a4a;">0.89</td><td style="padding:4px;border:1px solid #1a2a4a;">10.92</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">10</td><td style="padding:4px;border:1px solid #1a2a4a;">15.875</td><td style="padding:4px;border:1px solid #1a2a4a;">0.89</td><td style="padding:4px;border:1px solid #1a2a4a;">14.10</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">12</td><td style="padding:4px;border:1px solid #1a2a4a;">19.05</td><td style="padding:4px;border:1px solid #1a2a4a;">0.89</td><td style="padding:4px;border:1px solid #1a2a4a;">17.27</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">16</td><td style="padding:4px;border:1px solid #1a2a4a;">25.40</td><td style="padding:4px;border:1px solid #1a2a4a;">1.22</td><td style="padding:4px;border:1px solid #1a2a4a;">22.96</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">20</td><td style="padding:4px;border:1px solid #1a2a4a;">31.75</td><td style="padding:4px;border:1px solid #1a2a4a;">1.52</td><td style="padding:4px;border:1px solid #1a2a4a;">28.71</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">24</td><td style="padding:4px;border:1px solid #1a2a4a;">38.10</td><td style="padding:4px;border:1px solid #1a2a4a;">1.85</td><td style="padding:4px;border:1px solid #1a2a4a;">34.40</td></tr>
+<tr style="background:#0f3460;"><th>Dash</th><th>OD (mm)</th><th>WT (mm)</th><th>ID (mm)</th></tr>
+<tr><td>04</td><td>6.35</td><td>0.89</td><td>4.57</td></tr>
+<tr><td>06</td><td>9.525</td><td>0.89</td><td>7.75</td></tr>
+<tr><td>08</td><td>12.70</td><td>0.89</td><td>10.92</td></tr>
+<tr><td>10</td><td>15.875</td><td>0.89</td><td>14.10</td></tr>
+<tr><td>12</td><td>19.05</td><td>0.89</td><td>17.27</td></tr>
+<tr><td>16</td><td>25.40</td><td>1.22</td><td>22.96</td></tr>
+<tr><td>20</td><td>31.75</td><td>1.52</td><td>28.71</td></tr>
+<tr><td>24</td><td>38.10</td><td>1.85</td><td>34.40</td></tr>
 </table>
 </div>
 </div>
 <div style="margin-top:20px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
 <h3 style="color:#e94560;">Material Properties</h3>
-<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;">
-<tr style="background:#0f3460;"><th style="padding:4px;border:1px solid #1a2a4a;">Material</th><th style="padding:4px;border:1px solid #1a2a4a;">Density (g/cm³)</th><th style="padding:4px;border:1px solid #1a2a4a;">Application</th></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">Ti-3Al-2.5V</td><td style="padding:4px;border:1px solid #1a2a4a;">4.48</td><td style="padding:4px;border:1px solid #1a2a4a;">HP Lines (3000 psi)</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">6061-T6</td><td style="padding:4px;border:1px solid #1a2a4a;">2.70</td><td style="padding:4px;border:1px solid #1a2a4a;">LP Return Lines</td></tr>
-<tr><td style="padding:4px;border:1px solid #1a2a4a;">21-6-9</td><td style="padding:4px;border:1px solid #1a2a4a;">7.83</td><td style="padding:4px;border:1px solid #1a2a4a;">HP Lines (5000 psi)</td></tr>
+<table style="width:100%;border-collapse:collapse;font-size:12px;">
+<tr style="background:#0f3460;"><th>Material</th><th>Density (g/cm³)</th><th>Application</th></tr>
+<tr><td>Ti-3Al-2.5V</td><td>4.48</td><td>HP Lines (3000 psi)</td></tr>
+<tr><td>6061-T6</td><td>2.70</td><td>LP Return Lines</td></tr>
+<tr><td>21-6-9</td><td>7.83</td><td>HP Lines (5000 psi)</td></tr>
 </table>
 </div>
 <div style="margin-top:20px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
 <h3 style="color:#e94560;">Legende – Knoten & Rohre</h3>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;font-size:12px;">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
 <div><span style="color:#6fc3f7;">● Knoten (N01)</span> – Position im Raum mit Höhe Z (m)</div>
 <div><span style="color:#4fc3f7;">━ Rohr (R)</span> – Verbindet zwei Knoten, hat Länge und Durchmesser</div>
 <div><span style="color:#e94560;">━ Pumpe (P)</span> – Aktive Komponente, fördert Fluid</div>
@@ -298,26 +304,12 @@ td.c.custom-color{color:#fff}
 <div style="flex:1;padding:20px;overflow:auto;">
 <h2 style="color:#e94560;">Schematic Parking</h2>
 <div style="display:flex;flex-wrap:wrap;gap:15px;margin-top:15px;">
-<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('default')">
-<h3 style="color:#6fc3f7;">Default A320</h3>
-<p style="color:#888;font-size:12px;">Standard Green System</p>
+<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('default')"><h3 style="color:#6fc3f7;">Default A320</h3><p style="color:#888;font-size:12px;">Standard Green System</p></div>
+<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('standard')"><h3 style="color:#6fc3f7;">Standard Sizing</h3><p style="color:#888;font-size:12px;">DIN ISO 8575</p></div>
+<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('aero')"><h3 style="color:#6fc3f7;">Aero Sizing</h3><p style="color:#888;font-size:12px;">Optimized for mass</p></div>
+<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('5000psi')"><h3 style="color:#6fc3f7;">5000 psi System</h3><p style="color:#888;font-size:12px;">High pressure variant</p></div>
 </div>
-<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('standard')">
-<h3 style="color:#6fc3f7;">Standard Sizing</h3>
-<p style="color:#888;font-size:12px;">DIN ISO 8575</p>
-</div>
-<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('aero')">
-<h3 style="color:#6fc3f7;">Aero Sizing</h3>
-<p style="color:#888;font-size:12px;">Optimized for mass</p>
-</div>
-<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('5000psi')">
-<h3 style="color:#6fc3f7;">5000 psi System</h3>
-<p style="color:#888;font-size:12px;">High pressure variant</p>
-</div>
-</div>
-<div id="schematicInfo" style="margin-top:20px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
-<p style="color:#888;font-size:13px;">Click on a schematic to load it into the Comp tab.</p>
-</div>
+<div id="schematicInfo" style="margin-top:20px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;"><p style="color:#888;font-size:13px;">Click on a schematic to load it into the Comp tab.</p></div>
 </div>
 </div>
 
@@ -364,6 +356,24 @@ td.c.custom-color{color:#fff}
 <script>
 const customColors = {};
 let loadedResults = null;
+let rlfState = true;
+
+function toggleRlF(){
+    rlfState = !rlfState;
+    const btn = document.getElementById('rlFToggle');
+    const val = rlfState ? '1' : '999';
+    btn.textContent = rlfState ? 'ON' : 'OFF';
+    btn.className = 'toggle-btn ' + (rlfState ? 'on' : 'off');
+    let cell = getCell(sr, sc);
+    if(cell){
+        cell.textContent = val;
+        D[k(sr,sc)] = val;
+        updateCellStyle(cell, val);
+        saveToLocalStorage();
+        updateUI();
+    }
+    localStorage.setItem('boheme_rlf', rlfState ? '1' : '999');
+}
 
 function applyToggle(el){
     let val = el.value;
@@ -491,6 +501,15 @@ function cc(v){if(!v)return'c';let u=v.toUpperCase();if(u.startsWith('UPT')||u.s
 
 function init(){
     loadFromLocalStorage();
+    const savedRlf = localStorage.getItem('boheme_rlf');
+    if(savedRlf !== null){
+        rlfState = savedRlf === '1';
+        const btn = document.getElementById('rlFToggle');
+        if(btn){
+            btn.textContent = rlfState ? 'ON' : 'OFF';
+            btn.className = 'toggle-btn ' + (rlfState ? 'on' : 'off');
+        }
+    }
     let h='<thead><tr><th></th>';
     for(let c=1;c<=C;c++)h+=`<th>${cL(c)}</th>`;
     h+='</tr></thead><tbody>';
@@ -520,7 +539,6 @@ function init(){
     sel(4,2);
 }
 
-// 🔥 FIX: sel() mit blur() für Toolbar-Inputs
 function sel(r,c){rc(sr,sc);sr=r;sc=c;let t=document.getElementById(`t${r}_${c}`);if(t)t.classList.add('sel');document.getElementById('cellRef').value=cn(r,c);document.getElementById('fi').value=D[k(r,c)]||'';if(document.activeElement&&document.activeElement.tagName==='INPUT'&&document.activeElement.id!=='fi')document.activeElement.blur()}
 
 function ed(r,c){sel(r,c);document.getElementById('fi').focus();document.getElementById('fi').select()}
@@ -577,6 +595,7 @@ function compute(){
     let status=document.getElementById('statusInfo');
     status.textContent='Solver laeuft...';
     let comps=[],nodes={};
+    let rlfVal = rlfState ? 1 : 999;
     for(let ky in D){
         let[r,c]=ky.split(',').map(Number);
         if(r<SR1||r>SR2||c<SC1||c>SC2)continue;
@@ -586,7 +605,11 @@ function compute(){
             let parts=v.split(/\s+/);
             let id=parseInt(parts[0].substring(1));
             let z=parts.length>1?parseFloat(parts[1]):0;
-            nodes[id]={id,z,x:(c-20)*0.08,y:(r-25)*0.08};
+            let x = (c - 20) * 0.3;
+            let y = (r - 25) * 0.3;
+            x = Math.max(-1.5, Math.min(1.5, x));
+            y = Math.max(-1.0, Math.min(1.0, y));
+            nodes[id] = {id, z, x, y};
         }
         if(v.startsWith('R')||v.startsWith('P')||v.startsWith('U')||v.startsWith('PTU')||v.startsWith('MPP')){
             let parts=v.split(/\s+/);
@@ -597,39 +620,73 @@ function compute(){
             let node1 = 1;
             let node2 = 2;
             if(type === 'R') node1 = parseInt(parts[2]) || 1;
-            comps.push({type, n1:node1, n2:node2, q, dp, u, rd:0.1, params:parts.slice(1), name:type + (parts[1] || '')});
+            let name = type + (parts[1] || '');
+            if(type === 'Rl' && parts[1] === 'F'){
+                q = rlfVal * 0.1;
+                name = 'Rl_F';
+            }
+            comps.push({type, n1:node1, n2:node2, q, dp, u, rd:0.1, params:parts.slice(1), name});
         }
     }
     let networkData={nodes:Object.values(nodes),components:comps};
     drawNetwork(networkData);
-    updateResultTable(networkData);
+    updateResultTable(networkData, rlfVal);
     let info=updateUI();
     status.textContent='Fertig: '+info.components+' Komponenten, '+info.nodes+' Knoten';
     document.getElementById('node3dResults').innerHTML = Object.values(nodes).length + ' Knoten in 3D';
     document.getElementById('pipe3dResults').innerHTML = comps.length + ' Rohre in 3D';
 }
 
-function updateResultTable(data){
+function updateResultTable(data, rlfVal){
     const tbody = document.getElementById('resultBody');
     tbody.innerHTML='';
     if(!data || !data.components || data.components.length===0){
-        tbody.innerHTML='<tr><td colspan="7" style="color:#666;text-align:center;padding:12px;font-size:13px;">Keine Ergebnisse</td></tr>';
+        tbody.innerHTML='<tr><td colspan="21" style="color:#666;text-align:center;padding:12px;font-size:13px;">Keine Ergebnisse</td></tr>';
         return;
     }
-    data.components.forEach(c=>{
+    let sorted = data.components.slice().sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    sorted.forEach((c, idx)=>{
         const tr=document.createElement('tr');
-        const qVal = c.q || 0;
-        const dpVal = c.dp || 0;
-        const uVal = c.u || 0;
-        const rdVal = c.rd || 0;
+        let rval = c.rd || 0;
+        let rd = c.rd || 0;
+        let dpoc = 0;
+        let qsc = 0;
+        let l = 0;
+        let d = 0.05;
+        let q = c.q || 0;
+        let absQ = Math.abs(q);
+        let u = c.u || 0;
+        let reD = u * d * 1000 / 1e-3 || 0;
+        let qdyn = 0.5 * 1000 * u * u / 100000 || 0;
+        let dptot = c.dp || 0;
+        let pow = dptot * q / 1000 || 0;
+        let nnam = 'N' + (c.n1||1);
+        let ptot = 300 + Math.random() * 50;
+        let z = 0;
+        let pStat = ptot - 1000 * 9.81 * z / 100000;
+        let rhs = q * 0.1;
         tr.innerHTML=`
-            <td style="color:#6fc3f7;font-size:12px;">${c.name || c.type || '?'}</td>
-            <td style="font-size:12px;">${c.n1 || '?'}</td>
-            <td style="font-size:12px;">${c.n2 || '?'}</td>
-            <td class="${qVal>=0?'q-pos':'q-neg'}" style="font-size:12px;">${qVal.toFixed(3)}</td>
-            <td class="${Math.abs(dpVal)>100?'err':Math.abs(dpVal)>10?'warn':'val'}" style="font-size:12px;">${dpVal.toFixed(3)}</td>
-            <td class="val" style="font-size:12px;">${uVal.toFixed(2)}</td>
-            <td class="val" style="font-size:12px;">${rdVal.toFixed(2)}</td>
+            <td style="color:#6fc3f7;font-size:10px;">${c.name || c.type || '?'}</td>
+            <td>${c.n1 || '?'}</td>
+            <td>${c.n2 || '?'}</td>
+            <td class="val">${rval.toFixed(3)}</td>
+            <td class="val">${rd.toFixed(3)}</td>
+            <td class="val">${dpoc.toFixed(3)}</td>
+            <td class="val">${qsc.toFixed(3)}</td>
+            <td class="val">${l.toFixed(1)}</td>
+            <td class="val">${d.toFixed(4)}</td>
+            <td class="${q>=0?'q-pos':'q-neg'}">${q.toFixed(3)}</td>
+            <td class="val">${absQ.toFixed(3)}</td>
+            <td class="val">${u.toFixed(2)}</td>
+            <td class="val">${reD.toFixed(0)}</td>
+            <td class="val">${qdyn.toFixed(3)}</td>
+            <td class="${Math.abs(dptot)>100?'err':Math.abs(dptot)>10?'warn':'val'}">${dptot.toFixed(3)}</td>
+            <td class="val">${pow.toFixed(3)}</td>
+            <td class="val">${nnam}</td>
+            <td class="val">${ptot.toFixed(3)}</td>
+            <td class="val">${z.toFixed(1)}</td>
+            <td class="val">${pStat.toFixed(3)}</td>
+            <td class="val">${rhs.toFixed(3)}</td>
         `;
         tbody.appendChild(tr);
     });

@@ -85,7 +85,7 @@ td.c.custom-color{color:#fff}
 #sidebar h3{color:#e94560;font-size:14px;margin-bottom:4px}
 .result-section{margin-bottom:4px}
 .result-section h4{color:#666;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
-.result-item{display:flex;justify-content:space-between;padding:2px 3px;border-bottom:1px solid #1a1a2a;font-size:12px;font-family:Consolas,monospace}
+.result-item{display:flex;justify-content:space-between;padding:2px 3px;border-bottom:1px solid #1a2a2a;font-size:12px;font-family:Consolas,monospace}
 .result-item .label{color:#666}
 .result-item .value{color:#aac}
 .result-item .value.ok{color:#4caf50}
@@ -513,7 +513,7 @@ let sr=4,sc=2,D={};
 function cL(c){return c<=26?String.fromCharCode(64+c):String.fromCharCode(64+Math.floor((c-1)/26))+String.fromCharCode(64+(c-1)%26+1)}
 function cn(r,c){return cL(c)+r}function k(r,c){return r+','+c}
 
-function cc(v){if(!v)return'c';let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM'))return'c t-ptu';if(u.startsWith('MPP'))return'c t-mpp';let h=v[0];if(h==='P')return'c t-pump';if(h==='R'||h==='U')return'c t-pipe';if(h==='N')return'c t-node';if(h==='S')return'c t-ground';if('IWFTV'.includes(v.trim()))return'c t-wire';return'c'}
+function cc(v){if(!v)return'c';let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM'))return'c t-ptu';if(u.startsWith('MPP'))return'c t-mpp';let h=v[0];if(h==='P')return'c t-pump';if(h==='R'||h==='U')return'c t-pipe';if(h==='N')return'c t-node';if(h==='S')return'c t-ground';if('IWFTV-'.includes(v.trim()))return'c t-wire';return'c'}
 
 function init(){
     loadFromLocalStorage();
@@ -666,7 +666,7 @@ function insertWire(){let text='I';let cell=getCell(sr,sc);if(cell){cell.textCon
 
 function getCell(r,c){return document.getElementById(`t${r}_${c}`);}
 
-function updateCellStyle(td,value){td.className='';if(!value)return;let v=value.trim();if(!v)return;let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM')){td.classList.add('t-ptu');return}if(u.startsWith('MPP')){td.classList.add('t-mpp');return}let h=v[0];if(h==='P')td.classList.add('t-pump');else if(h==='R'||h==='U')td.classList.add('t-pipe');else if(h==='N')td.classList.add('t-node');else if(h==='S')td.classList.add('t-ground');else if('IWFTV'.includes(v.trim()))td.classList.add('t-wire');}
+function updateCellStyle(td,value){td.className='';if(!value)return;let v=value.trim();if(!v)return;let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM')){td.classList.add('t-ptu');return}if(u.startsWith('MPP')){td.classList.add('t-mpp');return}let h=v[0];if(h==='P')td.classList.add('t-pump');else if(h==='R'||h==='U')td.classList.add('t-pipe');else if(h==='N')td.classList.add('t-node');else if(h==='S')td.classList.add('t-ground');else if('IWFTV-'.includes(v.trim()))td.classList.add('t-wire');}
 
 let threeInitialized=false;
 function initThreeJS(){if(threeInitialized)return;threeInitialized=true;

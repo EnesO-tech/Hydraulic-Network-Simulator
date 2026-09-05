@@ -358,12 +358,15 @@ const customColors = {};
 let loadedResults = null;
 let rlfState = true;
 
+// 🔥 FIX: Rl_F Toggle - schreibt direkt in die ausgewählte Zelle
 function toggleRlF(){
     rlfState = !rlfState;
     const btn = document.getElementById('rlFToggle');
     const val = rlfState ? '1' : '999';
     btn.textContent = rlfState ? 'ON' : 'OFF';
     btn.className = 'toggle-btn ' + (rlfState ? 'on' : 'off');
+    
+    // 🔥 SCHREIBT IN DIE AKTUELL AUSGEWÄHLTE ZELLE
     let cell = getCell(sr, sc);
     if(cell){
         cell.textContent = val;
@@ -375,16 +378,45 @@ function toggleRlF(){
     localStorage.setItem('boheme_rlf', rlfState ? '1' : '999');
 }
 
+// 🔥 FIX: Toggle-Werte schreiben in die Zellen (Zeile 2, Spalte 4-8)
 function applyToggle(el){
     let val = el.value;
-    let cell = getCell(sr, sc);
-    if(cell){
-        cell.textContent = val;
-        D[k(sr,sc)] = val;
-        updateCellStyle(cell, val);
-        saveToLocalStorage();
-        updateUI();
+    let id = el.id;
+    
+    // Zuweisung zu festen Zellen
+    const cellMap = {
+        'tglRlOn': [2,4],
+        'tglRlOff': [2,5],
+        'tglRkOn1': [2,6],
+        'tglRkOn54': [2,7],
+        'tglRkOff': [2,8],
+        'itLambda': [3,4],
+        'itDUcrit': [3,5],
+        'itNiter': [3,6],
+        'itKReD': [3,7],
+        'itProtect': [3,8],
+        'itZanke': [3,9],
+        'nodeS': [4,4],
+        'nodeH': [4,5],
+        'pamb': [4,6],
+        'grav': [4,7],
+        'krough': [4,8],
+        'redcrit': [4,9]
+    };
+    
+    if(cellMap[id]){
+        let r = cellMap[id][0];
+        let c = cellMap[id][1];
+        let cell = getCell(r, c);
+        if(cell){
+            cell.textContent = val;
+            D[k(r,c)] = val;
+            updateCellStyle(cell, val);
+            saveToLocalStorage();
+            updateUI();
+        }
     }
+    localStorage.setItem('boheme_toggle_' + id, val);
 }
 
 function applyCompDesc(el){
@@ -605,8 +637,9 @@ function compute(){
             let parts=v.split(/\s+/);
             let id=parseInt(parts[0].substring(1));
             let z=parts.length>1?parseFloat(parts[1]):0;
-            let x = (c - 20) * 0.3;
-            let y = (r - 25) * 0.3;
+            // 🔥 FIX: Bessere 3D-Positionierung mit Skalierung 0.08
+            let x = (c - 20) * 0.08;
+            let y = (r - 25) * 0.08;
             x = Math.max(-1.5, Math.min(1.5, x));
             y = Math.max(-1.0, Math.min(1.0, y));
             nodes[id] = {id, z, x, y};

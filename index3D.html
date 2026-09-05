@@ -85,7 +85,7 @@ td.c.custom-color{color:#fff}
 #sidebar h3{color:#e94560;font-size:14px;margin-bottom:4px}
 .result-section{margin-bottom:4px}
 .result-section h4{color:#666;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
-.result-item{display:flex;justify-content:space-between;padding:2px 3px;border-bottom:1px solid #1a2a2a;font-size:12px;font-family:Consolas,monospace}
+.result-item{display:flex;justify-content:space-between;padding:2px 3px;border-bottom:1px solid #1a1a2a;font-size:12px;font-family:Consolas,monospace}
 .result-item .label{color:#666}
 .result-item .value{color:#aac}
 .result-item .value.ok{color:#4caf50}
@@ -125,25 +125,25 @@ td.c.custom-color{color:#fff}
 <div class="comp-top">
 <div class="comp-left">
 <h4>Toggle Buttons</h4>
-<div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="999" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Rk_off</span><input class="val off" id="tglRkOff" value="0.001" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1"></div>
+<div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="999"></div>
+<div class="toggle-item"><span class="key">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1"></div>
+<div class="toggle-item"><span class="key">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54"></div>
+<div class="toggle-item"><span class="key">Rk_off</span><input class="val off" id="tglRkOff" value="0.001"></div>
 <h4>Iteration Controls</h4>
-<div class="toggle-item"><span class="key">lambdaU</span><input class="val" id="itLambda" value="0.6" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">dUcrit</span><input class="val" id="itDUcrit" value="1E-07" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">niter</span><input class="val" id="itNiter" value="999" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">kReD</span><input class="val" id="itKReD" value="0.2" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">boolProtect</span><input class="val off" id="itProtect" value="FALSCH" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSCH" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">lambdaU</span><input class="val" id="itLambda" value="0.6"></div>
+<div class="toggle-item"><span class="key">dUcrit</span><input class="val" id="itDUcrit" value="1E-07"></div>
+<div class="toggle-item"><span class="key">niter</span><input class="val" id="itNiter" value="999"></div>
+<div class="toggle-item"><span class="key">kReD</span><input class="val" id="itKReD" value="0.2"></div>
+<div class="toggle-item"><span class="key">boolProtect</span><input class="val off" id="itProtect" value="FALSCH"></div>
+<div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSCH"></div>
 <h4>Nodes</h4>
-<div class="toggle-item"><span class="key">Node: S</span><input class="val" id="nodeS" value="3.438E-01" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Node: H</span><input class="val" id="nodeH" value="1.01325" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Pamb</span><input class="val" id="pamb" value="1.01325" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">g</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">krough</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Node: S</span><input class="val" id="nodeS" value="3.438E-01"></div>
+<div class="toggle-item"><span class="key">Node: H</span><input class="val" id="nodeH" value="1.01325"></div>
+<div class="toggle-item"><span class="key">Pamb</span><input class="val" id="pamb" value="1.01325"></div>
+<div class="toggle-item"><span class="key">g</span><input class="val" id="grav" value="9.80665"></div>
+<div class="toggle-item"><span class="key">krough</span><input class="val" id="krough" value="0.0015"></div>
+<div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320"></div>
 </div>
 <div class="comp-center">
 <div class="toolbar">
@@ -366,40 +366,14 @@ const customColors = {};
 let loadedResults = null;
 
 function applyToggle(el){
-    let key = el.id;
     let val = el.value;
-    localStorage.setItem('boheme_toggle_' + key, val);
-    
-    const cellMap = {
-        'tglRlOn': [2,4],
-        'tglRlOff': [2,5],
-        'tglRkOn1': [2,6],
-        'tglRkOn54': [2,7],
-        'tglRkOff': [2,8],
-        'itLambda': [3,4],
-        'itDUcrit': [3,5],
-        'itNiter': [3,6],
-        'itKReD': [3,7],
-        'itProtect': [3,8],
-        'itZanke': [3,9],
-        'nodeS': [4,4],
-        'nodeH': [4,5],
-        'pamb': [4,6],
-        'grav': [4,7],
-        'krough': [4,8],
-        'redcrit': [4,9]
-    };
-    if(cellMap[key]){
-        let r = cellMap[key][0];
-        let c = cellMap[key][1];
-        let cell = getCell(r, c);
-        if(cell){
-            cell.textContent = val;
-            D[k(r,c)] = val;
-            updateCellStyle(cell, val);
-            saveToLocalStorage();
-            updateUI();
-        }
+    let cell = getCell(sr, sc);
+    if(cell){
+        cell.textContent = val;
+        D[k(sr,sc)] = val;
+        updateCellStyle(cell, val);
+        saveToLocalStorage();
+        updateUI();
     }
 }
 

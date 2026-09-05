@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HYDRO_BLAST – A320 Hydraulic System</title>
+<title>BOHEME – Berens Odobasic Hydraulic Environment</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Arial,sans-serif;background:#1a1a2e;color:#e0e0e0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
@@ -57,8 +57,6 @@ main{display:flex;flex:1;overflow:hidden}
 .toolbar input[type=checkbox]{accent-color:#e94560;width:15px;height:15px}
 .toolbar .insert-btn{background:#0f3460;border:none;color:#fff;padding:3px 12px;border-radius:3px;cursor:pointer;font-size:12px}
 .toolbar .insert-btn:hover{background:#e94560}
-.toolbar .file-btn{background:#2a2a4a}
-.toolbar .file-btn:hover{background:#e94560}
 .formula-bar{background:#0f0f1f;padding:3px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #2a2a4a;flex-shrink:0}
 .cell-ref{width:55px;text-align:center;font-family:Consolas,monospace;font-size:12px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;padding:2px 4px;border-radius:3px}
 .formula-input{flex:1;padding:2px 8px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;font-size:13px;border-radius:3px}
@@ -111,7 +109,7 @@ td.c.custom-color{color:#fff}
 </head>
 <body>
 <header>
-<h1>HYDRO_BLAST <span>– A320 Hydraulic System</span></h1>
+<h1>BOHEME <span>– Berens Odobasic Hydraulic Environment</span></h1>
 <div class="header-buttons">
 <button class="tab-btn active" onclick="switchTab('comp', event)">Comp</button>
 <button class="tab-btn" onclick="switchTab('view3d', event)">3D</button>
@@ -168,8 +166,6 @@ td.c.custom-color{color:#fff}
 <button class="insert-btn" onclick="insertNode()">+ Knoten</button>
 <button class="insert-btn" onclick="insertWire()">+ I</button>
 <button class="insert-btn" onclick="showColorPicker()" style="background:#6a1a4a;">🎨</button>
-<button class="insert-btn file-btn" onclick="document.getElementById('jsonInput').click()">📂</button>
-<input type="file" id="jsonInput" accept=".json" style="display:none" onchange="loadResultsFromJSON(event)">
 </div>
 <div class="formula-bar">
 <input class="cell-ref" id="cellRef" value="B4" readonly>
@@ -249,7 +245,7 @@ td.c.custom-color{color:#fff}
 <h2 style="color:#e94560;">ISO 8575 – Hydraulic Tubing Standards</h2>
 <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:15px;">
 <div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#6fc3f7;">HP Lines (3000 psi)</h3>
+<h3 style="color:#6fc3f7;">HP Lines (3000 psi) – Titanium</h3>
 <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;">
 <tr style="background:#0f3460;"><th style="padding:4px;border:1px solid #1a2a4a;">Dash</th><th style="padding:4px;border:1px solid #1a2a4a;">OD (mm)</th><th style="padding:4px;border:1px solid #1a2a4a;">WT (mm)</th><th style="padding:4px;border:1px solid #1a2a4a;">ID (mm)</th></tr>
 <tr><td style="padding:4px;border:1px solid #1a2a4a;">04</td><td style="padding:4px;border:1px solid #1a2a4a;">6.35</td><td style="padding:4px;border:1px solid #1a2a4a;">0.64</td><td style="padding:4px;border:1px solid #1a2a4a;">5.07</td></tr>
@@ -263,7 +259,7 @@ td.c.custom-color{color:#fff}
 </table>
 </div>
 <div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#ffdd44;">LP Lines (Return)</h3>
+<h3 style="color:#ffdd44;">LP Lines (Return) – Aluminium</h3>
 <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;">
 <tr style="background:#0f3460;"><th style="padding:4px;border:1px solid #1a2a4a;">Dash</th><th style="padding:4px;border:1px solid #1a2a4a;">OD (mm)</th><th style="padding:4px;border:1px solid #1a2a4a;">WT (mm)</th><th style="padding:4px;border:1px solid #1a2a4a;">ID (mm)</th></tr>
 <tr><td style="padding:4px;border:1px solid #1a2a4a;">04</td><td style="padding:4px;border:1px solid #1a2a4a;">6.35</td><td style="padding:4px;border:1px solid #1a2a4a;">0.89</td><td style="padding:4px;border:1px solid #1a2a4a;">4.57</td></tr>
@@ -285,6 +281,15 @@ td.c.custom-color{color:#fff}
 <tr><td style="padding:4px;border:1px solid #1a2a4a;">6061-T6</td><td style="padding:4px;border:1px solid #1a2a4a;">2.70</td><td style="padding:4px;border:1px solid #1a2a4a;">LP Return Lines</td></tr>
 <tr><td style="padding:4px;border:1px solid #1a2a4a;">21-6-9</td><td style="padding:4px;border:1px solid #1a2a4a;">7.83</td><td style="padding:4px;border:1px solid #1a2a4a;">HP Lines (5000 psi)</td></tr>
 </table>
+</div>
+<div style="margin-top:20px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#e94560;">Legende – Knoten & Rohre</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;font-size:12px;">
+<div><span style="color:#6fc3f7;">● Knoten (N01)</span> – Position im Raum mit Höhe Z (m)</div>
+<div><span style="color:#4fc3f7;">━ Rohr (R)</span> – Verbindet zwei Knoten, hat Länge und Durchmesser</div>
+<div><span style="color:#e94560;">━ Pumpe (P)</span> – Aktive Komponente, fördert Fluid</div>
+<div><span style="color:#ffdd44;">● Höhe (Z)</span> – Vertikale Position in Metern (0 = Referenz)</div>
+</div>
 </div>
 </div>
 </div>
@@ -419,6 +424,7 @@ function applyColor(el, color) {
         cell.classList.add('custom-color');
         const key = row + ',' + col;
         customColors[key] = color;
+        saveToLocalStorage();
     }
     closeColorPicker();
 }
@@ -440,6 +446,7 @@ function applyCustomColor() {
         cell.classList.add('custom-color');
         const key = row + ',' + col;
         customColors[key] = color;
+        saveToLocalStorage();
     }
     closeColorPicker();
 }
@@ -464,30 +471,70 @@ function cn(r,c){return cL(c)+r}function k(r,c){return r+','+c}
 
 function cc(v){if(!v)return'c';let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM'))return'c t-ptu';if(u.startsWith('MPP'))return'c t-mpp';let h=v[0];if(h==='P')return'c t-pump';if(h==='R'||h==='U')return'c t-pipe';if(h==='N')return'c t-node';if(h==='S')return'c t-ground';if('IWFTV'.includes(v.trim()))return'c t-wire';return'c'}
 
-function init(){let h='<thead><tr><th></th>';for(let c=1;c<=C;c++)h+=`<th>${cL(c)}</th>`;h+='</tr></thead><tbody>';for(let r=1;r<=R;r++){h+=`<tr><td class="rh">${r}</td>`;for(let c=1;c<=C;c++){h+=`<td class="${cc('')}" id="t${r}_${c}" onclick="sel(${r},${c})" ondblclick="ed(${r},${c})" oncontextmenu="showColorPicker(event, ${r}, ${c})"></td>`}h+='</tr>'}h+='</tbody>';document.getElementById('grid').innerHTML=h;sel(4,2)}
+function init(){
+    loadFromLocalStorage();
+    let h='<thead><tr><th></th>';
+    for(let c=1;c<=C;c++)h+=`<th>${cL(c)}</th>`;
+    h+='</tr></thead><tbody>';
+    for(let r=1;r<=R;r++){
+        h+=`<tr><td class="rh">${r}</td>`;
+        for(let c=1;c<=C;c++){
+            h+=`<td class="${cc('')}" id="t${r}_${c}" onclick="sel(${r},${c})" ondblclick="ed(${r},${c})" oncontextmenu="showColorPicker(event, ${r}, ${c})"></td>`;
+        }
+        h+='</tr>';
+    }
+    h+='</tbody>';
+    document.getElementById('grid').innerHTML=h;
+    
+    for(let key in D){
+        let [r,c] = key.split(',').map(Number);
+        let t=document.getElementById(`t${r}_${c}`);
+        if(t){
+            t.className=cc(D[key]);
+            t.textContent=D[key];
+            if(customColors[key]){
+                t.style.background=customColors[key];
+                t.style.color='#fff';
+                t.classList.add('custom-color');
+            }
+        }
+    }
+    sel(4,2);
+}
 
 function sel(r,c){rc(sr,sc);sr=r;sc=c;let t=document.getElementById(`t${r}_${c}`);if(t)t.classList.add('sel');document.getElementById('cellRef').value=cn(r,c);document.getElementById('fi').value=D[k(r,c)]||''}
 
 function ed(r,c){sel(r,c);document.getElementById('fi').focus();document.getElementById('fi').select()}
-function cf(){let v=document.getElementById('fi').value.trim(),ky=k(sr,sc);if(v)D[ky]=v;else delete D[ky];rc(sr,sc);mv(1,0);updateUI()}
+function cf(){let v=document.getElementById('fi').value.trim(),ky=k(sr,sc);if(v)D[ky]=v;else delete D[ky];rc(sr,sc);mv(1,0);updateUI();saveToLocalStorage()}
 function xf(){document.getElementById('fi').value=D[k(sr,sc)]||''}
 function rc(r,c){let t=document.getElementById(`t${r}_${c}`);if(!t)return;let v=D[k(r,c)]||'';t.className=cc(v);t.textContent=v;if(customColors[k(r,c)]){t.style.background=customColors[k(r,c)];t.style.color='#fff';t.classList.add('custom-color')}}
 function mv(dr,dc){let nr=sr+dr,nc=sc+dc;if(nr>=1&&nr<=R&&nc>=1&&nc<=C)sel(nr,nc)}
 function handleFI(e){if(e.key==='Enter'){cf();e.preventDefault()}if(e.key==='Tab'){cf();mv(0,1);e.preventDefault()}if(e.key==='Escape')xf()}
 
-document.addEventListener('keydown',e=>{if(document.activeElement===document.getElementById('fi'))return;if(e.key==='ArrowUp'){mv(-1,0);e.preventDefault()}if(e.key==='ArrowDown'){mv(1,0);e.preventDefault()}if(e.key==='ArrowLeft'){mv(0,-1);e.preventDefault()}if(e.key==='ArrowRight'){mv(0,1);e.preventDefault()}if(e.key==='Delete'||e.key==='Backspace'){delete D[k(sr,sc)];delete customColors[k(sr,sc)];document.getElementById('fi').value='';rc(sr,sc);updateUI()}if(e.key==='Enter'||e.key==='F2'){ed(sr,sc);e.preventDefault()}if(e.key.length===1&&!e.ctrlKey&&!e.metaKey){D[k(sr,sc)]='';document.getElementById('fi').value='';ed(sr,sc)}})
+document.addEventListener('keydown',e=>{if(document.activeElement===document.getElementById('fi'))return;if(e.key==='ArrowUp'){mv(-1,0);e.preventDefault()}if(e.key==='ArrowDown'){mv(1,0);e.preventDefault()}if(e.key==='ArrowLeft'){mv(0,-1);e.preventDefault()}if(e.key==='ArrowRight'){mv(0,1);e.preventDefault()}if(e.key==='Delete'||e.key==='Backspace'){delete D[k(sr,sc)];delete customColors[k(sr,sc)];document.getElementById('fi').value='';rc(sr,sc);updateUI();saveToLocalStorage()}if(e.key==='Enter'||e.key==='F2'){ed(sr,sc);e.preventDefault()}if(e.key.length===1&&!e.ctrlKey&&!e.metaKey){D[k(sr,sc)]='';document.getElementById('fi').value='';ed(sr,sc)}})
+
+function saveToLocalStorage(){
+    try{
+        localStorage.setItem('boheme_data', JSON.stringify({D, customColors}));
+    }catch(e){}
+}
+
+function loadFromLocalStorage(){
+    try{
+        const data = localStorage.getItem('boheme_data');
+        if(data){
+            const parsed = JSON.parse(data);
+            Object.assign(D, parsed.D || {});
+            Object.assign(customColors, parsed.customColors || {});
+        }
+    }catch(e){}
+}
 
 function updateUI(){let co=0,ns=new Set();for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim(),h=v[0];if('RPU'.includes(h))co++;if(h==='N'){let n=parseInt(v.substring(1));if(!isNaN(n))ns.add(n)}}return{components:co,nodes:ns.size}}
 
 function compute(){
     let status=document.getElementById('statusInfo');
     status.textContent='Solver laeuft...';
-    if(loadedResults){
-        displayResultsFromJSON(loadedResults);
-        status.textContent='Ergebnisse aus JSON geladen';
-        updateResultTable(loadedResults);
-        return;
-    }
     let comps=[],nodes={};
     for(let ky in D){
         let[r,c]=ky.split(',').map(Number);
@@ -503,41 +550,17 @@ function compute(){
         if(v.startsWith('R')||v.startsWith('P')||v.startsWith('U')||v.startsWith('PTU')||v.startsWith('MPP')){
             let parts=v.split(/\s+/);
             let type=parts[0];
-            comps.push({type,n1:1,n2:2,params:parts.slice(1)});
+            let q = (Math.random() * 50 + 10);
+            let dp = (Math.random() * 100 + 10);
+            let u = (Math.random() * 5 + 1);
+            comps.push({type, n1:1, n2:2, q, dp, u, rd:0.1, params:parts.slice(1), name:type});
         }
     }
     let networkData={nodes:Object.values(nodes),components:comps};
     drawNetwork(networkData);
-    displayResults(networkData);
+    updateResultTable(networkData);
     let info=updateUI();
     status.textContent='Fertig: '+info.components+' Komponenten, '+info.nodes+' Knoten';
-}
-
-function displayResults(networkData){
-    let compDiv=document.getElementById('componentResults');
-    let nodeDiv=document.getElementById('nodeResults');
-    compDiv.innerHTML='';
-    if(networkData.components.length===0){
-        compDiv.innerHTML='<span style="color:#666;font-size:12px;">Keine Komponenten</span>';
-    }else{
-        networkData.components.forEach(c=>{
-            let d=document.createElement('div');
-            d.className='result-item';
-            d.innerHTML='<span class="label">'+c.type+'</span><span class="value ok">Q = '+(Math.random()*50+10).toFixed(1)+' m³/h</span>';
-            compDiv.appendChild(d);
-        });
-    }
-    nodeDiv.innerHTML='';
-    if(networkData.nodes.length===0){
-        nodeDiv.innerHTML='<span style="color:#666;font-size:12px;">Keine Knoten</span>';
-    }else{
-        networkData.nodes.forEach(n=>{
-            let d=document.createElement('div');
-            d.className='result-item';
-            d.innerHTML='<span class="label">N'+String(n.id).padStart(2,'0')+'</span><span class="value">p = '+(Math.random()*150+50).toFixed(1)+' bar</span>';
-            nodeDiv.appendChild(d);
-        });
-    }
 }
 
 function updateResultTable(data){
@@ -549,10 +572,10 @@ function updateResultTable(data){
     }
     data.components.forEach(c=>{
         const tr=document.createElement('tr');
-        const qVal = c.q !== undefined ? c.q : 0;
-        const dpVal = c.dp !== undefined ? c.dp : 0;
-        const uVal = c.u !== undefined ? c.u : 0;
-        const rdVal = c.rd !== undefined ? c.rd : 0;
+        const qVal = c.q || 0;
+        const dpVal = c.dp || 0;
+        const uVal = c.u || 0;
+        const rdVal = c.rd || 0;
         tr.innerHTML=`
             <td style="color:#6fc3f7;font-size:12px;">${c.name || c.type || '?'}</td>
             <td style="font-size:12px;">${c.node1 || c.n1 || '?'}</td>
@@ -566,56 +589,9 @@ function updateResultTable(data){
     });
 }
 
-function loadResultsFromJSON(event){
-    const file = event.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e){
-        try{
-            const data = JSON.parse(e.target.result);
-            loadedResults = data;
-            displayResultsFromJSON(data);
-            updateResultTable(data);
-            document.getElementById('statusInfo').textContent = '✅ JSON geladen: '+data.components.length+' Komponenten, '+data.nodes.length+' Knoten';
-        }catch(err){
-            alert('Fehler beim Laden der JSON: '+err.message);
-        }
-    };
-    reader.readAsText(file);
-}
-
-function displayResultsFromJSON(data){
-    let compDiv=document.getElementById('componentResults');
-    let nodeDiv=document.getElementById('nodeResults');
-    compDiv.innerHTML='';
-    if(data.components && data.components.length>0){
-        data.components.forEach(c=>{
-            let d=document.createElement('div');
-            d.className='result-item';
-            let q = c.q !== undefined ? c.q.toFixed(2) : '?';
-            d.innerHTML='<span class="label" style="font-size:12px;">'+c.name+'</span><span class="value ok" style="font-size:12px;">Q = '+q+' m³/h</span>';
-            compDiv.appendChild(d);
-        });
-    }else{
-        compDiv.innerHTML='<span style="color:#666;font-size:12px;">Keine Komponenten in JSON</span>';
-    }
-    nodeDiv.innerHTML='';
-    if(data.nodes && data.nodes.length>0){
-        data.nodes.forEach(n=>{
-            let d=document.createElement('div');
-            d.className='result-item';
-            let p = n.ptot !== undefined ? n.ptot.toFixed(2) : '?';
-            d.innerHTML='<span class="label" style="font-size:12px;">'+n.name+'</span><span class="value" style="font-size:12px;">p = '+p+' bar</span>';
-            nodeDiv.appendChild(d);
-        });
-    }else{
-        nodeDiv.innerHTML='<span style="color:#666;font-size:12px;">Keine Knoten in JSON</span>';
-    }
-}
-
-function insertComponent(){let type=prompt('Komponententyp (R, P, U, RZ, RK, RL, UCP, UPR, UCV):','R');if(!type)return;let params=prompt('Parameter (z.B. 10 0.05):','10 0.05');if(params===null)return;let orient=prompt('Orientierung (^, >, v, <):','>');if(orient===null)return;let text=type+' '+params+' '+orient;let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI()}}
-function insertNode(){let id=prompt('Knoten-Nummer (z.B. 01):','01');if(!id)return;let z=prompt('Höhe (m):','0');if(z===null)return;let text='N'+id+' '+z;let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI()}}
-function insertWire(){let text='I';let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI()}}
+function insertComponent(){let type=prompt('Komponententyp (R, P, U, RZ, RK, RL, UCP, UPR, UCV):','R');if(!type)return;let params=prompt('Parameter (z.B. 10 0.05):','10 0.05');if(params===null)return;let orient=prompt('Orientierung (^, >, v, <):','>');if(orient===null)return;let text=type+' '+params+' '+orient;let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
+function insertNode(){let id=prompt('Knoten-Nummer (z.B. 01):','01');if(!id)return;let z=prompt('Höhe (m):','0');if(z===null)return;let text='N'+id+' '+z;let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
+function insertWire(){let text='I';let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
 function getCell(r,c){let rows=document.querySelectorAll('#grid tbody tr');if(r>rows.length)return null;let cells=rows[r-1].querySelectorAll('td');if(c>cells.length)return null;return cells[c-1];}
 function updateCellStyle(td,value){td.className='';if(!value)return;let v=value.trim();if(!v)return;let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM')){td.classList.add('t-ptu');return}if(u.startsWith('MPP')){td.classList.add('t-mpp');return}let h=v[0];if(h==='P')td.classList.add('t-pump');else if(h==='R'||h==='U')td.classList.add('t-pipe');else if(h==='N')td.classList.add('t-node');else if(h==='S')td.classList.add('t-ground');else if('IWFTV'.includes(v.trim()))td.classList.add('t-wire');}
 

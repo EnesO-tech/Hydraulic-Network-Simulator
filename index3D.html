@@ -75,7 +75,7 @@ td.c.t-ptu{background:#2a1a1a;color:#ff8844}
 <div id="tab-comp" class="tab-content active">
 <main>
 <section id="viewer3d" style="display:none;">
-<div id="three-container"></div>
+<div id="three-container-comp"></div>
 <div class="viewer-hint">Drehen: Maus ziehen | Zoomen: Scrollen</div>
 </section>
 <section id="right-panel" style="flex:1;">
@@ -140,7 +140,7 @@ td.c.t-ptu{background:#2a1a1a;color:#ff8844}
 </div>
 <div id="tab-iso" class="tab-content">
 <div style="flex:1;padding:20px;overflow:auto;">
-<h2 style="color:#e94560;">📏 ISO 8575 – Hydraulic Tubing Standards</h2>
+<h2 style="color:#e94560;">ISO 8575 – Hydraulic Tubing Standards</h2>
 <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:15px;">
 <div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
 <h3 style="color:#6fc3f7;">HP Lines (3000 psi)</h3>
@@ -184,7 +184,7 @@ td.c.t-ptu{background:#2a1a1a;color:#ff8844}
 </div>
 <div id="tab-schematic" class="tab-content">
 <div style="flex:1;padding:20px;overflow:auto;">
-<h2 style="color:#e94560;">📐 Schematic Parking</h2>
+<h2 style="color:#e94560;">Schematic Parking</h2>
 <div style="display:flex;flex-wrap:wrap;gap:15px;margin-top:15px;">
 <div style="flex:1;min-width:250px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('default')">
 <h3 style="color:#6fc3f7;">Default A320</h3>
@@ -210,7 +210,7 @@ td.c.t-ptu{background:#2a1a1a;color:#ff8844}
 </div>
 <div id="tab-qr" class="tab-content">
 <div style="flex:1;padding:20px;overflow:auto;">
-<h2 style="color:#e94560;">📈 QRUnivComp – Component Diagram</h2>
+<h2 style="color:#e94560;">QRUnivComp – Component Diagram</h2>
 <div style="display:flex;flex-wrap:wrap;gap:20px;margin-top:15px;">
 <div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
 <h3 style="color:#6fc3f7;">Component Types</h3>
@@ -230,7 +230,7 @@ td.c.t-ptu{background:#2a1a1a;color:#ff8844}
 <div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
 <h3 style="color:#6fc3f7;">Component Syntax</h3>
 <div style="margin-top:10px;font-family:Consolas,monospace;font-size:10px;color:#aac;">
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">R [Länge] [Durchmesser] [Orientierung]</div>
+<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">R [Laenge] [Durchmesser] [Orientierung]</div>
 <div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">RZ [Zeta] [Durchmesser] [Orientierung]</div>
 <div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">RK [Kv] [Orientierung]</div>
 <div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">RL [R] [Durchmesser] [Orientierung]</div>
@@ -265,7 +265,10 @@ document.addEventListener('keydown',e=>{if(document.activeElement===document.get
 function updateUI(){let co=0,ns=new Set();for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim(),h=v[0];if('RPU'.includes(h))co++;if(h==='N'){let n=parseInt(v.substring(1));if(!isNaN(n))ns.add(n)}}return{components:co,nodes:ns.size}}
 function compute(){let status=document.getElementById('statusInfo');status.textContent='Solver laeuft...';let comps=[],nodes={};for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim();if(!v)continue;if(v.startsWith('N')){let parts=v.split(/\s+/);let id=parseInt(parts[0].substring(1));let z=parts.length>1?parseFloat(parts[1]):0;nodes[id]={id,z,x:(c-20)*0.08,y:(r-25)*0.08}}if(v.startsWith('R')||v.startsWith('P')||v.startsWith('U')){let parts=v.split(/\s+/);let type=parts[0];comps.push({type,n1:1,n2:2,params:parts.slice(1)})}}let networkData={nodes:Object.values(nodes),components:comps};drawNetwork(networkData);displayResults(networkData);let info=updateUI();status.textContent='Fertig: '+info.components+' Komponenten, '+info.nodes+' Knoten'}
 function displayResults(networkData){let compDiv=document.getElementById('componentResults');let nodeDiv=document.getElementById('nodeResults');compDiv.innerHTML='';if(networkData.components.length===0){compDiv.innerHTML='<span style="color:#666;font-size:10px;">Keine Komponenten</span>'}else{networkData.components.forEach(c=>{let d=document.createElement('div');d.className='result-item';d.innerHTML='<span class="label">'+c.type+'</span><span class="value ok">Q = '+(Math.random()*50+10).toFixed(1)+' m³/h</span>';compDiv.appendChild(d)})}nodeDiv.innerHTML='';if(networkData.nodes.length===0){nodeDiv.innerHTML='<span style="color:#666;font-size:10px;">Keine Knoten</span>'}else{networkData.nodes.forEach(n=>{let d=document.createElement('div');d.className='result-item';d.innerHTML='<span class="label">N'+String(n.id).padStart(2,'0')+'</span><span class="value">p = '+(Math.random()*150+50).toFixed(1)+' bar</span>';nodeDiv.appendChild(d)})}}
-const container=document.getElementById('three-container');const scene=new THREE.Scene();scene.background=new THREE.Color(0x0a0a1a);
+let threeInitialized=false;
+function initThreeJS(){if(threeInitialized)return;threeInitialized=true;
+const container=document.getElementById('three-container');if(!container)return;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0a0a1a);
 const camera=new THREE.PerspectiveCamera(45,container.clientWidth/container.clientHeight,0.1,1000);camera.position.set(0,2,15);
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(container.clientWidth,container.clientHeight);renderer.setPixelRatio(window.devicePixelRatio);container.appendChild(renderer.domElement);
 const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=0.1;controls.target.set(0,0,0);
@@ -275,15 +278,17 @@ function createFallbackModel(){let g=new THREE.Group();let m=new THREE.MeshPhong
 function loadAircraft(){loader.load('models/a320.stl',(geometry)=>{let m=new THREE.MeshPhongMaterial({color:0x88aacc,transparent:true,opacity:0.9});let mesh=new THREE.Mesh(geometry,m);geometry.computeBoundingBox();geometry.center();mesh.scale.set(0.1,0.1,0.1);mesh.rotation.x=-Math.PI/2;mesh.rotation.z=Math.PI/2;aircraftGroup.add(mesh);scene.add(aircraftGroup);document.getElementById('statusInfo').textContent='A320 Modell geladen'},undefined,()=>{let fallback=createFallbackModel();fallback.scale.set(1.2,1.2,1.2);aircraftGroup.add(fallback);scene.add(aircraftGroup);document.getElementById('statusInfo').textContent='Fallback-Modell (kein STL)'})}
 loadAircraft();
 const pipeGroup=new THREE.Group();scene.add(pipeGroup);
-function drawNetwork(data){while(pipeGroup.children.length)pipeGroup.remove(pipeGroup.children[0]);if(!data||!data.components)return;let pos={};data.nodes.forEach(n=>{pos[n.id]=new THREE.Vector3(n.x||0,n.z||0,n.y||0)});data.components.forEach(c=>{let p1=pos[c.n1],p2=pos[c.n2];if(!p1||!p2)return;let pts=[p1,p2];let geo=new THREE.BufferGeometry().setFromPoints(pts);let col=c.type==='P'?0xe94560:0x4fc3f7;let line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col}));pipeGroup.add(line);let sm=new THREE.MeshPhongMaterial({color:0xffdd44});[p1,p2].forEach(p=>{let s=new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8),sm);s.position.copy(p);pipeGroup.add(s)})})}
-function setView(view){switch(view){case'front':camera.position.set(0,1,14);controls.target.set(0,0,0);break;case'top':camera.position.set(0,14,0.1);controls.target.set(0,0,0);break;case'side':camera.position.set(14,1,0);controls.target.set(0,0,0);break}controls.update()}
+window.drawNetwork=function(data){while(pipeGroup.children.length)pipeGroup.remove(pipeGroup.children[0]);if(!data||!data.components)return;let pos={};data.nodes.forEach(n=>{pos[n.id]=new THREE.Vector3(n.x||0,n.z||0,n.y||0)});data.components.forEach(c=>{let p1=pos[c.n1],p2=pos[c.n2];if(!p1||!p2)return;let pts=[p1,p2];let geo=new THREE.BufferGeometry().setFromPoints(pts);let col=c.type==='P'?0xe94560:0x4fc3f7;let line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col}));pipeGroup.add(line);let sm=new THREE.MeshPhongMaterial({color:0xffdd44});[p1,p2].forEach(p=>{let s=new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8),sm);s.position.copy(p);pipeGroup.add(s)})})}
+window.setView=function(view){switch(view){case'front':camera.position.set(0,1,14);controls.target.set(0,0,0);break;case'top':camera.position.set(0,14,0.1);controls.target.set(0,0,0);break;case'side':camera.position.set(14,1,0);controls.target.set(0,0,0);break}controls.update()}
 document.getElementById('toggleHull').addEventListener('click',()=>{hullVisible=!hullVisible;let op=hullVisible?0.9:0.05;document.getElementById('toggleHull').textContent=hullVisible?'Mantel':'Durchsichtig';if(aircraftGroup){aircraftGroup.children.forEach(ch=>{if(ch.material)ch.material.opacity=op})}})
 document.getElementById('resetView').addEventListener('click',()=>{camera.position.set(0,2,15);controls.target.set(0,0,0);controls.update()})
 window.addEventListener('resize',()=>{let w=container.clientWidth,h=container.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)})
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}
-animate();init();
-function switchTab(tabName, event){document.querySelectorAll('.tab-content').forEach(tab=>{tab.classList.remove('active')});document.querySelectorAll('.tab-btn').forEach(btn=>{btn.classList.remove('active')});document.getElementById('tab-'+tabName).classList.add('active');if(event&&event.target){event.target.classList.add('active')}else{document.querySelector('.tab-btn[onclick*="'+tabName+'"]').classList.add('active')}}
-function loadSchematic(type){let info=document.getElementById('schematicInfo');let schematics={default:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',standard:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',aero:'N01 10|P1 8.4 15.875 >|R01 0.5 28.2|S 35','5000psi':'N01 10|P1 5.04 15.875 >|R01 0.5 25.4|S 35'};info.innerHTML='<p style="color:#4caf50;font-size:12px;">✅ Loaded: '+type+' schematic. Switch to Comp tab to see it.</p><pre style="color:#aac;font-size:10px;margin-top:10px;background:#1a1a2e;padding:10px;border-radius:4px;">'+schematics[type]+'</pre>'}
+animate();}
+function switchTab(tabName, event){document.querySelectorAll('.tab-content').forEach(tab=>{tab.classList.remove('active')});document.querySelectorAll('.tab-btn').forEach(btn=>{btn.classList.remove('active')});document.getElementById('tab-'+tabName).classList.add('active');if(event&&event.target){event.target.classList.add('active')}else{document.querySelector('.tab-btn[onclick*="'+tabName+'"]').classList.add('active')}
+if(tabName==='view3d'){setTimeout(()=>{if(!threeInitialized){initThreeJS()}else{const container=document.getElementById('three-container');if(container){const renderer=container.querySelector('canvas');if(renderer){const rect=container.getBoundingClientRect();renderer.width=rect.width;renderer.height=rect.height;renderer.style.width=rect.width+'px';renderer.style.height=rect.height+'px'}}}},100)}}
+function loadSchematic(type){let info=document.getElementById('schematicInfo');let schematics={default:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',standard:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',aero:'N01 10|P1 8.4 15.875 >|R01 0.5 28.2|S 35','5000psi':'N01 10|P1 5.04 15.875 >|R01 0.5 25.4|S 35'};info.innerHTML='<p style="color:#4caf50;font-size:12px;">Loaded: '+type+' schematic. Switch to Comp tab to see it.</p><pre style="color:#aac;font-size:10px;margin-top:10px;background:#1a1a2e;padding:10px;border-radius:4px;">'+schematics[type]+'</pre>'}
+init();
 </script>
 </body>
 </html>

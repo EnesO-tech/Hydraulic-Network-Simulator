@@ -125,25 +125,25 @@ td.c.custom-color{color:#fff}
 <div class="comp-top">
 <div class="comp-left">
 <h4>Toggle Buttons</h4>
-<div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1"></div>
-<div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="999"></div>
-<div class="toggle-item"><span class="key">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1"></div>
-<div class="toggle-item"><span class="key">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54"></div>
-<div class="toggle-item"><span class="key">Rk_off</span><input class="val off" id="tglRkOff" value="0.001"></div>
+<div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="999" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rk_off</span><input class="val off" id="tglRkOff" value="0.001" onchange="applyToggle(this)"></div>
 <h4>Iteration Controls</h4>
-<div class="toggle-item"><span class="key">lambdaU</span><input class="val" id="itLambda" value="0.6"></div>
-<div class="toggle-item"><span class="key">dUcrit</span><input class="val" id="itDUcrit" value="1E-07"></div>
-<div class="toggle-item"><span class="key">niter</span><input class="val" id="itNiter" value="999"></div>
-<div class="toggle-item"><span class="key">kReD</span><input class="val" id="itKReD" value="0.2"></div>
-<div class="toggle-item"><span class="key">boolProtect</span><input class="val off" id="itProtect" value="FALSCH"></div>
-<div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSCH"></div>
+<div class="toggle-item"><span class="key">lambdaU</span><input class="val" id="itLambda" value="0.6" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">dUcrit</span><input class="val" id="itDUcrit" value="1E-07" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">niter</span><input class="val" id="itNiter" value="999" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">kReD</span><input class="val" id="itKReD" value="0.2" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">boolProtect</span><input class="val off" id="itProtect" value="FALSCH" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSCH" onchange="applyToggle(this)"></div>
 <h4>Nodes</h4>
-<div class="toggle-item"><span class="key">Node: S</span><input class="val" id="nodeS" value="3.438E-01"></div>
-<div class="toggle-item"><span class="key">Node: H</span><input class="val" id="nodeH" value="1.01325"></div>
-<div class="toggle-item"><span class="key">Pamb</span><input class="val" id="pamb" value="1.01325"></div>
-<div class="toggle-item"><span class="key">g</span><input class="val" id="grav" value="9.80665"></div>
-<div class="toggle-item"><span class="key">krough</span><input class="val" id="krough" value="0.0015"></div>
-<div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320"></div>
+<div class="toggle-item"><span class="key">Node: S</span><input class="val" id="nodeS" value="3.438E-01" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Node: H</span><input class="val" id="nodeH" value="1.01325" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Pamb</span><input class="val" id="pamb" value="1.01325" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">g</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">krough</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320" onchange="applyToggle(this)"></div>
 </div>
 <div class="comp-center">
 <div class="toolbar">
@@ -175,25 +175,25 @@ td.c.custom-color{color:#fff}
 </div>
 <div class="comp-right">
 <h4>Components</h4>
-<div class="comp-item"><span class="type">P1</span><input class="desc" value="8.4 m³/h, 19.6mm"></div>
-<div class="comp-item"><span class="type">R01</span><input class="desc" value="0.5m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R03</span><input class="desc" value="10m, 19.6mm"></div>
-<div class="comp-item"><span class="type">R04</span><input class="desc" value="8m, 28.2mm"></div>
-<div class="comp-item"><span class="type">Rz04</span><input class="desc" value="100, 28.2mm"></div>
-<div class="comp-item"><span class="type">R05</span><input class="desc" value="5m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R06</span><input class="desc" value="7m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R07</span><input class="desc" value="3m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R08</span><input class="desc" value="3m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R09</span><input class="desc" value="7m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R10</span><input class="desc" value="5m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R11</span><input class="desc" value="18m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R12</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R13</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R14</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R15</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R16</span><input class="desc" value="2m, 28.2mm"></div>
-<div class="comp-item"><span class="type">R17</span><input class="desc" value="2m, 34.4mm"></div>
-<div class="comp-item"><span class="type">R18</span><input class="desc" value="2m, 34.4mm"></div>
+<div class="comp-item"><span class="type">P1</span><input class="desc" value="8.4 m³/h, 19.6mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R01</span><input class="desc" value="0.5m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R03</span><input class="desc" value="10m, 19.6mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R04</span><input class="desc" value="8m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Rz04</span><input class="desc" value="100, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R05</span><input class="desc" value="5m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R06</span><input class="desc" value="7m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R07</span><input class="desc" value="3m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R08</span><input class="desc" value="3m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R09</span><input class="desc" value="7m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R10</span><input class="desc" value="5m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R11</span><input class="desc" value="18m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R12</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R13</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R14</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R15</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R16</span><input class="desc" value="2m, 28.2mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R17</span><input class="desc" value="2m, 34.4mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">R18</span><input class="desc" value="2m, 34.4mm" onchange="applyCompDesc(this)"></div>
 </div>
 </div>
 <div class="comp-bottom">
@@ -365,6 +365,20 @@ td.c.custom-color{color:#fff}
 const customColors = {};
 let loadedResults = null;
 
+function applyToggle(el){
+    let key = el.id;
+    let val = el.value;
+    console.log("Toggle " + key + " = " + val);
+    localStorage.setItem('boheme_toggle_' + key, val);
+}
+
+function applyCompDesc(el){
+    let key = el.parentElement.querySelector('.type').textContent;
+    let val = el.value;
+    console.log("Component " + key + " = " + val);
+    localStorage.setItem('boheme_comp_' + key, val);
+}
+
 function showColorPicker() {
     const cell = getCell(sr, sc);
     if (!cell) { alert('Bitte wähle zuerst eine Zelle aus!'); return; }
@@ -527,6 +541,14 @@ function loadFromLocalStorage(){
             Object.assign(D, parsed.D || {});
             Object.assign(customColors, parsed.customColors || {});
         }
+        const toggleKeys = ['tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff','itLambda','itDUcrit','itNiter','itKReD','itProtect','itZanke','nodeS','nodeH','pamb','grav','krough','redcrit'];
+        toggleKeys.forEach(id => {
+            const el = document.getElementById(id);
+            if(el){
+                const saved = localStorage.getItem('boheme_toggle_' + id);
+                if(saved !== null) el.value = saved;
+            }
+        });
     }catch(e){}
 }
 
@@ -553,7 +575,10 @@ function compute(){
             let q = (Math.random() * 50 + 10);
             let dp = (Math.random() * 100 + 10);
             let u = (Math.random() * 5 + 1);
-            comps.push({type, n1:1, n2:2, q, dp, u, rd:0.1, params:parts.slice(1), name:type});
+            let node1 = 1;
+            let node2 = 2;
+            if(type === 'R') node1 = parseInt(parts[2]) || 1;
+            comps.push({type, n1:node1, n2:node2, q, dp, u, rd:0.1, params:parts.slice(1), name:type + (parts[1] || '')});
         }
     }
     let networkData={nodes:Object.values(nodes),components:comps};
@@ -561,6 +586,8 @@ function compute(){
     updateResultTable(networkData);
     let info=updateUI();
     status.textContent='Fertig: '+info.components+' Komponenten, '+info.nodes+' Knoten';
+    document.getElementById('node3dResults').innerHTML = Object.values(nodes).length + ' Knoten in 3D';
+    document.getElementById('pipe3dResults').innerHTML = comps.length + ' Rohre in 3D';
 }
 
 function updateResultTable(data){
@@ -578,8 +605,8 @@ function updateResultTable(data){
         const rdVal = c.rd || 0;
         tr.innerHTML=`
             <td style="color:#6fc3f7;font-size:12px;">${c.name || c.type || '?'}</td>
-            <td style="font-size:12px;">${c.node1 || c.n1 || '?'}</td>
-            <td style="font-size:12px;">${c.node2 || c.n2 || '?'}</td>
+            <td style="font-size:12px;">${c.n1 || '?'}</td>
+            <td style="font-size:12px;">${c.n2 || '?'}</td>
             <td class="${qVal>=0?'q-pos':'q-neg'}" style="font-size:12px;">${qVal.toFixed(3)}</td>
             <td class="${Math.abs(dpVal)>100?'err':Math.abs(dpVal)>10?'warn':'val'}" style="font-size:12px;">${dpVal.toFixed(3)}</td>
             <td class="val" style="font-size:12px;">${uVal.toFixed(2)}</td>
@@ -608,7 +635,38 @@ function createFallbackModel(){let g=new THREE.Group();let m=new THREE.MeshPhong
 function loadAircraft(){loader.load('models/a320.stl',(geometry)=>{let m=new THREE.MeshPhongMaterial({color:0x88aacc,transparent:true,opacity:0.9});let mesh=new THREE.Mesh(geometry,m);geometry.computeBoundingBox();geometry.center();mesh.scale.set(0.1,0.1,0.1);mesh.rotation.x=-Math.PI/2;mesh.rotation.z=Math.PI/2;aircraftGroup.add(mesh);scene.add(aircraftGroup);document.getElementById('statusInfo').textContent='A320 Modell geladen'},undefined,()=>{let fallback=createFallbackModel();fallback.scale.set(1.2,1.2,1.2);aircraftGroup.add(fallback);scene.add(aircraftGroup);document.getElementById('statusInfo').textContent='Fallback-Modell (kein STL)'})}
 loadAircraft();
 const pipeGroup=new THREE.Group();scene.add(pipeGroup);
-window.drawNetwork=function(data){while(pipeGroup.children.length)pipeGroup.remove(pipeGroup.children[0]);if(!data||!data.components)return;let pos={};data.nodes.forEach(n=>{pos[n.id]=new THREE.Vector3(n.x||0,n.z||0,n.y||0)});data.components.forEach(c=>{let p1=pos[c.n1],p2=pos[c.n2];if(!p1||!p2)return;let pts=[p1,p2];let geo=new THREE.BufferGeometry().setFromPoints(pts);let col=c.type==='P'?0xe94560:0x4fc3f7;let line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col}));pipeGroup.add(line);let sm=new THREE.MeshPhongMaterial({color:0xffdd44});[p1,p2].forEach(p=>{let s=new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8),sm);s.position.copy(p);pipeGroup.add(s)})})}
+window.drawNetwork=function(data){
+    while(pipeGroup.children.length)pipeGroup.remove(pipeGroup.children[0]);
+    if(!data || !data.components || data.components.length===0){
+        document.getElementById('statusInfo').textContent = 'Keine Daten für 3D';
+        return;
+    }
+    let pos={};
+    if(data.nodes && data.nodes.length>0){
+        data.nodes.forEach(n=>{
+            pos[n.id]=new THREE.Vector3(n.x||0, n.z||0, n.y||0);
+        });
+    } else {
+        return;
+    }
+    data.components.forEach(c=>{
+        let p1 = pos[c.n1];
+        let p2 = pos[c.n2];
+        if(!p1 || !p2) return;
+        let pts=[p1,p2];
+        let geo=new THREE.BufferGeometry().setFromPoints(pts);
+        let col=c.type==='P'?0xe94560:0x4fc3f7;
+        let line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col, linewidth:2}));
+        pipeGroup.add(line);
+        let sm=new THREE.MeshPhongMaterial({color:0xffdd44});
+        [p1,p2].forEach(p=>{
+            let s=new THREE.Mesh(new THREE.SphereGeometry(0.1,8,8),sm);
+            s.position.copy(p);
+            pipeGroup.add(s);
+        });
+    });
+    document.getElementById('statusInfo').textContent = '3D Netzwerk geladen: ' + data.components.length + ' Rohre';
+}
 window.setView=function(view){switch(view){case'front':camera.position.set(0,1,14);controls.target.set(0,0,0);break;case'top':camera.position.set(0,14,0.1);controls.target.set(0,0,0);break;case'side':camera.position.set(14,1,0);controls.target.set(0,0,0);break}controls.update()}
 document.getElementById('toggleHull').addEventListener('click',()=>{hullVisible=!hullVisible;let op=hullVisible?0.9:0.05;document.getElementById('toggleHull').textContent=hullVisible?'Mantel':'Durchsichtig';if(aircraftGroup){aircraftGroup.children.forEach(ch=>{if(ch.material)ch.material.opacity=op})}})
 document.getElementById('resetView').addEventListener('click',()=>{camera.position.set(0,2,15);controls.target.set(0,0,0);controls.update()})

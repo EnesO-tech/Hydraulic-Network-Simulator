@@ -383,6 +383,78 @@ let solverReadyPromise = null;
 let threeInitialized = false;
 let scene, camera, renderer, controls, aircraftGroup, pipeGroup, hullVisible = true;
 
+// ---- 3D NODE INTERACTION / PLACEMENT ----
+let nodeMeshes = [];
+let selectedNodeMesh = null;
+let latestNetworkData = null;
+let raycaster = null;
+let pointer = null;
+let pointerDownXY = null;
+
+// Pull the hydraulic network slightly toward the aircraft centreline so
+// nodes sit more clearly inside the model instead of on/outside the skin.
+// These factors affect ONLY the 3D visualisation, never the hydraulic solver.
+const NODE_VIS_SCALE_X = 0.86;   // wing span direction
+const NODE_VIS_SCALE_Y = 0.55;   // vertical: strongest compression
+const NODE_VIS_SCALE_Z = 0.86;   // fuselage longitudinal direction
+const NODE_VIS_OFFSET_Y = -0.03; // tiny downward shift into the fuselage
+
+function nodePoint3D(p) {
+    return new THREE.Vector3(
+        (Number(p.x) || 0) * NODE_VIS_SCALE_X,
+        (Number(p.y) || 0) * NODE_VIS_SCALE_Y + NODE_VIS_OFFSET_Y,
+        (Number(p.z) || 0) * NODE_VIS_SCALE_Z
+    );
+}
+
+function clearSelectedNode() {
+    if (selectedNodeMesh) {
+        selectedNodeMesh.scale.set(1, 1, 1);
+        selectedNodeMesh = null;
+    }
+
+    const panel = document.getElementById('selectedNodePanel');
+    if (panel) panel.style.display = 'none';
+}
+
+function showSelectedNode(mesh) {
+    if (!mesh || !mesh.userData) return;
+
+    if (selectedNodeMesh && selectedNodeMesh !== mesh) {
+        selectedNodeMesh.scale.set(1, 1, 1);
+    }
+
+    selectedNodeMesh = mesh;
+    selectedNodeMesh.scale.set(1.65, 1.65, 1.65);
+
+    const name = mesh.userData.name || '?';
+    const p = nodePositions[name] || {};
+    const nodeResult = latestNetworkData?.nodes?.find(n => n.id === name);
+    const connected = (latestNetworkData?.components || [])
+        .filter(c => c.n1 === name || c.n2 === name)
+        .map(c => c.name)
+        .filter(Boolean);
+
+    const panel = document.getElementById('selectedNodePanel');
+    const nameEl = document.getElementById('selectedNodeName');
+    const descEl = document.getElementById('selectedNodeDesc');
+    const locEl = document.getElementById('selectedNodeLoc');
+    const connEl = document.getElementById('selectedNodeConnections');
+
+    if (nameEl) nameEl.textContent = name;
+    if (descEl) {
+        const pressure = nodeResult && Number.isFinite(Number(nodeResult.ptot))
+            ? ` | Ptot: ${Number(nodeResult.ptot).toFixed(3)}`
+            : '';
+        descEl.textContent = (p.desc || 'Keine Beschreibung') + pressure;
+    }
+    if (locEl) locEl.textContent = p.loc || 'Keine Positionsbeschreibung';
+    if (connEl) connEl.textContent = connected.length
+        ? 'Verbunden: ' + connected.join(', ')
+        : 'Keine verbundenen Komponenten gefunden';
+    if (panel) panel.style.display = 'block';
+}
+
 // ---- LADE A320 KOORDINATEN AUS JSON ----
 async function loadNodePositions() {
     // Auf GitHub bitte die Datei als "a320_network.json" ablegen.

@@ -394,10 +394,10 @@ let pointerDownXY = null;
 // Pull the hydraulic network slightly toward the aircraft centreline so
 // nodes sit more clearly inside the model instead of on/outside the skin.
 // These factors affect ONLY the 3D visualisation, never the hydraulic solver.
-const NODE_VIS_SCALE_X = 0.86;   // wing span direction
-const NODE_VIS_SCALE_Y = 0.55;   // vertical: strongest compression
-const NODE_VIS_SCALE_Z = 0.86;   // fuselage longitudinal direction
-const NODE_VIS_OFFSET_Y = -0.03; // tiny downward shift into the fuselage
+const NODE_VIS_SCALE_X = 0.70;   // pull wing nodes inward
+const NODE_VIS_SCALE_Y = 0.20;   // strongly compress vertical spread into aircraft
+const NODE_VIS_SCALE_Z = 0.62;   // pull nose/tail nodes inward
+const NODE_VIS_OFFSET_Y = -0.02; // tiny vertical centering shift
 
 function nodePoint3D(p) {
     return new THREE.Vector3(
@@ -701,7 +701,7 @@ function drawNetwork(data) {
             missingNodes.push(name);
             return;
         }
-        const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 12), nodeMaterial);
+        const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.032, 12, 12), nodeMaterial);
         const pp = nodePoint3D(p);
         sphere.position.copy(pp);
         sphere.userData = {

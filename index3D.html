@@ -364,6 +364,8 @@ const customColors = {};
 let loadedResults = null;
 let rlfState = true;
 let nodePositions = {};
+let threeInitialized = false;
+let scene, camera, renderer, controls, aircraftGroup, pipeGroup, hullVisible = true;
 
 // ---- LADE A320 KOORDINATEN AUS JSON ----
 function loadNodePositions() {
@@ -383,6 +385,45 @@ function loadNodePositions() {
         .catch(err => {
             console.warn('Keine a320_network.json gefunden, verwende Standard-Positionen');
         });
+}
+
+// ---- GLOBALE drawNetwork Funktion ----
+function drawNetwork(data) {
+    if (!pipeGroup) {
+        pipeGroup = new THREE.Group();
+        if (scene) scene.add(pipeGroup);
+    }
+    while(pipeGroup.children.length) pipeGroup.remove(pipeGroup.children[0]);
+    
+    if(!data || !data.components || data.components.length===0){
+        document.getElementById('statusInfo').textContent = 'Keine Daten für 3D';
+        return;
+    }
+    let pos={};
+    if(data.nodes && data.nodes.length>0){
+        data.nodes.forEach(n=>{
+            pos[n.id]=new THREE.Vector3(n.x||0, n.y||0, n.z||0);
+        });
+    } else {
+        return;
+    }
+    data.components.forEach(c=>{
+        let p1 = pos[c.n1];
+        let p2 = pos[c.n2];
+        if(!p1 || !p2) return;
+        let pts=[p1,p2];
+        let geo=new THREE.BufferGeometry().setFromPoints(pts);
+        let col=c.type==='P'?0xe94560:0x4fc3f7;
+        let line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col, linewidth:2}));
+        pipeGroup.add(line);
+        let sm=new THREE.MeshPhongMaterial({color:0xffdd44});
+        [p1,p2].forEach(p=>{
+            let s=new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8),sm);
+            s.position.copy(p);
+            pipeGroup.add(s);
+        });
+    });
+    document.getElementById('statusInfo').textContent = '3D Netzwerk geladen: ' + data.components.length + ' Rohre';
 }
 
 // ---- RL_F TOGGLE ----
@@ -705,12 +746,10 @@ function compute(){
         if(v.startsWith('N')){
             let parts = v.split(/\s+/);
             let id = parseInt(parts[0].substring(1));
-            // 🔥 KOORDINATEN AUS JSON
             let pos = nodePositions['N' + String(id).padStart(2,'0')];
             if(pos){
                 nodes[id] = {id: id, x: pos.x, y: pos.y, z: pos.z};
             } else {
-                // Fallback: aus Zeile/Spalte
                 let z = parts.length > 1 ? parseFloat(parts[1]) : 0;
                 let x = (c - 20) * 0.08;
                 let y = (r - 25) * 0.08;
@@ -806,62 +845,178 @@ function getCell(r,c){return document.getElementById(`t${r}_${c}`);}
 
 function updateCellStyle(td,value){td.className='';if(!value)return;let v=value.trim();if(!v)return;let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM')){td.classList.add('t-ptu');return}if(u.startsWith('MPP')){td.classList.add('t-mpp');return}let h=v[0];if(h==='P')td.classList.add('t-pump');else if(h==='R'||h==='U')td.classList.add('t-pipe');else if(h==='N')td.classList.add('t-node');else if(h==='S')td.classList.add('t-ground');else if('IWFTV-'.includes(v.trim()))td.classList.add('t-wire');}
 
-let threeInitialized=false;
-function initThreeJS(){if(threeInitialized)return;threeInitialized=true;
-const container=document.getElementById('three-container');if(!container)return;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x0a0a1a);
-const camera=new THREE.PerspectiveCamera(45,container.clientWidth/container.clientHeight,0.1,1000);camera.position.set(0,2,15);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(container.clientWidth,container.clientHeight);renderer.setPixelRatio(window.devicePixelRatio);container.appendChild(renderer.domElement);
-const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=0.1;controls.target.set(0,0,0);
-scene.add(new THREE.AmbientLight(0x404060,0.6));let dl=new THREE.DirectionalLight(0xffffff,1.0);dl.position.set(10,20,10);scene.add(dl);let fl=new THREE.DirectionalLight(0x4488ff,0.3);fl.position.set(-10,5,-10);scene.add(fl);
-let aircraftGroup=new THREE.Group();let hullVisible=true;const loader=new THREE.STLLoader();
-function createFallbackModel(){let g=new THREE.Group();let m=new THREE.MeshPhongMaterial({color:0x88aacc,transparent:true,opacity:0.85});let f=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,8,32),m);f.rotation.x=Math.PI/2;g.add(f);let nose=new THREE.Mesh(new THREE.SphereGeometry(1.5,16,16),m);nose.position.z=4;g.add(nose);let tail=new THREE.Mesh(new THREE.ConeGeometry(0.8,2,16),m);tail.position.z=-5;tail.rotation.x=Math.PI/2;g.add(tail);let wm=new THREE.MeshPhongMaterial({color:0xcccccc});let wing=new THREE.Mesh(new THREE.BoxGeometry(6,0.08,2),wm);wing.position.set(0,0,0.5);g.add(wing);let h=new THREE.Mesh(new THREE.BoxGeometry(2.5,0.08,0.8),wm);h.position.set(0,0,-4.5);g.add(h);let v=new THREE.Mesh(new THREE.BoxGeometry(0.08,1.2,0.8),wm);v.position.set(0,0.6,-4.5);g.add(v);let em=new THREE.MeshPhongMaterial({color:0x444466});for(let s of[-1.8,1.8]){let e=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.7,1.2,16),em);e.position.set(s,-0.7,2.5);e.rotation.x=Math.PI/2;g.add(e)}return g}
-function loadAircraft(){loader.load('models/a320.stl',(geometry)=>{let m=new THREE.MeshPhongMaterial({color:0x88aacc,transparent:true,opacity:0.9});let mesh=new THREE.Mesh(geometry,m);geometry.computeBoundingBox();geometry.center();mesh.scale.set(0.1,0.1,0.1);mesh.rotation.x=-Math.PI/2;mesh.rotation.z=Math.PI/2;aircraftGroup.add(mesh);scene.add(aircraftGroup);document.getElementById('statusInfo').textContent='A320 Modell geladen'},undefined,()=>{let fallback=createFallbackModel();fallback.scale.set(1.2,1.2,1.2);aircraftGroup.add(fallback);scene.add(aircraftGroup);document.getElementById('statusInfo').textContent='Fallback-Modell (kein STL)'})}
-loadAircraft();
-const pipeGroup=new THREE.Group();scene.add(pipeGroup);
-window.drawNetwork=function(data){
-    while(pipeGroup.children.length)pipeGroup.remove(pipeGroup.children[0]);
-    if(!data || !data.components || data.components.length===0){
-        document.getElementById('statusInfo').textContent = 'Keine Daten für 3D';
-        return;
+// ---- 3D VIEWER ----
+function initThreeJS(){
+    if(threeInitialized)return;
+    threeInitialized=true;
+    const container=document.getElementById('three-container');
+    if(!container)return;
+    
+    scene=new THREE.Scene();
+    scene.background=new THREE.Color(0x0a0a1a);
+    camera=new THREE.PerspectiveCamera(45,container.clientWidth/container.clientHeight,0.1,1000);
+    camera.position.set(0,2,15);
+    renderer=new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(container.clientWidth,container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+    controls=new THREE.OrbitControls(camera,renderer.domElement);
+    controls.enableDamping=true;
+    controls.dampingFactor=0.1;
+    controls.target.set(0,0,0);
+    
+    scene.add(new THREE.AmbientLight(0x404060,0.6));
+    let dl=new THREE.DirectionalLight(0xffffff,1.0);
+    dl.position.set(10,20,10);
+    scene.add(dl);
+    let fl=new THREE.DirectionalLight(0x4488ff,0.3);
+    fl.position.set(-10,5,-10);
+    scene.add(fl);
+    
+    aircraftGroup=new THREE.Group();
+    hullVisible=true;
+    const loader=new THREE.STLLoader();
+    
+    function createFallbackModel(){
+        let g=new THREE.Group();
+        let m=new THREE.MeshPhongMaterial({color:0x88aacc,transparent:true,opacity:0.85});
+        let f=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,8,32),m);
+        f.rotation.x=Math.PI/2;
+        g.add(f);
+        let nose=new THREE.Mesh(new THREE.SphereGeometry(1.5,16,16),m);
+        nose.position.z=4;
+        g.add(nose);
+        let tail=new THREE.Mesh(new THREE.ConeGeometry(0.8,2,16),m);
+        tail.position.z=-5;
+        tail.rotation.x=Math.PI/2;
+        g.add(tail);
+        let wm=new THREE.MeshPhongMaterial({color:0xcccccc});
+        let wing=new THREE.Mesh(new THREE.BoxGeometry(6,0.08,2),wm);
+        wing.position.set(0,0,0.5);
+        g.add(wing);
+        let h=new THREE.Mesh(new THREE.BoxGeometry(2.5,0.08,0.8),wm);
+        h.position.set(0,0,-4.5);
+        g.add(h);
+        let v=new THREE.Mesh(new THREE.BoxGeometry(0.08,1.2,0.8),wm);
+        v.position.set(0,0.6,-4.5);
+        g.add(v);
+        let em=new THREE.MeshPhongMaterial({color:0x444466});
+        for(let s of[-1.8,1.8]){
+            let e=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.7,1.2,16),em);
+            e.position.set(s,-0.7,2.5);
+            e.rotation.x=Math.PI/2;
+            g.add(e);
+        }
+        return g;
     }
-    let pos={};
-    if(data.nodes && data.nodes.length>0){
-        data.nodes.forEach(n=>{
-            pos[n.id]=new THREE.Vector3(n.x||0, n.y||0, n.z||0);
-        });
-    } else {
-        return;
+    
+    function loadAircraft(){
+        loader.load('models/a320.stl',
+            (geometry)=>{
+                let m=new THREE.MeshPhongMaterial({color:0x88aacc,transparent:true,opacity:0.9});
+                let mesh=new THREE.Mesh(geometry,m);
+                geometry.computeBoundingBox();
+                geometry.center();
+                mesh.scale.set(0.1,0.1,0.1);
+                mesh.rotation.x=-Math.PI/2;
+                mesh.rotation.z=Math.PI/2;
+                aircraftGroup.add(mesh);
+                scene.add(aircraftGroup);
+                document.getElementById('statusInfo').textContent='A320 Modell geladen';
+            },
+            undefined,
+            ()=>{
+                let fallback=createFallbackModel();
+                fallback.scale.set(1.2,1.2,1.2);
+                aircraftGroup.add(fallback);
+                scene.add(aircraftGroup);
+                document.getElementById('statusInfo').textContent='Fallback-Modell (kein STL)';
+            }
+        );
     }
-    data.components.forEach(c=>{
-        let p1 = pos[c.n1];
-        let p2 = pos[c.n2];
-        if(!p1 || !p2) return;
-        let pts=[p1,p2];
-        let geo=new THREE.BufferGeometry().setFromPoints(pts);
-        let col=c.type==='P'?0xe94560:0x4fc3f7;
-        let line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:col, linewidth:2}));
-        pipeGroup.add(line);
-        let sm=new THREE.MeshPhongMaterial({color:0xffdd44});
-        [p1,p2].forEach(p=>{
-            let s=new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8),sm);
-            s.position.copy(p);
-            pipeGroup.add(s);
-        });
+    loadAircraft();
+    
+    pipeGroup=new THREE.Group();
+    scene.add(pipeGroup);
+    
+    document.getElementById('toggleHull').addEventListener('click',()=>{
+        hullVisible=!hullVisible;
+        let op=hullVisible?0.9:0.05;
+        document.getElementById('toggleHull').textContent=hullVisible?'Mantel':'Durchsichtig';
+        if(aircraftGroup){
+            aircraftGroup.children.forEach(ch=>{
+                if(ch.material) ch.material.opacity=op;
+            });
+        }
     });
-    document.getElementById('statusInfo').textContent = '3D Netzwerk geladen: ' + data.components.length + ' Rohre';
+    
+    document.getElementById('resetView').addEventListener('click',()=>{
+        camera.position.set(0,2,15);
+        controls.target.set(0,0,0);
+        controls.update();
+    });
+    
+    window.addEventListener('resize',()=>{
+        let w=container.clientWidth,h=container.clientHeight;
+        camera.aspect=w/h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w,h);
+    });
+    
+    function animate(){
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene,camera);
+    }
+    animate();
 }
-window.setView=function(view){switch(view){case'front':camera.position.set(0,1,14);controls.target.set(0,0,0);break;case'top':camera.position.set(0,14,0.1);controls.target.set(0,0,0);break;case'side':camera.position.set(14,1,0);controls.target.set(0,0,0);break}controls.update()}
-document.getElementById('toggleHull').addEventListener('click',()=>{hullVisible=!hullVisible;let op=hullVisible?0.9:0.05;document.getElementById('toggleHull').textContent=hullVisible?'Mantel':'Durchsichtig';if(aircraftGroup){aircraftGroup.children.forEach(ch=>{if(ch.material)ch.material.opacity=op})}})
-document.getElementById('resetView').addEventListener('click',()=>{camera.position.set(0,2,15);controls.target.set(0,0,0);controls.update()})
-window.addEventListener('resize',()=>{let w=container.clientWidth,h=container.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)})
-function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}
-animate();}
 
-function switchTab(tabName, event){document.querySelectorAll('.tab-content').forEach(tab=>{tab.classList.remove('active')});document.querySelectorAll('.tab-btn').forEach(btn=>{btn.classList.remove('active')});document.getElementById('tab-'+tabName).classList.add('active');if(event&&event.target){event.target.classList.add('active')}else{document.querySelector('.tab-btn[onclick*="'+tabName+'"]').classList.add('active')}
-if(tabName==='view3d'){setTimeout(()=>{if(!threeInitialized){initThreeJS()}else{const container=document.getElementById('three-container');if(container){const renderer=container.querySelector('canvas');if(renderer){const rect=container.getBoundingClientRect();renderer.width=rect.width;renderer.height=rect.height;renderer.style.width=rect.width+'px';renderer.style.height=rect.height+'px'}}}},100)}}
+window.setView=function(view){
+    if(!camera) return;
+    switch(view){
+        case'front': camera.position.set(0,1,14); controls.target.set(0,0,0); break;
+        case'top': camera.position.set(0,14,0.1); controls.target.set(0,0,0); break;
+        case'side': camera.position.set(14,1,0); controls.target.set(0,0,0); break;
+    }
+    controls.update();
+}
 
-function loadSchematic(type){let info=document.getElementById('schematicInfo');let schematics={default:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',standard:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',aero:'N01 10|P1 8.4 15.875 >|R01 0.5 28.2|S 35','5000psi':'N01 10|P1 5.04 15.875 >|R01 0.5 25.4|S 35'};info.innerHTML='<p style="color:#4caf50;font-size:13px;">Loaded: '+type+' schematic. Switch to Comp tab to see it.</p><pre style="color:#aac;font-size:11px;margin-top:10px;background:#1a1a2e;padding:10px;border-radius:4px;">'+schematics[type]+'</pre>'}
+function switchTab(tabName, event){
+    document.querySelectorAll('.tab-content').forEach(tab=>{tab.classList.remove('active')});
+    document.querySelectorAll('.tab-btn').forEach(btn=>{btn.classList.remove('active')});
+    document.getElementById('tab-'+tabName).classList.add('active');
+    if(event&&event.target){event.target.classList.add('active')}
+    else{document.querySelector('.tab-btn[onclick*="'+tabName+'"]').classList.add('active')}
+    if(tabName==='view3d'){
+        setTimeout(()=>{
+            if(!threeInitialized){initThreeJS();}
+            else{
+                const container=document.getElementById('three-container');
+                if(container){
+                    const canvas=container.querySelector('canvas');
+                    if(canvas){
+                        const rect=container.getBoundingClientRect();
+                        canvas.width=rect.width;
+                        canvas.height=rect.height;
+                        canvas.style.width=rect.width+'px';
+                        canvas.style.height=rect.height+'px';
+                    }
+                }
+            }
+        }, 100);
+    }
+}
+
+function loadSchematic(type){
+    let info=document.getElementById('schematicInfo');
+    let schematics={
+        default:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',
+        standard:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',
+        aero:'N01 10|P1 8.4 15.875 >|R01 0.5 28.2|S 35',
+        '5000psi':'N01 10|P1 5.04 15.875 >|R01 0.5 25.4|S 35'
+    };
+    info.innerHTML='<p style="color:#4caf50;font-size:13px;">Loaded: '+type+' schematic. Switch to Comp tab to see it.</p><pre style="color:#aac;font-size:11px;margin-top:10px;background:#1a1a2e;padding:10px;border-radius:4px;">'+schematics[type]+'</pre>';
+}
 
 init();
 </script>

@@ -89,6 +89,9 @@ td.c.custom-color{color:#fff}
 #viewer3d{flex:2;position:relative;background:#0a0a1a;min-height:300px}
 #three-container{width:100%;height:100%}
 .viewer-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);color:#666;padding:3px 14px;border-radius:12px;font-size:12px;pointer-events:none}
+#node3dTooltip{position:absolute;pointer-events:none;background:rgba(15,15,31,0.92);border:1px solid #e94560;border-radius:6px;padding:6px 12px;font-size:12px;color:#fff;display:none;z-index:100;white-space:nowrap;font-family:Consolas,monospace;box-shadow:0 2px 12px rgba(0,0,0,0.5)}
+#node3dTooltip .tt-id{color:#ffdd44;font-weight:bold;font-size:14px}
+#node3dTooltip .tt-desc{color:#aab3cc;font-size:11px;margin-top:2px}
 #right-panel{flex:1.2;display:flex;flex-direction:column;background:#1a1a2e;border-left:1px solid #2a2a4a;min-width:350px}
 #sidebar{flex:0.6;background:#0f0f1f;border-top:1px solid #2a2a4a;padding:6px 10px;overflow-y:auto;min-height:80px}
 #sidebar h3{color:#e94560;font-size:14px;margin-bottom:4px}
@@ -237,6 +240,7 @@ td.c.custom-color{color:#fff}
 <main>
 <section id="viewer3d">
 <div id="three-container"></div>
+<div id="node3dTooltip"><span class="tt-id"></span><div class="tt-desc"></div></div>
 <div class="viewer-hint">Drehen: Maus ziehen | Zoomen: Scrollen | Knoten: anklicken</div>
 </section>
 <section id="right-panel" style="flex:0.8;">
@@ -668,6 +672,29 @@ function disposeGroupChildren(group) {
     }
 }
 
+function makeTextSprite(text) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 128;
+    canvas.height = 48;
+    ctx.fillStyle = 'rgba(0,0,0,0)';
+    ctx.fillRect(0, 0, 128, 48);
+    ctx.font = 'bold 28px Consolas, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 3;
+    ctx.strokeText(text, 64, 24);
+    ctx.fillText(text, 64, 24);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
+    const mat = new THREE.SpriteMaterial({map: tex, transparent: true, depthTest: false});
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(0.35, 0.13, 1);
+    return sprite;
+}
+
 function drawNetwork(data) {
     latestNetworkData = data;
     nodeMeshes = [];
@@ -702,7 +729,7 @@ function drawNetwork(data) {
             missingNodes.push(name);
             return;
         }
-        const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.032, 12, 12), nodeMaterial);
+        const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 12), nodeMaterial);
         const pp = nodePoint3D(p);
         sphere.position.copy(pp);
         sphere.userData = {
@@ -713,6 +740,12 @@ function drawNetwork(data) {
         };
         pipeGroup.add(sphere);
         nodeMeshes.push(sphere);
+
+        const label = makeTextSprite(name);
+        label.position.copy(pp);
+        label.position.y += 0.12;
+        pipeGroup.add(label);
+
         renderedNodes++;
     });
 
@@ -1192,6 +1225,52 @@ function initThreeJS(){
             showSelectedNode(hits[0].object);
         }else{
             clearSelectedNode();
+        }
+    });
+
+    // ---- HOVER TOOLTIP ----
+    let hoveredMesh = null;
+    const hoverPointer = new THREE.Vector2();
+    const hoverRaycaster = new THREE.Raycaster();
+
+    renderer.domElement.addEventListener('mousemove', (event)=>{
+        const tooltip = document.getElementById('node3dTooltip');
+        if(!tooltip || !camera || nodeMeshes.length === 0) return;
+
+        const rect = renderer.domElement.getBoundingClientRect();
+        hoverPointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        hoverPointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        hoverRaycaster.setFromCamera(hoverPointer, camera);
+        const hits = hoverRaycaster.intersectObjects(nodeMeshes, false);
+
+        if(hits.length){
+            const mesh = hits[0].object;
+            const ud = mesh.userData;
+            if(hoveredMesh !== mesh){
+                hoveredMesh = mesh;
+                mesh.material = new THREE.MeshPhongMaterial({color: 0xff6644, emissive: 0x442200});
+            }
+            tooltip.style.display = 'block';
+            tooltip.style.left = (event.clientX - rect.left + 16) + 'px';
+            tooltip.style.top = (event.clientY - rect.top - 10) + 'px';
+            tooltip.querySelector('.tt-id').textContent = ud.name || '?';
+            tooltip.querySelector('.tt-desc').textContent = ud.desc || '';
+        } else {
+            if(hoveredMesh){
+                hoveredMesh.material = new THREE.MeshPhongMaterial({color: 0xffdd44});
+                hoveredMesh = null;
+            }
+            tooltip.style.display = 'none';
+        }
+    });
+
+    renderer.domElement.addEventListener('mouseleave', ()=>{
+        const tooltip = document.getElementById('node3dTooltip');
+        if(tooltip) tooltip.style.display = 'none';
+        if(hoveredMesh){
+            hoveredMesh.material = new THREE.MeshPhongMaterial({color: 0xffdd44});
+            hoveredMesh = null;
         }
     });
 

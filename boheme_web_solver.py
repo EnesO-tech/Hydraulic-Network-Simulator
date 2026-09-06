@@ -1,59 +1,150 @@
-"""Web adapter for the original Bachelorthesis.Network solver.
+"""Browser compatibility adapter for BOHEME.
 
-Keeps the thesis solver as the source of truth, while correcting a few
-interface/refactor issues that prevent the uploaded version from running in a
-browser/Pyodide context.
+The original Bachelorthesis.py remains the hydraulic solver.
+This adapter only fixes browser/schematic compatibility issues.
 """
+
 from Bachelorthesis import Network as ThesisNetwork
 
 
 class WebNetwork(ThesisNetwork):
-    """Thin compatibility layer around the thesis solver."""
+    """Compatibility layer around the original thesis Network class."""
 
     def ReadParameters(self):
-        """Parameters are supplied by the web GUI before Solve() is called."""
-        # The uploaded thesis file calls ReadParameters(), but does not define
-        # the method. In the existing Tk GUI the parameters are assigned on the
-        # Network object immediately before the solver call, so no grid read is
-        # required here.
+        """
+        Parameters are already assigned by the HTML/Pyodide interface
+        before the solver is started.
+        """
         return None
 
-    def WalkConnectionUntilNode(self, c, scanDir, iiStart, jjStart, slot, foundNr):
-        """Follow a straight schematic connection until a node is reached.
 
-        The uploaded solver's StepAlongConnection() tries to mutate integers
-        with ii[0]/jj[0]. Python integers are immutable, so the indices never
-        advance correctly. This method implements the same intended algorithm
-        with local integer updates.
+    def IsWire(self, head):
         """
+        The browser schematic also uses '-' as a visible connector.
+
+        Original thesis solver:
+        I, W, F, T, V
+
+        Web GUI additionally:
+        -
+        """
+        return head in [
+            "I",
+            "W",
+            "F",
+            "T",
+            "V",
+            "-"
+        ]
+
+
+    def WalkConnectionUntilNode(
+        self,
+        c,
+        scanDir,
+        iiStart,
+        jjStart,
+        slot,
+        foundNr
+    ):
+        """
+        Follow a straight schematic connection until a node is reached.
+
+        This replaces the original StepAlongConnection implementation,
+        which attempts to modify Python integers using ii[0] / jj[0].
+        """
+
         ii = iiStart
         jj = jjStart
 
-        while self.InGrid(ii, jj):
-            cell_content = self.Schematic[ii - 1][jj - 1]
-            head = cell_content[0] if cell_content else ""
+        # Safety guard against accidental endless scans.
+        max_steps = self.Nrow + self.Ncol + 4
+        steps = 0
 
+        while self.InGrid(ii, jj):
+
+            steps += 1
+
+            if steps > max_steps:
+                raise Exception(
+                    f"Connection scan exceeded grid bounds "
+                    f"for component '{c.Name}'."
+                )
+
+            cell_content = str(
+                self.Schematic[ii - 1][jj - 1]
+            ).strip()
+
+            head = (
+                cell_content[0]
+                if cell_content
+                else ""
+            )
+
+            # Node or ground reached
             if self.IsNodeToken(head):
-                self.RegisterFoundNode(c, scanDir, ii, jj, slot, foundNr)
+
+                self.RegisterFoundNode(
+                    c,
+                    scanDir,
+                    ii,
+                    jj,
+                    slot,
+                    foundNr
+                )
+
                 return
 
+
+            # Continue along connector
             if self.IsWire(head):
+
                 ii += self.RowStep(scanDir)
                 jj += self.ColStep(scanDir)
+
                 continue
 
-            self.RaiseSchematicTopologyError(c, ii, jj)
-            return
 
-    def AddComponent(self, cellText, rowIdx, colIdx):
-        super().AddComponent(cellText, rowIdx, colIdx)
+            # Anything else really is a topology error
+            raise Exception(
+                f"Error in Schematic for component '{c.Name}' "
+                f"at row {ii}, column {jj}: "
+                f"connected element '{cell_content}' "
+                f"found instead of a node or connector."
+            )
+
+
+    def AddComponent(
+        self,
+        cellText,
+        rowIdx,
+        colIdx
+    ):
+        """
+        Let the thesis solver parse the component and determine
+        its connected nodes.
+        """
+
+        super().AddComponent(
+            cellText,
+            rowIdx,
+            colIdx
+        )
+
         c = self.Comp[-1]
-        # In the uploaded thesis file the parsers write c.DPoc, whereas the
-        # check-valve/result code reads the dataclass field c.Dpoc.
+
+        # Compatibility fix:
+        # parser writes DPoc while later code reads Dpoc.
         if hasattr(c, "DPoc"):
             c.Dpoc = c.DPoc
 
+
     def RunSolver(self):
+        """
+        Run the unchanged hydraulic solver.
+        """
+
         super().RunSolver()
-        # The original GUI displays `liter`, while the solver increments Iiter.
+
+        # Existing web/result interface expects 'liter'.
         self.liter = self.Iiter

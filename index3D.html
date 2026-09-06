@@ -363,20 +363,60 @@ td.c.custom-color{color:#fff}
 const customColors = {};
 let loadedResults = null;
 let rlfState = true;
+let nodePositions = {};
 
+// ---- LADE A320 KOORDINATEN AUS JSON ----
+function loadNodePositions() {
+    fetch('a320_network.json')
+        .then(response => {
+            if (!response.ok) throw new Error('JSON nicht gefunden');
+            return response.json();
+        })
+        .then(data => {
+            if (data.nodes) {
+                data.nodes.forEach(n => {
+                    nodePositions[n.id] = {x: n.x || 0, y: n.y || 0, z: n.z || 0};
+                });
+                console.log('A320 Koordinaten geladen: ' + Object.keys(nodePositions).length + ' Knoten');
+            }
+        })
+        .catch(err => {
+            console.warn('Keine a320_network.json gefunden, verwende Standard-Positionen');
+        });
+}
+
+// ---- RL_F TOGGLE ----
 function toggleRlF(){
     rlfState = !rlfState;
     const btn = document.getElementById('rlFToggle');
     const val = rlfState ? '1' : '999';
     btn.textContent = rlfState ? 'ON' : 'OFF';
     btn.className = 'toggle-btn ' + (rlfState ? 'on' : 'off');
-    let cell = getCell(sr, sc);
-    if(cell){
-        cell.textContent = val;
-        D[k(sr,sc)] = val;
-        updateCellStyle(cell, val);
-        saveToLocalStorage();
-        updateUI();
+    
+    let found = false;
+    for(let ky in D){
+        let v = D[ky].trim();
+        if(v.startsWith('Rl_F')){
+            let [r,c] = ky.split(',').map(Number);
+            let cell = getCell(r, c);
+            if(cell){
+                let parts = v.split(' ');
+                if(parts.length >= 3){
+                    parts[1] = val;
+                    let newText = parts.join(' ');
+                    cell.textContent = newText;
+                    D[ky] = newText;
+                    updateCellStyle(cell, newText);
+                    saveToLocalStorage();
+                    updateUI();
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+    if(!found){
+        alert('Keine Zelle mit "Rl_F" gefunden! Bitte schreibe "Rl_F 1 999 ^" in eine Zelle.');
     }
     localStorage.setItem('boheme_rlf', rlfState ? '1' : '999');
 }
@@ -521,6 +561,7 @@ function cc(v){if(!v)return'c';let u=v.toUpperCase();if(u.startsWith('UPT')||u.s
 
 function init(){
     loadFromLocalStorage();
+    loadNodePositions();
     const savedRlf = localStorage.getItem('boheme_rlf');
     if(savedRlf !== null){
         rlfState = savedRlf === '1';
@@ -609,7 +650,7 @@ function loadFromLocalStorage(){
     }catch(e){}
 }
 
-// ---- EXPORT / IMPORT FUNKTIONEN ----
+// ---- EXPORT / IMPORT ----
 function saveDataToFile() {
     try {
         const data = localStorage.getItem('boheme_data');
@@ -638,7 +679,6 @@ function loadDataFromFile(event) {
     reader.onload = function(e) {
         try {
             const data = e.target.result;
-            // Prüfen ob gültiges JSON
             JSON.parse(data);
             localStorage.setItem('boheme_data', data);
             alert('Daten erfolgreich geladen! Seite wird neu geladen.');
@@ -663,14 +703,19 @@ function compute(){
         let v=D[ky].trim();
         if(!v)continue;
         if(v.startsWith('N')){
-            let parts=v.split(/\s+/);
-            let id=parseInt(parts[0].substring(1));
-            let z=parts.length>1?parseFloat(parts[1]):0;
-            let x = (c - 20) * 0.08;
-            let y = (r - 25) * 0.08;
-            x = Math.max(-1.5, Math.min(1.5, x));
-            y = Math.max(-1.0, Math.min(1.0, y));
-            nodes[id] = {id, z, x, y};
+            let parts = v.split(/\s+/);
+            let id = parseInt(parts[0].substring(1));
+            // 🔥 KOORDINATEN AUS JSON
+            let pos = nodePositions['N' + String(id).padStart(2,'0')];
+            if(pos){
+                nodes[id] = {id: id, x: pos.x, y: pos.y, z: pos.z};
+            } else {
+                // Fallback: aus Zeile/Spalte
+                let z = parts.length > 1 ? parseFloat(parts[1]) : 0;
+                let x = (c - 20) * 0.08;
+                let y = (r - 25) * 0.08;
+                nodes[id] = {id, z, x, y};
+            }
         }
         if(v.startsWith('R')||v.startsWith('P')||v.startsWith('U')||v.startsWith('PTU')||v.startsWith('MPP')){
             let parts=v.split(/\s+/);
@@ -783,7 +828,7 @@ window.drawNetwork=function(data){
     let pos={};
     if(data.nodes && data.nodes.length>0){
         data.nodes.forEach(n=>{
-            pos[n.id]=new THREE.Vector3(n.x||0, n.z||0, n.y||0);
+            pos[n.id]=new THREE.Vector3(n.x||0, n.y||0, n.z||0);
         });
     } else {
         return;
@@ -799,7 +844,7 @@ window.drawNetwork=function(data){
         pipeGroup.add(line);
         let sm=new THREE.MeshPhongMaterial({color:0xffdd44});
         [p1,p2].forEach(p=>{
-            let s=new THREE.Mesh(new THREE.SphereGeometry(0.1,8,8),sm);
+            let s=new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8),sm);
             s.position.copy(p);
             pipeGroup.add(s);
         });

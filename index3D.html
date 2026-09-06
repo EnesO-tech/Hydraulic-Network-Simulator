@@ -63,6 +63,8 @@ main{display:flex;flex:1;overflow:hidden}
 .toolbar .toggle-btn.on{background:#4caf50}
 .toolbar .toggle-btn.off{background:#e94560}
 .toolbar .toggle-btn:hover{opacity:0.8}
+.toolbar .file-btn{background:#2a2a4a;border:none;color:#fff;padding:3px 12px;border-radius:3px;cursor:pointer;font-size:12px}
+.toolbar .file-btn:hover{background:#e94560}
 .formula-bar{background:#0f0f1f;padding:3px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #2a2a4a;flex-shrink:0}
 .cell-ref{width:55px;text-align:center;font-family:Consolas,monospace;font-size:12px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;padding:2px 4px;border-radius:3px}
 .formula-input{flex:1;padding:2px 8px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;font-size:13px;border-radius:3px}
@@ -174,6 +176,9 @@ td.c.custom-color{color:#fff}
 <button class="insert-btn" onclick="insertNode()">+ Knoten</button>
 <button class="insert-btn" onclick="insertWire()">+ I</button>
 <button class="insert-btn" onclick="showColorPicker()" style="background:#6a1a4a;">🎨</button>
+<button class="file-btn" onclick="document.getElementById('fileInput').click()">📂</button>
+<input type="file" id="fileInput" accept=".json" style="display:none" onchange="loadDataFromFile(event)">
+<button class="file-btn" onclick="saveDataToFile()">💾</button>
 </div>
 <div class="formula-bar">
 <input class="cell-ref" id="cellRef" value="B4" readonly>
@@ -602,6 +607,47 @@ function loadFromLocalStorage(){
             }
         });
     }catch(e){}
+}
+
+// ---- EXPORT / IMPORT FUNKTIONEN ----
+function saveDataToFile() {
+    try {
+        const data = localStorage.getItem('boheme_data');
+        if (!data) {
+            alert('Keine Daten zum Speichern vorhanden!');
+            return;
+        }
+        const blob = new Blob([data], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'boheme_data.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch(e) {
+        alert('Fehler beim Speichern: ' + e.message);
+    }
+}
+
+function loadDataFromFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = e.target.result;
+            // Prüfen ob gültiges JSON
+            JSON.parse(data);
+            localStorage.setItem('boheme_data', data);
+            alert('Daten erfolgreich geladen! Seite wird neu geladen.');
+            location.reload();
+        } catch(err) {
+            alert('Fehler beim Laden: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
 }
 
 function updateUI(){let co=0,ns=new Set();for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim(),h=v[0];if('RPU'.includes(h))co++;if(h==='N'){let n=parseInt(v.substring(1));if(!isNaN(n))ns.add(n)}}return{components:co,nodes:ns.size}}

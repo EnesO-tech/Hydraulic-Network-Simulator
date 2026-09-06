@@ -394,16 +394,17 @@ let pointerDownXY = null;
 // Pull the hydraulic network slightly toward the aircraft centreline so
 // nodes sit more clearly inside the model instead of on/outside the skin.
 // These factors affect ONLY the 3D visualisation, never the hydraulic solver.
-const NODE_VIS_SCALE_X = 0.75;   // pull wing nodes inward
-const NODE_VIS_SCALE_Y = 0.40;   // restore vertical separation so nodes are not flattened onto the roof
-const NODE_VIS_SCALE_Z = 0.68;   // pull nose/tail nodes inward
-const NODE_VIS_OFFSET_Y = -0.18; // move the whole hydraulic network down into the aircraft
+const NODE_VIS_SCALE_X = 0.75;   // wing span unchanged
+const NODE_VIS_SCALE_Y = 0.40;   // vertical spread unchanged
+const NODE_VIS_SCALE_Z = 0.78;   // extend network slightly farther toward nose AND tail
+const NODE_VIS_OFFSET_Y = -0.24; // move whole hydraulic network a little farther down
+const NODE_VIS_OFFSET_Z = 0.10;  // shift whole hydraulic network slightly toward the nose
 
 function nodePoint3D(p) {
     return new THREE.Vector3(
         (Number(p.x) || 0) * NODE_VIS_SCALE_X,
         (Number(p.y) || 0) * NODE_VIS_SCALE_Y + NODE_VIS_OFFSET_Y,
-        (Number(p.z) || 0) * NODE_VIS_SCALE_Z
+        (Number(p.z) || 0) * NODE_VIS_SCALE_Z + NODE_VIS_OFFSET_Z
     );
 }
 

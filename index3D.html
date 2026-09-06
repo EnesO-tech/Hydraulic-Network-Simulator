@@ -965,9 +965,79 @@ function cn(r,c){return cL(c)+r}function k(r,c){return r+','+c}
 
 function cc(v){if(!v)return'c';let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM'))return'c t-ptu';if(u.startsWith('MPP'))return'c t-mpp';let h=v[0];if(h==='P')return'c t-pump';if(h==='R'||h==='U')return'c t-pipe';if(h==='N')return'c t-node';if(h==='S')return'c t-ground';if('IWFTV-'.includes(v.trim()))return'c t-wire';return'c'}
 
+function renderGridData(){
+    for(let r=1;r<=R;r++){
+        for(let c=1;c<=C;c++){
+            const t=document.getElementById(`t${r}_${c}`);
+            if(!t) continue;
+            const key=k(r,c);
+            const value=D[key]||'';
+            t.className=cc(value);
+            t.textContent=value;
+            t.style.background='';
+            t.style.color='';
+            if(customColors[key]){
+                t.style.background=customColors[key];
+                t.style.color='#fff';
+                t.classList.add('custom-color');
+            }
+        }
+    }
+    updateUI();
+}
+
+function hasGridData(){
+    return Object.keys(D).some(key => String(D[key] ?? '').trim() !== '');
+}
+
+async function loadDefaultBohemeData(){
+    try{
+        const response = await fetch('boheme_data.json', {cache:'no-store'});
+        if(!response.ok) throw new Error('HTTP ' + response.status);
+        const parsed = await response.json();
+
+        let incomingD = null;
+        if(parsed && typeof parsed === 'object'){
+            if(parsed.D && typeof parsed.D === 'object') incomingD = parsed.D;
+            else if(parsed.grid && typeof parsed.grid === 'object') incomingD = parsed.grid;
+            else {
+                const candidateKeys = Object.keys(parsed);
+                if(candidateKeys.some(key => /^\d+,\d+$/.test(key))) incomingD = parsed;
+            }
+        }
+
+        if(!incomingD || Object.keys(incomingD).length === 0){
+            throw new Error('boheme_data.json enthält keine Grid-Daten.');
+        }
+
+        Object.keys(D).forEach(key => delete D[key]);
+        Object.assign(D, incomingD);
+
+        Object.keys(customColors).forEach(key => delete customColors[key]);
+        if(parsed.customColors && typeof parsed.customColors === 'object'){
+            Object.assign(customColors, parsed.customColors);
+        }
+
+        localStorage.setItem('boheme_data', JSON.stringify({D, customColors}));
+        renderGridData();
+        sel(4,2);
+
+        console.log('BOHEME Standarddaten geladen:', Object.keys(D).length, 'Zellen');
+
+        const status = document.getElementById('statusInfo');
+        if(status) status.textContent = 'Daten aus boheme_data.json geladen';
+    }catch(err){
+        console.warn('boheme_data.json konnte nicht automatisch geladen werden:', err);
+
+        const status = document.getElementById('statusInfo');
+        if(status) status.textContent = 'Keine Daten geladen – bitte manuell importieren (📂)';
+    }
+}
+
 function init(){
+    // UI zuerst aufbauen: Tabelle und Tabs dürfen nicht von externen Dateien abhängen.
     loadFromLocalStorage();
-    networkLoadPromise = loadNodePositions();
+
     const savedRlf = localStorage.getItem('boheme_rlf');
     if(savedRlf !== null){
         rlfState = savedRlf === '1';
@@ -977,9 +1047,11 @@ function init(){
             btn.className = 'toggle-btn ' + (rlfState ? 'on' : 'off');
         }
     }
+
     let h='<thead><tr><th></th>';
-    for(let c=1;c<=C;c++)h+=`<th>${cL(c)}</th>`;
+    for(let c=1;c<=C;c++) h+=`<th>${cL(c)}</th>`;
     h+='</tr></thead><tbody>';
+
     for(let r=1;r<=R;r++){
         h+=`<tr><td class="rh">${r}</td>`;
         for(let c=1;c<=C;c++){
@@ -988,22 +1060,23 @@ function init(){
         h+='</tr>';
     }
     h+='</tbody>';
-    document.getElementById('grid').innerHTML=h;
-    
-    for(let key in D){
-        let [r,c] = key.split(',').map(Number);
-        let t=document.getElementById(`t${r}_${c}`);
-        if(t){
-            t.className=cc(D[key]);
-            t.textContent=D[key];
-            if(customColors[key]){
-                t.style.background=customColors[key];
-                t.style.color='#fff';
-                t.classList.add('custom-color');
-            }
-        }
-    }
+
+    const grid=document.getElementById('grid');
+    if(!grid) throw new Error('Grid-Element #grid fehlt.');
+    grid.innerHTML=h;
+
+    renderGridData();
     sel(4,2);
+
+    // Externe Daten erst nach der UI im Hintergrund laden.
+    networkLoadPromise = loadNodePositions().catch(err => {
+        console.warn('A320-Koordinaten konnten beim Start nicht geladen werden:', err);
+        return null;
+    });
+
+    // Wenn lokal keine brauchbaren Grid-Daten vorhanden sind,
+    // automatisch die Repo-Datei boheme_data.json laden.
+    loadDefaultBohemeData();
 }
 
 function sel(r,c){rc(sr,sc);sr=r;sc=c;let t=document.getElementById(`t${r}_${c}`);if(t)t.classList.add('sel');document.getElementById('cellRef').value=cn(r,c);document.getElementById('fi').value=D[k(r,c)]||'';if(document.activeElement&&document.activeElement.tagName==='INPUT'&&document.activeElement.id!=='fi')document.activeElement.blur()}
@@ -1430,7 +1503,17 @@ function loadSchematic(type){
     info.innerHTML='<p style="color:#4caf50;font-size:13px;">Loaded: '+type+' schematic. Switch to Comp tab to see it.</p><pre style="color:#aac;font-size:11px;margin-top:10px;background:#1a1a2e;padding:10px;border-radius:4px;">'+schematics[type]+'</pre>';
 }
 
-init();
+
+try{
+    init();
+}catch(err){
+    console.error('BOHEME Startfehler:', err);
+    const status=document.getElementById('statusInfo');
+    if(status){
+        status.textContent='Startfehler: ' + (err && err.message ? err.message : String(err));
+        status.style.color='#e94560';
+    }
+}
 </script>
 </body>
 </html>

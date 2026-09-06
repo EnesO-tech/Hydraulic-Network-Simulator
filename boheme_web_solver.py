@@ -1,34 +1,57 @@
-"""Browser compatibility adapter for BOHEME.
+"""
+BOHEME Web Adapter
+==================
 
-The original Bachelorthesis.py remains the hydraulic solver.
-This adapter only fixes browser/schematic compatibility issues.
+Browser compatibility layer for the original Bachelorthesis.py solver.
+
+IMPORTANT:
+- The hydraulic equations remain in Bachelorthesis.py.
+- This file only adapts schematic parsing for the browser GUI.
 """
 
-from Bachelorthesis import Network as ThesisNetwork
+from Bachelorthesis import (
+    Network as ThesisNetwork,
+    Component,
+    KIND_R,
+    KIND_RZ,
+    KIND_RK,
+    KIND_RR,
+    KIND_RL,
+    KIND_P,
+    KIND_U,
+    KIND_UCP,
+    KIND_UPR,
+    KIND_UCV,
+)
 
 
 class WebNetwork(ThesisNetwork):
-    """Compatibility layer around the original thesis Network class."""
+
+    # ---------------------------------------------------------
+    # Parameters are already supplied by the HTML/Pyodide GUI
+    # ---------------------------------------------------------
 
     def ReadParameters(self):
-        """
-        Parameters are already assigned by the HTML/Pyodide interface
-        before the solver is started.
-        """
         return None
 
 
+    # ---------------------------------------------------------
+    # Browser schematic connector tokens
+    # ---------------------------------------------------------
+
     def IsWire(self, head):
         """
-        The browser schematic also uses '-' as a visible connector.
-
-        Original thesis solver:
+        Original solver accepts:
         I, W, F, T, V
 
-        Web GUI additionally:
+        BOHEME browser schematic additionally uses:
         -
         """
-        return head in [
+
+        if head is None:
+            return False
+
+        return str(head).upper() in [
             "I",
             "W",
             "F",
@@ -37,6 +60,235 @@ class WebNetwork(ThesisNetwork):
             "-"
         ]
 
+
+    # ---------------------------------------------------------
+    # Case-insensitive component detection
+    # ---------------------------------------------------------
+
+    def ComponentKind(self, componentName):
+
+        name = str(componentName).upper()
+
+        if name.startswith(KIND_RZ):
+            return KIND_RZ
+
+        elif name.startswith(KIND_RK):
+            return KIND_RK
+
+        elif name.startswith(KIND_RR):
+            return KIND_RR
+
+        elif name.startswith(KIND_RL):
+            return KIND_RL
+
+        elif name.startswith(KIND_UCP):
+            return KIND_UCP
+
+        elif name.startswith(KIND_UPR):
+            return KIND_UPR
+
+        elif name.startswith(KIND_UCV):
+            return KIND_UCV
+
+        elif name.startswith(KIND_R):
+            return KIND_R
+
+        elif name.startswith(KIND_P):
+            return KIND_P
+
+        elif name.startswith(KIND_U):
+            return KIND_U
+
+        return ""
+
+
+    # ---------------------------------------------------------
+    # Component creation
+    # ---------------------------------------------------------
+
+    def AddComponent(
+        self,
+        cellText,
+        rowIdx,
+        colIdx
+    ):
+        """
+        We deliberately do NOT call super().AddComponent() here.
+
+        The original AddComponent immediately calls its strict
+        FindConnectedNodes implementation.
+
+        Instead:
+        1. create component
+        2. parse component with original thesis parser
+        3. determine topology using the web-compatible parser
+        """
+
+        self.Ncomp += 1
+
+        self.Comp.append(
+            Component()
+        )
+
+        c = self.Comp[-1]
+
+
+        # Original parser from Bachelorthesis.py
+        self.ParseComponent(
+            c,
+            cellText,
+            rowIdx,
+            colIdx
+        )
+
+
+        # Compatibility:
+        # some parsers write c.DPoc while later solver code
+        # reads c.Dpoc
+        if hasattr(c, "DPoc"):
+            c.Dpoc = c.DPoc
+
+
+        # Web-compatible topology parser
+        self.FindConnectedNodes(c)
+
+
+    # ---------------------------------------------------------
+    # Robust topology search
+    # ---------------------------------------------------------
+
+    def FindConnectedNodes(self, c):
+        """
+        Search for the two nodes connected to a component.
+
+        Important difference from the thesis implementation:
+
+        Irrelevant neighbouring cells are ignored instead of
+        immediately causing an exception.
+
+        This is necessary because the browser grid also contains
+        parameter cells and other spreadsheet content.
+        """
+
+        slot = [0]
+
+        foundNr = [False]
+
+        startDir = self.StartDirection(
+            c.orient
+        )
+
+
+        for offset in range(4):
+
+            scanDir = (
+                startDir +
+                offset
+            )
+
+            if scanDir > 4:
+                scanDir -= 4
+
+
+            ii = (
+                c.Row +
+                self.RowStep(
+                    scanDir
+                )
+            )
+
+            jj = (
+                c.Col +
+                self.ColStep(
+                    scanDir
+                )
+            )
+
+
+            if not self.InGrid(
+                ii,
+                jj
+            ):
+                continue
+
+
+            cell_content = str(
+                self.Schematic[
+                    ii - 1
+                ][
+                    jj - 1
+                ]
+            ).strip()
+
+
+            # Empty neighbour:
+            # nothing connected in this direction
+            if not cell_content:
+                continue
+
+
+            head = (
+                cell_content[0]
+            )
+
+
+            # Directly neighbouring node
+            if self.IsNodeToken(
+                head
+            ):
+
+                self.RegisterFoundNode(
+                    c,
+                    scanDir,
+                    ii,
+                    jj,
+                    slot,
+                    foundNr
+                )
+
+
+            # Wire / connector
+            elif self.IsWire(
+                head
+            ):
+
+                self.WalkConnectionUntilNode(
+                    c,
+                    scanDir,
+                    ii,
+                    jj,
+                    slot,
+                    foundNr
+                )
+
+
+            else:
+                """
+                IMPORTANT:
+
+                The spreadsheet can contain numbers,
+                parameters or unrelated components
+                next to a component.
+
+                They are not considered connections.
+                """
+
+                continue
+
+
+            if slot[0] >= 2:
+                break
+
+
+        self.EnsureTwoConnectedNodes(
+            c,
+            slot[0]
+        )
+
+
+    # ---------------------------------------------------------
+    # Walk along a straight connector
+    # ---------------------------------------------------------
 
     def WalkConnectionUntilNode(
         self,
@@ -47,42 +299,53 @@ class WebNetwork(ThesisNetwork):
         slot,
         foundNr
     ):
-        """
-        Follow a straight schematic connection until a node is reached.
-
-        This replaces the original StepAlongConnection implementation,
-        which attempts to modify Python integers using ii[0] / jj[0].
-        """
 
         ii = iiStart
         jj = jjStart
 
-        # Safety guard against accidental endless scans.
-        max_steps = self.Nrow + self.Ncol + 4
-        steps = 0
 
-        while self.InGrid(ii, jj):
+        # Safety limit
+        max_steps = (
+            self.Nrow +
+            self.Ncol +
+            4
+        )
 
-            steps += 1
 
-            if steps > max_steps:
-                raise Exception(
-                    f"Connection scan exceeded grid bounds "
-                    f"for component '{c.Name}'."
-                )
+        for _ in range(
+            max_steps
+        ):
+
+            if not self.InGrid(
+                ii,
+                jj
+            ):
+                return
+
 
             cell_content = str(
-                self.Schematic[ii - 1][jj - 1]
+                self.Schematic[
+                    ii - 1
+                ][
+                    jj - 1
+                ]
             ).strip()
+
+
+            # Connection ended before reaching a node
+            if not cell_content:
+                return
+
 
             head = (
                 cell_content[0]
-                if cell_content
-                else ""
             )
 
-            # Node or ground reached
-            if self.IsNodeToken(head):
+
+            # Node found
+            if self.IsNodeToken(
+                head
+            ):
 
                 self.RegisterFoundNode(
                     c,
@@ -97,54 +360,34 @@ class WebNetwork(ThesisNetwork):
 
 
             # Continue along connector
-            if self.IsWire(head):
+            if self.IsWire(
+                head
+            ):
 
-                ii += self.RowStep(scanDir)
-                jj += self.ColStep(scanDir)
+                ii += self.RowStep(
+                    scanDir
+                )
+
+                jj += self.ColStep(
+                    scanDir
+                )
 
                 continue
 
 
-            # Anything else really is a topology error
-            raise Exception(
-                f"Error in Schematic for component '{c.Name}' "
-                f"at row {ii}, column {jj}: "
-                f"connected element '{cell_content}' "
-                f"found instead of a node or connector."
-            )
+            # Something unrelated encountered:
+            # this direction is simply not a valid connection
+            return
 
 
-    def AddComponent(
-        self,
-        cellText,
-        rowIdx,
-        colIdx
-    ):
-        """
-        Let the thesis solver parse the component and determine
-        its connected nodes.
-        """
-
-        super().AddComponent(
-            cellText,
-            rowIdx,
-            colIdx
-        )
-
-        c = self.Comp[-1]
-
-        # Compatibility fix:
-        # parser writes DPoc while later code reads Dpoc.
-        if hasattr(c, "DPoc"):
-            c.Dpoc = c.DPoc
-
+    # ---------------------------------------------------------
+    # Solver
+    # ---------------------------------------------------------
 
     def RunSolver(self):
-        """
-        Run the unchanged hydraulic solver.
-        """
 
         super().RunSolver()
 
-        # Existing web/result interface expects 'liter'.
+
+        # Web interface expects this attribute
         self.liter = self.Iiter

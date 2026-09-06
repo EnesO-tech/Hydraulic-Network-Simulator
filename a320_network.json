@@ -1,10 +1,10 @@
 {
-  "info": "A320 Hydraulik-Knotenpositionen – kalibrierte 3D-Visualisierung fuer BOHEME. Koordinaten in Modelleinheiten. Z=Laengsachse (positiv=Nase), X=Spannweite (positiv=rechts/Steuerbord), Y=Hoehe (positiv=oben). Diese Datei steuert nur die 3D-Positionen; Solver-Topologie und Physik kommen aus Bachelorthesis.py.",
+  "info": "A320 Hydraulik-Knotenpositionen – BOHEME 3D calibration v15. Z=Längsachse (positiv=Nase), X=Spannweite (positiv=rechts/Steuerbord), Y=Höhe (positiv=oben). Diese Koordinaten steuern nur die 3D-Darstellung; hydraulische Topologie und Physik bleiben im Schematic/Bachelorthesis.py.",
   "nodes": [
     {
       "id": "N01",
       "x": 0.0,
-      "y": -0.55,
+      "y": -0.58,
       "z": 0.05,
       "desc": "Reservoir-Ausgang (Pumpe Saugseite)",
       "loc": "Rumpf Mitte unten, neben Hydrauliktank"
@@ -12,328 +12,328 @@
     {
       "id": "N02",
       "x": 0.0,
-      "y": -0.48,
-      "z": 0.15,
+      "y": -0.52,
+      "z": 0.12,
       "desc": "Pumpe P1 Ausgang (Hochdruck ~209 bar)",
       "loc": "Rumpf Mitte, Druckleitung"
     },
     {
       "id": "N03",
       "x": 0.0,
-      "y": -0.4,
-      "z": 0.3,
+      "y": -0.48,
+      "z": 0.25,
       "desc": "Verteiler nach Pumpe (nach R03)",
       "loc": "Rumpf Mitte, Hauptverteiler"
     },
     {
       "id": "N04",
       "x": 0.0,
-      "y": -0.7,
+      "y": -0.68,
       "z": -0.05,
       "desc": "Rücklauf-Sammelknoten (Return Manifold)",
       "loc": "Rumpf unten, Rücklaufsammler"
     },
     {
       "id": "N05",
-      "x": -1.0,
-      "y": -0.48,
+      "x": -0.9,
+      "y": -0.52,
       "z": 0.0,
       "desc": "Linke Tragfläche Abzweig innen (vor Spoiler 1)",
       "loc": "Linker Flügelansatz"
     },
     {
       "id": "N06",
-      "x": -1.35,
-      "y": -0.46,
-      "z": -0.1,
+      "x": -1.15,
+      "y": -0.5,
+      "z": -0.08,
       "desc": "Linke Tragfläche Rücklauf-Knoten",
       "loc": "Linker Flügel innen"
     },
     {
       "id": "N07",
-      "x": -2.45,
-      "y": -0.4,
-      "z": -0.7,
+      "x": -1.75,
+      "y": -0.48,
+      "z": -0.45,
       "desc": "Querruder Links Eingang (vor UAL)",
       "loc": "Linker Flügel Mitte"
     },
     {
       "id": "N08",
-      "x": -2.6,
-      "y": -0.4,
-      "z": -0.82,
+      "x": -1.9,
+      "y": -0.48,
+      "z": -0.55,
       "desc": "Querruder Links Ausgang (nach UAL)",
       "loc": "Linker Flügel Mitte"
     },
     {
       "id": "N09",
-      "x": -1.85,
-      "y": -0.42,
-      "z": -0.35,
+      "x": -1.45,
+      "y": -0.5,
+      "z": -0.25,
       "desc": "Spoiler 5 Links Ausgang (nach U5L)",
       "loc": "Linker Flügel innen-mitte"
     },
     {
       "id": "N10",
-      "x": -1.18,
-      "y": -0.44,
-      "z": -0.15,
+      "x": -1.0,
+      "y": -0.5,
+      "z": -0.1,
       "desc": "Spoiler 1 Links Ausgang (nach U1L)",
       "loc": "Linker Flügelansatz"
     },
     {
       "id": "N11",
-      "x": -0.35,
-      "y": -0.48,
-      "z": -0.55,
+      "x": -0.3,
+      "y": -0.52,
+      "z": -0.45,
       "desc": "Verteiler Mitte-Links (Rumpf)",
       "loc": "Rumpf Mitte links"
     },
     {
       "id": "N12",
       "x": 0.0,
-      "y": -0.48,
-      "z": -0.7,
+      "y": -0.52,
+      "z": -0.58,
       "desc": "Verteiler Mitte (Rumpf)",
       "loc": "Rumpf Mitte"
     },
     {
       "id": "N13",
       "x": 0.0,
-      "y": -0.22,
-      "z": -3.45,
+      "y": -0.3,
+      "z": -2.35,
       "desc": "Trimmbare Höhenflosse THS (vor UTS)",
       "loc": "Heck, Höhenleitwerk Mitte"
     },
     {
       "id": "N14",
-      "x": -0.95,
-      "y": -0.22,
-      "z": -3.35,
+      "x": -0.65,
+      "y": -0.3,
+      "z": -2.3,
       "desc": "Höhenruder Links Eingang (vor ULE)",
       "loc": "Heck, linkes Höhenruder"
     },
     {
       "id": "N15",
       "x": 0.0,
-      "y": -0.2,
-      "z": -3.05,
+      "y": -0.28,
+      "z": -2.15,
       "desc": "Gierungsdämpfer Eingang (vor UYD)",
       "loc": "Heck, vor Seitenruder"
     },
     {
       "id": "N16",
       "x": 0.0,
-      "y": 0.65,
-      "z": -3.65,
+      "y": 0.3,
+      "z": -2.45,
       "desc": "Seitenruder Oben Eingang (vor URU)",
       "loc": "Seitenleitwerk oben"
     },
     {
       "id": "N17",
       "x": 0.0,
-      "y": 0.82,
-      "z": -3.9,
+      "y": 0.45,
+      "z": -2.55,
       "desc": "Seitenruder Oben Ausgang (nach URU)",
       "loc": "Seitenleitwerk oben"
     },
     {
       "id": "N18",
       "x": 0.0,
-      "y": -0.18,
-      "z": -3.28,
+      "y": -0.28,
+      "z": -2.25,
       "desc": "Gierungsdämpfer Ausgang (nach UYD)",
       "loc": "Heck, nach Seitenruder"
     },
     {
       "id": "N19",
-      "x": -1.05,
-      "y": -0.22,
-      "z": -3.58,
+      "x": -0.7,
+      "y": -0.3,
+      "z": -2.4,
       "desc": "Höhenruder Links Ausgang (nach ULE)",
       "loc": "Heck, linkes Höhenruder"
     },
     {
       "id": "N20",
       "x": 0.0,
-      "y": -0.2,
-      "z": -3.82,
+      "y": -0.28,
+      "z": -2.5,
       "desc": "THS Ausgang (nach UTS)",
       "loc": "Heck, Höhenleitwerk"
     },
     {
       "id": "N21",
-      "x": 0.35,
-      "y": -0.48,
-      "z": -0.55,
+      "x": 0.3,
+      "y": -0.52,
+      "z": -0.45,
       "desc": "Verteiler Mitte-Rechts (Rumpf)",
       "loc": "Rumpf Mitte rechts"
     },
     {
       "id": "N22",
-      "x": 0.38,
+      "x": 0.32,
       "y": -0.58,
-      "z": -0.78,
+      "z": -0.62,
       "desc": "Rücklauf Mitte-Rechts",
       "loc": "Rumpf Mitte rechts"
     },
     {
       "id": "N23",
-      "x": 0.58,
-      "y": -0.48,
-      "z": -1.05,
+      "x": 0.48,
+      "y": -0.52,
+      "z": -0.82,
       "desc": "Rechte Seite Verteiler",
       "loc": "Rumpf rechts"
     },
     {
       "id": "N24",
       "x": 0.0,
-      "y": -0.52,
-      "z": -0.2,
+      "y": -0.56,
+      "z": -0.15,
       "desc": "Landeklappen Eingang (vor UFL)",
       "loc": "Rumpf Mitte, unter Flügel"
     },
     {
       "id": "N25",
       "x": 0.0,
-      "y": -0.52,
-      "z": -0.45,
+      "y": -0.56,
+      "z": -0.35,
       "desc": "Landeklappen Ausgang (nach UFL)",
       "loc": "Rumpf Mitte, unter Flügel"
     },
     {
       "id": "N26",
-      "x": -1.05,
-      "y": -0.4,
-      "z": 0.55,
+      "x": -0.9,
+      "y": -0.48,
+      "z": 0.35,
       "desc": "Vorflügel Links Eingang (vor USL)",
       "loc": "Linker Flügel Vorderkante"
     },
     {
       "id": "N27",
-      "x": -1.9,
-      "y": -0.38,
-      "z": 0.38,
+      "x": -1.45,
+      "y": -0.46,
+      "z": 0.3,
       "desc": "Vorflügel Links Ausgang (nach USL)",
       "loc": "Linker Flügel Vorderkante"
     },
     {
       "id": "N28",
-      "x": 0.58,
-      "y": -0.38,
-      "z": -2.4,
+      "x": 0.48,
+      "y": -0.46,
+      "z": -1.75,
       "desc": "Rechte Seite Heck-Verteiler",
       "loc": "Rumpf rechts hinten"
     },
     {
       "id": "N29",
-      "x": 0.35,
-      "y": -0.48,
-      "z": -0.3,
+      "x": 0.3,
+      "y": -0.52,
+      "z": -0.25,
       "desc": "Rechte Seite nach RLF",
       "loc": "Rumpf rechts"
     },
     {
       "id": "N30",
-      "x": 1.0,
-      "y": -0.48,
+      "x": 0.9,
+      "y": -0.52,
       "z": 0.0,
       "desc": "Rechte Tragfläche Abzweig (vor Spoiler 1R)",
       "loc": "Rechter Flügelansatz"
     },
     {
       "id": "N31",
-      "x": 1.35,
-      "y": -0.46,
-      "z": -0.1,
+      "x": 1.15,
+      "y": -0.5,
+      "z": -0.08,
       "desc": "Rechte Tragfläche Rücklauf",
       "loc": "Rechter Flügel innen"
     },
     {
       "id": "N32",
-      "x": 2.45,
-      "y": -0.4,
-      "z": -0.7,
+      "x": 1.75,
+      "y": -0.48,
+      "z": -0.45,
       "desc": "Querruder Rechts Eingang (vor UAR)",
       "loc": "Rechter Flügel Mitte"
     },
     {
       "id": "N33",
-      "x": 2.6,
-      "y": -0.4,
-      "z": -0.82,
+      "x": 1.9,
+      "y": -0.48,
+      "z": -0.55,
       "desc": "Querruder Rechts Ausgang (nach UAR)",
       "loc": "Rechter Flügel Mitte"
     },
     {
       "id": "N34",
-      "x": 1.85,
-      "y": -0.42,
-      "z": -0.35,
+      "x": 1.45,
+      "y": -0.5,
+      "z": -0.25,
       "desc": "Spoiler 5 Rechts Ausgang (nach U5R)",
       "loc": "Rechter Flügel innen-mitte"
     },
     {
       "id": "N35",
-      "x": 1.18,
-      "y": -0.44,
-      "z": -0.15,
+      "x": 1.0,
+      "y": -0.5,
+      "z": -0.1,
       "desc": "Spoiler 1 Rechts Ausgang (nach U1R)",
       "loc": "Rechter Flügelansatz"
     },
     {
       "id": "N36",
       "x": 0.0,
-      "y": -0.7,
-      "z": -0.35,
+      "y": -0.68,
+      "z": -0.3,
       "desc": "Rücklauf-Sammelknoten 2",
       "loc": "Rumpf unten"
     },
     {
       "id": "N37",
       "x": 0.0,
-      "y": -0.4,
-      "z": 0.42,
+      "y": -0.48,
+      "z": 0.35,
       "desc": "Verteiler nach R04 (Mitte)",
       "loc": "Rumpf Mitte"
     },
     {
       "id": "N38",
       "x": 0.0,
-      "y": -0.58,
-      "z": -0.15,
+      "y": -0.6,
+      "z": -0.12,
       "desc": "Rücklauf vor Reservoir",
       "loc": "Rumpf unten, nahe Tank"
     },
     {
       "id": "N39",
-      "x": 0.18,
-      "y": -0.66,
-      "z": -0.1,
+      "x": 0.15,
+      "y": -0.64,
+      "z": -0.08,
       "desc": "PTU Motor Rücklauf",
       "loc": "Rumpf unten Mitte (PTU)"
     },
     {
       "id": "N40",
-      "x": -0.18,
-      "y": -0.66,
+      "x": -0.15,
+      "y": -0.64,
       "z": 0.0,
       "desc": "PTU System B Zulauf",
       "loc": "Rumpf unten Mitte (PTU)"
     },
     {
       "id": "N41",
-      "x": -0.18,
-      "y": -0.64,
-      "z": 0.16,
+      "x": -0.15,
+      "y": -0.62,
+      "z": 0.12,
       "desc": "PTU System B nach Pumpe",
       "loc": "Rumpf unten Mitte (PTU)"
     },
     {
       "id": "N42",
-      "x": -0.22,
-      "y": -0.62,
-      "z": 0.32,
+      "x": -0.18,
+      "y": -0.6,
+      "z": 0.24,
       "desc": "PTU System B nach Aktuator",
       "loc": "Rumpf unten Mitte (PTU)"
     }

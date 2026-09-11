@@ -21,6 +21,8 @@ from Bachelorthesis import (
     KIND_UCP,
     KIND_UPR,
     KIND_UCV,
+    KIND_UPT,
+    KIND_UPM,
 )
 
 
@@ -62,8 +64,6 @@ class WebNetwork(ThesisNetwork):
             "V",
             "-"
         }
-
-
     # ---------------------------------------------------------
     # Component recognition
     # ---------------------------------------------------------
@@ -75,6 +75,8 @@ class WebNetwork(ThesisNetwork):
         Important for names such as:
         Rl_F
         Ucv1
+        Upt1a
+        Upm1
         etc.
         """
 
@@ -100,6 +102,12 @@ class WebNetwork(ThesisNetwork):
 
         if name.startswith(KIND_UCV):
             return KIND_UCV
+
+        if name.startswith(KIND_UPT):
+            return KIND_UPT
+
+        if name.startswith(KIND_UPM):
+            return KIND_UPM
 
         if name.startswith(KIND_R):
             return KIND_R

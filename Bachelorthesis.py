@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Aug 25 21:13:00 2026
+Created on Fri Sep 11 16:10:39 2026
 
 @author: eneso
 """
@@ -27,7 +27,9 @@ KIND_P: str="P"
 KIND_U: str="U"       
 KIND_UCP: str="UCP"     
 KIND_UPR: str="UPR"     
-KIND_UCV: str="UCV" 
+KIND_UCV: str="UCV"
+KIND_UPT: str="UPT"
+KIND_UPM: str="UPM"
 
 class FlowTopology(IntEnum):
     TOPO_PUMP=1
@@ -48,6 +50,11 @@ class Component:
     Dpoc:float=0
     Qsc:float=0
     Rd:float=0
+    Pset:float=0
+    Qmax:float=0
+    Eta:float=1.0
+    Rd0:float=0
+    PtuPartner: object=None
     orient:str=""
     
     n1:int=0
@@ -201,29 +208,34 @@ class Network:
             
     def ComponentKind(self,componentName):
         
-        if componentName.startswith(KIND_RZ):
+        up = componentName.upper()
+        if up.startswith(KIND_RZ):
             return KIND_RZ
-        elif componentName.startswith(KIND_RK):
+        elif up.startswith(KIND_RK):
             return KIND_RK
-        elif componentName.startswith(KIND_RR):
+        elif up.startswith(KIND_RR):
             return KIND_RR
-        elif componentName.startswith(KIND_RL):
+        elif up.startswith(KIND_RL):
             return KIND_RL
-        elif componentName.startswith(KIND_UCP):
+        elif up.startswith(KIND_UCP):
             return KIND_UCP
-        elif componentName.startswith(KIND_UPR):
+        elif up.startswith(KIND_UPR):
             return KIND_UPR
-        elif componentName.startswith(KIND_UCV):
+        elif up.startswith(KIND_UCV):
             return KIND_UCV
-        elif componentName.startswith(KIND_R):
+        elif up.startswith(KIND_UPT):
+            return KIND_UPT
+        elif up.startswith(KIND_UPM):
+            return KIND_UPM
+        elif up.startswith(KIND_R):
             return KIND_R
-        elif componentName.startswith(KIND_P):
+        elif up.startswith(KIND_P):
             return KIND_P
-        elif componentName.startswith(KIND_U):
+        elif up.startswith(KIND_U):
             return KIND_U
         else:
             return ""
-        
+
     def DispatchComponentParser(self,c,t):
         
         if c.kind == KIND_RZ:
@@ -244,6 +256,10 @@ class Network:
             self.ParseUpr(c,t)
         elif c.kind == KIND_UCV:
             self.ParseUcv(c,t)
+        elif c.kind == KIND_UPT:
+            self.ParseUpt(c,t)
+        elif c.kind == KIND_UPM:
+            self.ParseUpm(c,t)
         elif c.kind == KIND_U:
             self.ParseUniversal(c,t)
             
@@ -314,6 +330,27 @@ class Network:
         self.ReadOrient(c, t, 4)
         c.Rd = -c.DPoc / c.Qsc
         
+    def ParseUpt(self, c, t):
+        if self.IsPtuPump(c):
+            c.Diam = float(t[1]) / MM_PER_M
+            self.ReadOrient(c, t, 2)
+        else:
+            c.Eta = float(t[1])
+            c.Rd = float(t[2]) * PA_PER_BAR * S_PER_H
+            c.Rd0 = c.Rd
+            c.Diam = float(t[3]) / MM_PER_M
+            self.ReadOrient(c, t, 4)
+    
+    def IsPtuPump(self, c):
+        return c.kind == KIND_UPT and c.Name[-1].lower() == 'b'
+    
+    def ParseUpm(self, c, t):
+        c.Pset = float(t[1]) * PA_PER_BAR
+        c.Qmax = float(t[2]) / S_PER_H
+        c.Qsc = c.Qmax
+        c.Diam = float(t[3]) / MM_PER_M
+        self.ReadOrient(c, t, 4)
+    
     def InitialiseComponentGeometry(self,c):
         
         if c.kind == KIND_RK:
@@ -324,7 +361,7 @@ class Network:
             c.Kd = (self.Krough/MM_PER_M)/c.Diam if c.Diam !=0 else 0.0
             
     def ReadOrient(self, c, t, idx):
-         if len(t) > idx:  # idx ist 0-basiert! Kein -1!
+         if len(t) > idx:  
             c.orient = t[idx]
     
     def FindConnectedNodes(self,c):
@@ -348,25 +385,24 @@ class Network:
         self.EnsureTwoConnectedNodes(c, slot[0])
     
     def WalkConnectionUntilNode(self, c, scanDir, iiStart, jjStart, slot, foundNr):
-         ii = iiStart
-         jj = jjStart
+         ii = [iiStart]
+         jj = [jjStart]
          
          while True:
-            cell_content = self.Schematic[ii - 1][jj - 1]
+            cell_content = self.Schematic[ii[0] - 1][jj[0] - 1]
             head = cell_content[0] if cell_content else ""
             
             if self.IsNodeToken(head):
-                self.RegisterFoundNode(c, scanDir, ii, jj, slot, foundNr)
+                self.RegisterFoundNode(c, scanDir, ii[0], jj[0], slot, foundNr)
                 break
             elif self.IsWire(head):
                 self.StepAlongConnection(scanDir, ii, jj)
-                if not self.InGrid(ii, jj):
+                if not self.InGrid(ii[0], jj[0]):
                     break
             else:
-                self.RaiseSchematicTopologyError(c, ii, jj)
+                self.RaiseSchematicTopologyError(c, ii[0], jj[0])
                 break
 
-       
     def IsNodeToken(self,head):
         
         return(head == "N" or head== "S")
@@ -551,11 +587,14 @@ class Network:
         
         self.X = [0.0] * (self.Nnode + 1)
         self.BuildNodeDirectory()
+        self.LinkPtuPairs()
         self.Iiter = 0
         self.DUres = 1.0
         
         while True:
             self.Iiter += 1
+            self.UpdatePtuCoupling()
+            self.UpdateRegulatedPumps()
             self.AssembleSystem()
 
             Xbar = self.LoesungsVektor(self.A, self.B)
@@ -572,7 +611,69 @@ class Network:
 
             if self.DUres <= self.DUcrit or self.Iiter >= self.NiterMax:
                 break    
-                    
+
+    def LinkPtuPairs(self):
+        
+        ptu = {}
+        for c in self.Comp:
+            if c.kind == KIND_UPT:
+                suffix = c.Name[3:]
+                nr = suffix[:-1]
+                side = suffix[-1].lower()
+                if nr not in ptu:
+                    ptu[nr] = {}
+                ptu[nr][side] = c
+        
+        for nr, sides in ptu.items():
+            if 'a' in sides and 'b' in sides:
+                sides['a'].PtuPartner = sides['b']
+                sides['b'].PtuPartner = sides['a']
+            else:
+                raise Exception(f"PTU {nr}: Motor (a) und Pumpe (b) muessen beide vorhanden sein.")
+
+    def UpdatePtuCoupling(self):
+        
+        for c in self.Comp:
+            if self.IsPtuPump(c):
+                m = c.PtuPartner
+                if m is None:
+                    continue
+                Qa = abs(m.q)
+                c.Qsc = Qa
+                if self.Iiter <= 1 or Qa < 1e-12:
+                    continue
+                Qb = abs(c.q)
+                DPb = abs(c.Ptot1 - c.Ptot2)
+                Rneu = m.Rd0 + DPb * Qb / (m.Eta * Qa * Qa)
+                if abs(Rneu - m.Rd) < 0.0005 * m.Rd:
+                    continue
+                m.Rd = 0.1 * Rneu + 0.9 * m.Rd
+
+    def UpdateRegulatedPumps(self):
+        
+        if self.Iiter <= 1:
+            return
+        for c in self.Comp:
+            if c.kind == KIND_UPM:
+                if c.n2 > GROUND:
+                    Pist = self.X[c.n2]
+                elif c.n1 > GROUND:
+                    Pist = self.X[c.n1]
+                else:
+                    continue
+                
+                if abs(Pist - c.Pset) < 0.0005 * c.Pset:
+                    continue
+                
+                if Pist > 0:
+                    Qneu = c.Qsc * (c.Pset / Pist)
+                else:
+                    Qneu = c.Qmax
+                
+                Qneu = min(Qneu, c.Qmax)
+                Qneu = max(Qneu, 0.0)
+                c.Qsc = 0.3 * Qneu + 0.7 * c.Qsc
+
     def BuildNodeDirectory(self):
         
         self.NodeName = [""] * (self.Nnode + 1)
@@ -604,18 +705,20 @@ class Network:
         
         if not c.Fwd:
             return
-        if self.IsResistive(c.kind):
+        if self.IsResistive(c.kind) and not self.IsPtuPump(c):
             self.StampConductance(c)
         if self.IsSource(c.kind):
             self.StampSource(c)
             
     def IsResistive(self, kind):
         
+        if kind == KIND_UPM:
+            return False
         return kind.startswith(KIND_R) or kind.startswith(KIND_U)
 
     def IsSource(self, kind):
         
-        return kind == KIND_P or kind.startswith(KIND_U)
+        return kind == KIND_P or kind == KIND_UPM or kind.startswith(KIND_U)
 
     def StampConductance(self, c):
         
@@ -694,7 +797,7 @@ class Network:
 
     def ComputeComponentFlow(self, c):
         
-        if c.kind == KIND_P:
+        if c.kind == KIND_P or c.kind == KIND_UPM or self.IsPtuPump(c):
             c.q = c.Qsc
         elif c.n2 == GROUND:
             self.ComputeFlowToGroundSide2(c)
@@ -723,7 +826,7 @@ class Network:
 
     def EnforceClosedUniversalFlow(self, c):
         
-        if c.kind.startswith(KIND_U) and not c.Fwd:
+        if c.kind.startswith(KIND_U) and c.kind not in (KIND_UPT, KIND_UPM) and not c.Fwd:
             c.q = 0.0
 
     def RelaxComponentVelocity(self, c):
@@ -773,7 +876,7 @@ class Network:
             self.ComputeKvResistance(c)
         elif c.kind == KIND_R:
             self.ComputePipeResistance(c)
-        elif c.kind in [KIND_UCP, KIND_UPR, KIND_U, KIND_RL]:
+        elif c.kind in [KIND_UCP, KIND_UPR, KIND_U, KIND_RL, KIND_UPT]:
             pass  
         else:
             raise Exception(f"No resistance model for component '{c.Name}'.")
@@ -937,10 +1040,3 @@ class Network:
             self.OutX[inode] = self.X[nodeIdx] / PA_PER_BAR
             self.OutZ[inode] = self.NodeZ[nodeIdx]
             self.OutPtmP[inode] = self.OutX[inode] - self.Rho * self.G * self.NodeZ[nodeIdx] / PA_PER_BAR
-
-  
-
-             
-
-
-    

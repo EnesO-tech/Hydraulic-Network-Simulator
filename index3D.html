@@ -1013,7 +1013,7 @@ if (!p) {
 missingNodes.push(name);
 return;
 }
-const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.04, 12, 12), nodeMaterial);
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 12), nodeMaterial);
 const pp = nodePoint3D(p);
 sphere.position.copy(pp);
 sphere.userData = {
@@ -1055,7 +1055,7 @@ const p2 = nodePoint3D(b);
 const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
 const kind = String(c.type || '').toUpperCase();
 const color = kind === 'P' ? 0xe94560 : (kind.startsWith('U') ? 0xff8844 : 0x4fc3f7);
-const line = new THREE.Line(geo, new THREE.LineBasicMaterial({color}));
+const line = new THREE.Line(geo, new THREE.LineBasicMaterial({color, transparent:true, opacity:0.85}));
 line.userData = {kind: 'component', name: c.name, n1: c.n1, n2: c.n2};
 pipeGroup.add(line);
 window.pipeSegments.push({line:line, n1:c.n1, n2:c.n2});

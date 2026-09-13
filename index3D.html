@@ -69,8 +69,13 @@ main{display:flex;flex:1;overflow:hidden}
 .formula-bar{background:#0f0f1f;padding:3px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #2a2a4a;flex-shrink:0}
 .cell-ref{width:55px;text-align:center;font-family:Consolas,monospace;font-size:12px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;padding:2px 4px;border-radius:3px}
 .formula-input{flex:1;padding:2px 8px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;font-size:13px;border-radius:3px}
-.grid-wrap{flex:1;overflow:auto;background:#0f0f1f;padding:4px}
-table.grid{border-collapse:collapse;table-layout:fixed;width:100%}
+.grid-wrap{flex:1;overflow:auto;background:#0f0f1f;padding:4px;scrollbar-width:auto;scrollbar-color:#4472C4 #1a1a2e}
+.grid-wrap::-webkit-scrollbar{width:14px;height:14px}
+.grid-wrap::-webkit-scrollbar-track{background:#1a1a2e;border-radius:7px}
+.grid-wrap::-webkit-scrollbar-thumb{background:#4472C4;border-radius:7px;border:2px solid #1a1a2e}
+.grid-wrap::-webkit-scrollbar-thumb:hover{background:#5a8ae0}
+.grid-wrap::-webkit-scrollbar-corner{background:#1a1a2e}
+table.grid{border-collapse:collapse;table-layout:fixed}
 table.grid th{background:#0f3460;color:#fff;font-weight:700;font-size:12px;height:22px;width:75px;min-width:75px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2}
 table.grid th:first-child{width:32px;min-width:32px;z-index:3;left:0}
 table.grid td.rh{background:#0f3460;color:#fff;font-weight:700;font-size:12px;width:32px;min-width:32px;border:1px solid #1a2a4a;position:sticky;left:0;z-index:1;text-align:center}
@@ -549,6 +554,18 @@ function qrDrawCircuit(type,p){
     }
 }
 qrBuildRadios();setTimeout(qrSelect,100);
+
+(function(){
+    const gw=document.querySelector('.grid-wrap');
+    if(gw){
+        gw.addEventListener('wheel',function(e){
+            if(e.shiftKey&&e.deltaY!==0){
+                gw.scrollLeft+=e.deltaY;
+                e.preventDefault();
+            }
+        },{passive:false});
+    }
+})();
 const customColors = {};
 let loadedResults = null;
 let rlfState = true;

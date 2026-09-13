@@ -24,6 +24,14 @@ main{display:flex;flex:1;overflow:hidden}
 
 #comp-main{display:flex;flex-direction:column;flex:1;overflow:hidden}
 .comp-top{display:flex;flex:1;overflow:hidden}
+.comp-left.collapsed{width:0!important;min-width:0!important;padding:0!important;overflow:hidden;border:none!important}
+.comp-right.collapsed{width:0!important;min-width:0!important;padding:0!important;overflow:hidden;border:none!important}
+.comp-bottom.collapsed{height:0!important;min-height:0!important;padding:0!important;overflow:hidden;border:none!important}
+.panel-toggle{position:absolute;z-index:20;background:#0f3460;color:#fff;border:1px solid #2a4a7a;cursor:pointer;font-size:13px;padding:0;display:flex;align-items:center;justify-content:center;transition:background 0.15s}
+.panel-toggle:hover{background:#4472C4}
+.pt-left{left:0;top:50%;width:18px;height:54px;border-radius:0 6px 6px 0;transform:translateY(-50%)}
+.pt-right{right:0;top:50%;width:18px;height:54px;border-radius:6px 0 0 6px;transform:translateY(-50%)}
+.pt-bottom{left:50%;bottom:0;width:54px;height:18px;border-radius:6px 6px 0 0;transform:translateX(-50%)}
 .comp-left{width:300px;min-width:220px;background:#0f0f1f;padding:8px 12px;overflow-y:auto;border-right:1px solid #2a2a4a}
 .comp-left h4{color:#e94560;font-size:13px;text-transform:uppercase;margin:8px 0 5px 0;letter-spacing:1px}
 .comp-left .toggle-item{display:flex;justify-content:space-between;font-size:13px;padding:4px 4px;border-bottom:1px solid #1a2a2a;align-items:center}
@@ -32,7 +40,7 @@ main{display:flex;flex:1;overflow:hidden}
 .comp-left .toggle-item .val:focus{outline:1px solid #e94560;border-color:#e94560}
 .comp-left .toggle-item .val.on{color:#4caf50;border-color:#4caf50}
 .comp-left .toggle-item .val.off{color:#e94560;border-color:#e94560}
-.comp-center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.comp-center{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
 .comp-right{width:280px;min-width:220px;background:#0f0f1f;padding:8px 12px;overflow-y:auto;border-left:1px solid #2a2a4a}
 .comp-right h4{color:#e94560;font-size:13px;text-transform:uppercase;margin:8px 0 5px 0;letter-spacing:1px}
 .comp-right .comp-item{display:flex;justify-content:space-between;font-size:12px;padding:3px 4px;border-bottom:1px solid #1a2a2a;font-family:Consolas,monospace;align-items:center}
@@ -144,7 +152,7 @@ td.c.custom-color{color:#fff}
 <div id="tab-comp" class="tab-content active">
 <div id="comp-main">
 <div class="comp-top">
-<div class="comp-left">
+<div class="comp-left" id="compLeft">
 <h4>Toggle Buttons</h4>
 <div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="999" onchange="applyToggle(this)"></div>
@@ -169,6 +177,9 @@ td.c.custom-color{color:#fff}
 <div class="toggle-item"><span class="key">Rl_F Status</span><button class="toggle-btn on" id="rlFToggle" onclick="toggleRlF()">ON</button></div>
 </div>
 <div class="comp-center">
+<button class="panel-toggle pt-left" id="ptLeft" onclick="togglePanel('left')" title="Toggle Buttons ein-/ausblenden">◀</button>
+<button class="panel-toggle pt-right" id="ptRight" onclick="togglePanel('right')" title="Components ein-/ausblenden">▶</button>
+<button class="panel-toggle pt-bottom" id="ptBottom" onclick="togglePanel('bottom')" title="Results ein-/ausblenden">▼</button>
 <div class="toolbar">
 <label>Mue:</label><input type="text" id="pMue" value="1e-3">
 <label>Rho:</label><input type="text" id="pRho" value="1000">
@@ -199,7 +210,7 @@ td.c.custom-color{color:#fff}
 </div>
 <div class="grid-wrap"><table class="grid" id="grid"></table></div>
 </div>
-<div class="comp-right">
+<div class="comp-right" id="compRight">
 <h4>Components</h4>
 <div class="comp-item"><span class="type">P1</span><input class="desc" value="8.4 m³/h, 19.6mm" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">R01</span><input class="desc" value="0.5m, 34.4mm" onchange="applyCompDesc(this)"></div>
@@ -223,7 +234,7 @@ td.c.custom-color{color:#fff}
 <div class="comp-item"><span class="type">Rl_F</span><input class="desc" value="1 bar/(m³/h), 999mm" onchange="applyCompDesc(this)"></div>
 </div>
 </div>
-<div class="comp-bottom">
+<div class="comp-bottom" id="compBottom">
 <h4>Results (tabular)</h4>
 <div style="overflow:auto;max-height:100%;">
 <table id="resultTable">
@@ -554,6 +565,17 @@ function qrDrawCircuit(type,p){
     }
 }
 qrBuildRadios();setTimeout(qrSelect,100);
+
+function togglePanel(which){
+    const map={left:['compLeft','ptLeft','◀','▶'],right:['compRight','ptRight','▶','◀'],bottom:['compBottom','ptBottom','▼','▲']};
+    const [panelId,btnId,openChar,closedChar]=map[which];
+    const panel=document.getElementById(panelId);
+    const btn=document.getElementById(btnId);
+    if(!panel||!btn)return;
+    panel.classList.toggle('collapsed');
+    const isCollapsed=panel.classList.contains('collapsed');
+    btn.textContent=isCollapsed?closedChar:openChar;
+}
 
 (function(){
     const gw=document.querySelector('.grid-wrap');

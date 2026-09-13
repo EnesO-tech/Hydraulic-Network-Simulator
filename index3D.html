@@ -375,204 +375,177 @@ td.c.custom-color{color:#fff}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 <script>
 const qrPresets = {
-    U:   {label:'U (Free)',       params:[['DPoc',0.02,'bar'],['Qsc',-0.01,'m³/h'],['rd',2,'bar/(m³/h)'],['D',19.6,'mm'],['Dir','>','-']], syntax:(p)=>`U7lin ${p.DPoc} ${p.Qsc} ${p.D} ${p.Dir}`, circuit:'parallel'},
-    Ucp: {label:'Ucp (Centrif.)', params:[['DPoc',-2,'bar'],['Qsc',0.01,'m³/h'],['rd',0,'bar/(m³/h)'],['D',19.6,'mm'],['Dir','^','-']], syntax:(p)=>`Ucp4 ${p.DPoc} ${p.Qsc} ${p.D} ${p.Dir}`, circuit:'parallel'},
-    Upr: {label:'Upr (Press.Reg)',params:[['DPoc',-2,'bar'],['Qsc',1,'m³/h'],['rd',0,'bar/(m³/h)'],['D',19.6,'mm'],['Dir','^','-']], syntax:(p)=>`Upr4 ${p.DPoc} ${p.Qsc} ${p.D} ${p.Dir}`, circuit:'parallel'},
-    Ucv: {label:'Ucv (Check V.)', params:[['DPoc',2,'bar'],['Qsc',0,'m³/h'],['rd',0.01,'bar/(m³/h)'],['D',19.6,'mm'],['Dir','<','-']], syntax:(p)=>`Ucv05 ${p.DPoc} ${p.rd} ${p.D} ${p.Dir}`, circuit:'ucv'},
-    P:   {label:'P (Pos.Displ.)', params:[['Qsc',1,'m³/h'],['D',19.6,'mm'],['Dir','v','-']], syntax:(p)=>`P_6 ${p.Qsc} ${p.D} ${p.Dir}`, circuit:'pump'},
-    RL:  {label:'RL (Lin.Resist)',params:[['DPoc',0.02,'bar'],['Qsc',-0.01,'m³/h'],['rd',2,'bar/(m³/h)'],['D',19.6,'mm'],['Dir','>','-']], syntax:(p)=>`RL7lin ${p.DPoc} ${p.Qsc} ${p.D} ${p.Dir}`, circuit:'parallel'},
-    Upt: {label:'Upt (PTU)',      params:[['η',0.85,'-'],['Rd',200,'bar/(m³/h)'],['D',28.2,'mm'],['Dir','^','-']], syntax:(p)=>`Upt1a ${p['η']} ${p.Rd} ${p.D} ${p.Dir}`, circuit:'ptu'},
-    Upm: {label:'Upm (Reg.Pump)', params:[['Pset',200,'bar'],['Qmax',8.4,'m³/h'],['D',19.6,'mm'],['Dir','v','-']], syntax:(p)=>`Upm1 ${p.Pset} ${p.Qmax} ${p.D} ${p.Dir}`, circuit:'upm'}
+    U:   {label:'U (Free)',        suffix:'4',    DPoc:-2,   rd:200,  D:19.6, dir:'^', lock:[]},
+    Ucp: {label:'Ucp (Centrif.)',  suffix:'4',    DPoc:-2,   rd:2,    D:19.6, dir:'^', lock:['rd']},
+    Upr: {label:'Upr (Press.Reg)', suffix:'05',   DPoc:2,    rd:0.01, D:19.6, dir:'<', lock:['Qsc']},
+    Ucv: {label:'Ucv (Check V.)',  suffix:'05',   DPoc:0.1,  rd:0.01, D:19.6, dir:'^', lock:['Qsc']},
+    P:   {label:'P (Pos.Displ.)',  suffix:'_6',   DPoc:-100, rd:100,  D:19.6, dir:'v', lock:['rd']},
+    RL:  {label:'RL (Lin.Resist)', suffix:'7lin', DPoc:0.02, rd:2,    D:19.6, dir:'>', lock:['rd']},
+    Upt: {label:'Upt (PTU)',       eta:0.85, Rd:200, D:28.2, dir:'^', special:'ptu'},
+    Upm: {label:'Upm (Reg.Pump)',  Pset:200, Qmax:8.4, D:19.6, dir:'v', special:'upm'}
 };
-const qrBtnStyle='font-size:11px;cursor:pointer;padding:4px 10px;border-radius:4px;';
 function qrBuildRadios(){
     const c=document.getElementById('qr-radios');if(!c)return;
     c.innerHTML=Object.keys(qrPresets).map((k,i)=>{
-        const col=k.startsWith('Upt')||k.startsWith('Upm')?'#ff8844':'#aac';
-        return `<label style="${qrBtnStyle}border:1px solid #2a2a4a;background:#1a1a2e;color:${col};"><input type="radio" name="qrType" value="${k}" ${i===0?'checked':''} onchange="qrSelect()" style="margin-right:4px;">${qrPresets[k].label}</label>`;
+        const col=qrPresets[k].special?'#ff8844':'#aac';
+        return `<label style="font-size:11px;cursor:pointer;padding:4px 10px;border-radius:4px;border:1px solid #2a2a4a;background:#1a1a2e;color:${col};"><input type="radio" name="qrType" value="${k}" ${i===0?'checked':''} onchange="qrSelect()" style="margin-right:4px;">${qrPresets[k].label}</label>`;
     }).join('');
 }
 function qrGetType(){return document.querySelector('input[name="qrType"]:checked')?.value||'U'}
+function qrInput(id,val,unit,locked){
+    const st='background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:3px;padding:2px 6px;font-size:12px;width:70px;text-align:right;font-family:Consolas,monospace;';
+    const lockSt=locked?'background:#2a2a3a;color:#666;cursor:not-allowed;':'';
+    return `<input id="qr_${id}" type="text" value="${val}" ${locked?'readonly':''} oninput="qrLive()" style="${st}${lockSt}">`;
+}
 function qrSelect(){
     const t=qrGetType(), pr=qrPresets[t];
     const tbody=document.getElementById('qr-params');
-    tbody.innerHTML=pr.params.map(r=>{
-        const isDir=r[0]==='Dir';
-        const inp=isDir
-            ?`<select id="qr_${r[0]}" onchange="qrLive()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:3px;padding:2px 6px;font-size:12px;width:50px;text-align:right;"><option value="^">^</option><option value=">">&gt;</option><option value="v">v</option><option value="<">&lt;</option></select>`
-            :`<input id="qr_${r[0]}" type="text" value="${r[1]}" oninput="qrLive()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:3px;padding:2px 6px;font-size:12px;width:70px;text-align:right;font-family:Consolas,monospace;">`;
-        return `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${r[0]}</td><td style="text-align:right;padding:4px;">${inp}</td><td style="padding:4px;color:#888;">${r[2]}</td></tr>`;
-    }).join('');
-    pr.params.forEach(r=>{
-        const el=document.getElementById('qr_'+r[0]);
-        if(el)el.value=r[1];
-    });
+    const dirSel=`<select id="qr_dir" onchange="qrLive()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:3px;padding:2px 6px;font-size:12px;width:50px;"><option value="^">^</option><option value=">">&gt;</option><option value="v">v</option><option value="<">&lt;</option></select>`;
+    let rows;
+    if(pr.special==='ptu'){
+        rows=[['η',qrInput('eta',pr.eta,'-',false),'-'],['Rd',qrInput('Rd',pr.Rd,'',false),'bar/(m³/h)'],['Diameter',qrInput('D',pr.D,'',false),'mm'],['Direction',dirSel,'-']];
+    } else if(pr.special==='upm'){
+        rows=[['Pset',qrInput('Pset',pr.Pset,'',false),'bar'],['Qmax',qrInput('Qmax',pr.Qmax,'',false),'m³/h'],['Diameter',qrInput('D',pr.D,'',false),'mm'],['Direction',dirSel,'-']];
+    } else {
+        const Qsc=-pr.DPoc/pr.rd;
+        rows=[
+            ['Suffix',qrInput('suffix',pr.suffix,'',false),'-'],
+            ['ΔPoc',qrInput('DPoc',pr.DPoc,'',false),'bar'],
+            ['Qsc',qrInput('Qsc',Qsc,'',pr.lock.includes('Qsc')),'m³/h'],
+            ['rd = ∂ΔP/∂Q',qrInput('rd',pr.rd,'',pr.lock.includes('rd')),'bar/(m³/h)'],
+            ['Diameter',qrInput('D',pr.D,'',false),'mm'],
+            ['Direction',dirSel,'-']
+        ];
+    }
+    tbody.innerHTML=rows.map(r=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${r[0]}</td><td style="text-align:right;padding:4px;">${r[1]}</td><td style="padding:4px;color:#888;">${r[2]}</td></tr>`).join('');
+    const ds=document.getElementById('qr_dir');if(ds)ds.value=pr.dir;
     qrLive();
 }
-function qrReadParams(){
-    const t=qrGetType(), pr=qrPresets[t], vals={};
-    pr.params.forEach(r=>{
-        const el=document.getElementById('qr_'+r[0]);
-        if(!el)return;
-        vals[r[0]]=r[0]==='Dir'?el.value:parseFloat(el.value)||0;
-    });
-    return vals;
-}
+function qrNum(id,def){const el=document.getElementById('qr_'+id);return el?(parseFloat(el.value)||def):def}
+function qrStr(id,def){const el=document.getElementById('qr_'+id);return el?el.value:def}
 function qrLive(){
-    const t=qrGetType(), pr=qrPresets[t], p=qrReadParams();
-    document.getElementById('qr-syntax').textContent=pr.syntax(p);
-    const DPoc=p.DPoc||0, Qsc=p.Qsc||0, rd=p.rd||0.001;
-    const hasCurve=pr.circuit==='parallel'||pr.circuit==='ucv';
-    if(hasCurve){
-        const Qmax=1.5;
-        const pts=[
-            {label:'Qsc min',Q:(-Qmax+Qsc),DP:(DPoc+rd*(-Qmax))},
-            {label:'open circuit',Q:Qsc,DP:0},
-            {label:'short circuit',Q:0,DP:DPoc},
-            {label:'Qsc max',Q:(Qmax+Qsc),DP:(DPoc+rd*Qmax)}
-        ];
-        document.getElementById('qr-points').innerHTML=pts.map((pt,i)=>
-            `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${i+1}</td><td style="padding:4px;">${pt.label}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${pt.Q.toFixed(2)}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${pt.DP.toFixed(2)}</td></tr>`
-        ).join('');
-        qrDrawChart(pts,DPoc,Qsc,rd);
-    } else if(pr.circuit==='upm'){
-        const Pset=p.Pset||200, Qmax=p.Qmax||8.4;
-        const pts=[{label:'Pset',Q:Qmax,DP:Pset},{label:'no load',Q:Qmax,DP:0},{label:'max load',Q:0,DP:Pset}];
-        document.getElementById('qr-points').innerHTML=pts.map((pt,i)=>
-            `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${i+1}</td><td style="padding:4px;">${pt.label}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${pt.Q.toFixed(2)}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${pt.DP.toFixed(1)}</td></tr>`
-        ).join('');
-        qrDrawUpmChart(Pset,Qmax);
-    } else if(pr.circuit==='ptu'){
-        const eta=p['η']||0.85, Rd=p.Rd||200;
-        document.getElementById('qr-points').innerHTML=
-            `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">—</td><td style="padding:4px;">Motor: Rd=${Rd}, η=${eta}</td><td style="text-align:right;padding:4px;color:#ffdd44;">Q_a</td><td style="text-align:right;padding:4px;color:#ffdd44;">ΔP_a</td></tr>
-             <tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">—</td><td style="padding:4px;">Pump: Qsc=|Q_motor|</td><td style="text-align:right;padding:4px;color:#ffdd44;">Q_b=Q_a</td><td style="text-align:right;padding:4px;color:#ffdd44;">η·ΔP_a</td></tr>`;
-        qrDrawPtuChart(eta,Rd);
-    } else {
-        document.getElementById('qr-points').innerHTML='<tr><td colspan="4" style="padding:8px;color:#888;">No Q-ΔP curve for this type</td></tr>';
-        const c=document.getElementById('qr-canvas');if(c){const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);}
+    const t=qrGetType(), pr=qrPresets[t];
+    const dir=qrStr('dir',pr.dir), D=qrNum('D',pr.D);
+    if(pr.special==='ptu'){
+        const eta=qrNum('eta',pr.eta), Rd=qrNum('Rd',pr.Rd);
+        document.getElementById('qr-syntax').textContent=`Upt1a ${eta} ${Rd} ${D} ${dir}   |   Upt1b ${D}`;
+        document.getElementById('qr-points').innerHTML=`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;" colspan="2">Motor ΔP_a = Rd·Q_a + ΔP_b/η</td><td style="text-align:right;padding:4px;color:#ffdd44;">Q_a</td><td style="text-align:right;padding:4px;color:#ffdd44;">ΔP_a</td></tr><tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;" colspan="2">Pump Q_b = Q_a (kinematic)</td><td style="text-align:right;padding:4px;color:#ffdd44;">Q_b</td><td style="text-align:right;padding:4px;color:#ffdd44;">ΔP_b</td></tr>`;
+        qrDrawPtuChart(eta,Rd);qrDrawCircuit(t,{eta,Rd});return;
     }
-    qrDrawCircuit(t,p);
+    if(pr.special==='upm'){
+        const Pset=qrNum('Pset',pr.Pset), Qmax=qrNum('Qmax',pr.Qmax);
+        document.getElementById('qr-syntax').textContent=`Upm1 ${Pset} ${Qmax} ${D} ${dir}`;
+        document.getElementById('qr-points').innerHTML=[['1','Pset (regulated)',Qmax,Pset],['2','max load',0,Pset],['3','no load',Qmax,0]].map(r=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${r[0]}</td><td style="padding:4px;">${r[1]}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${r[2]}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${r[3]}</td></tr>`).join('');
+        qrDrawUpmChart(Pset,Qmax);qrDrawCircuit(t,{Pset,Qmax});return;
+    }
+    const suffix=qrStr('suffix',pr.suffix);
+    const DPoc=qrNum('DPoc',pr.DPoc);
+    let rd, Qsc;
+    if(pr.lock.includes('rd')){ Qsc=qrNum('Qsc',-pr.DPoc/pr.rd); rd=Qsc!==0?-DPoc/Qsc:0.001; const e=document.getElementById('qr_rd'); if(e)e.value=rd.toFixed(4).replace(/\.?0+$/,''); }
+    else { rd=qrNum('rd',pr.rd)||0.001; Qsc=-DPoc/rd; const e=document.getElementById('qr_Qsc'); if(e)e.value=Qsc.toFixed(4).replace(/\.?0+$/,''); }
+    const name=(t==='P'?'U':t)+suffix;
+    document.getElementById('qr-syntax').textContent=`${name} ${DPoc} ${Qsc.toFixed(2).replace(/\.?0+$/,'')} ${D} ${dir}`;
+    const isUcv=t==='Ucv';
+    const Qr=1.49;
+    const f=q=>DPoc+rd*q;
+    let pts;
+    if(isUcv){
+        pts=[{label:'Qsc min',Q:0,DP:-3},{label:'open circuit',Q:0,DP:-3},{label:'short circuit',Q:0,DP:DPoc},{label:'Qsc max',Q:Qr,DP:f(Qr)}];
+    } else {
+        pts=[{label:'Qsc min',Q:-Qr,DP:f(-Qr)},{label:'open circuit',Q:Qsc,DP:0},{label:'short circuit',Q:0,DP:DPoc},{label:'Qsc max',Q:Qr,DP:f(Qr)}];
+    }
+    document.getElementById('qr-points').innerHTML=pts.map((p,i)=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${i+1}</td><td style="padding:4px;">${p.label}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${p.Q.toFixed(2)}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${p.DP.toFixed(4).replace(/\.?0+$/,'')}</td></tr>`).join('');
+    qrDrawChart(pts,DPoc,rd,isUcv);
+    qrDrawCircuit(t,{});
 }
-function qrDrawChart(pts,DPoc,Qsc,rd){
+function qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty){
+    ctx.strokeStyle='#1a2a4a';ctx.lineWidth=1;ctx.fillStyle='#888';ctx.font='10px Consolas';
+    const qStep=(qMax-qMin)>3?1:0.5;
+    ctx.textAlign='center';
+    for(let q=Math.ceil(qMin/qStep)*qStep;q<=qMax+1e-9;q+=qStep){ctx.beginPath();ctx.moveTo(tx(q),pad);ctx.lineTo(tx(q),H-pad);ctx.stroke();ctx.fillText(q.toFixed(1),tx(q),H-pad+14);}
+    const span=dpMax-dpMin;const dpStep=span>400?100:span>150?50:span>40?10:span>15?5:span>4?1:span>1?0.5:span>0.2?0.05:span>0.05?0.01:0.005;
+    ctx.textAlign='right';
+    for(let dp=Math.ceil(dpMin/dpStep)*dpStep;dp<=dpMax+1e-9;dp+=dpStep){ctx.beginPath();ctx.moveTo(pad,ty(dp));ctx.lineTo(W-pad,ty(dp));ctx.stroke();ctx.fillText(dp.toFixed(dpStep<0.1?3:dpStep<1?1:0),pad-6,ty(dp)+3);}
+    ctx.strokeStyle='#2a2a4a';ctx.lineWidth=1.5;
+    if(dpMin<=0&&dpMax>=0){ctx.beginPath();ctx.moveTo(pad,ty(0));ctx.lineTo(W-pad,ty(0));ctx.stroke();}
+    if(qMin<=0&&qMax>=0){ctx.beginPath();ctx.moveTo(tx(0),pad);ctx.lineTo(tx(0),H-pad);ctx.stroke();}
+    ctx.fillStyle='#6fc3f7';ctx.font='11px Consolas';ctx.textAlign='center';ctx.fillText('Q [m³/h]',W/2,H-4);
+    ctx.save();ctx.translate(11,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('ΔP [bar]',0,0);ctx.restore();
+}
+function qrDrawChart(pts,DPoc,rd,isUcv){
     const c=document.getElementById('qr-canvas');if(!c)return;
     const ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
     const pad=50;
-    const allQ=pts.map(p=>p.Q),allDP=pts.map(p=>p.DP);
-    const qMin=Math.min(...allQ)-0.3,qMax=Math.max(...allQ)+0.3;
-    const dpMin=Math.min(...allDP)-0.5,dpMax=Math.max(...allDP)+0.5;
-    const sx=(W-2*pad)/(qMax-qMin),sy=(H-2*pad)/(dpMax-dpMin);
-    const tx=q=>pad+(q-qMin)*sx, ty=dp=>H-pad-(dp-dpMin)*sy;
-    ctx.strokeStyle='#2a2a4a';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(pad,ty(0));ctx.lineTo(W-pad,ty(0));ctx.stroke();
-    ctx.beginPath();ctx.moveTo(tx(0),pad);ctx.lineTo(tx(0),H-pad);ctx.stroke();
-    ctx.fillStyle='#888';ctx.font='11px Consolas';ctx.textAlign='center';
-    for(let q=Math.ceil(qMin*2)/2;q<=qMax;q+=0.5){ctx.fillText(q.toFixed(1),tx(q),H-pad+16);ctx.strokeStyle='#1a2a4a';ctx.beginPath();ctx.moveTo(tx(q),pad);ctx.lineTo(tx(q),H-pad);ctx.stroke();}
-    ctx.textAlign='right';
-    for(let dp=Math.ceil(dpMin);dp<=dpMax;dp+=1){ctx.fillText(dp.toFixed(0),pad-8,ty(dp)+4);ctx.strokeStyle='#1a2a4a';ctx.beginPath();ctx.moveTo(pad,ty(dp));ctx.lineTo(W-pad,ty(dp));ctx.stroke();}
-    ctx.fillStyle='#6fc3f7';ctx.textAlign='center';ctx.fillText('Q [m³/h]',W/2,H-5);
-    ctx.save();ctx.translate(12,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('ΔP [bar]',0,0);ctx.restore();
-    ctx.strokeStyle='#6fc3f7';ctx.lineWidth=2;ctx.beginPath();
-    for(let i=0;i<=80;i++){const q=pts[0].Q+(pts[3].Q-pts[0].Q)*i/80;const dp=DPoc+rd*(q-Qsc);if(i===0)ctx.moveTo(tx(q),ty(dp));else ctx.lineTo(tx(q),ty(dp));}
+    const qMin=isUcv?0:-2, qMax=2;
+    const dps=pts.map(p=>p.DP);
+    let dpMin=Math.min(...dps), dpMax=Math.max(...dps);
+    const m=(dpMax-dpMin)*0.1||0.01; dpMin-=m; dpMax+=m;
+    const tx=q=>pad+(q-qMin)/(qMax-qMin)*(W-2*pad), ty=dp=>H-pad-(dp-dpMin)/(dpMax-dpMin)*(H-2*pad);
+    qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty);
+    ctx.strokeStyle='#1e3a8a';ctx.lineWidth=2.5;ctx.beginPath();
+    if(isUcv){ctx.moveTo(tx(0),ty(pts[0].DP));ctx.lineTo(tx(0),ty(DPoc));ctx.lineTo(tx(1.49),ty(DPoc+rd*1.49));}
+    else{ctx.moveTo(tx(-1.49),ty(DPoc+rd*(-1.49)));ctx.lineTo(tx(1.49),ty(DPoc+rd*1.49));}
     ctx.stroke();
-    ctx.fillStyle='#ffdd44';pts.forEach(p=>{ctx.beginPath();ctx.arc(tx(p.Q),ty(p.DP),5,0,Math.PI*2);ctx.fill();});
-    ctx.fillStyle='#aac';ctx.font='10px Consolas';ctx.textAlign='left';
-    pts.forEach((p,i)=>{ctx.fillText((i+1)+': '+p.label,tx(p.Q)+8,ty(p.DP)-6);});
+    ctx.fillStyle='#1e3a8a';pts.forEach(p=>{ctx.beginPath();ctx.arc(tx(p.Q),ty(p.DP),4,0,Math.PI*2);ctx.fill();});
 }
 function qrDrawUpmChart(Pset,Qmax){
     const c=document.getElementById('qr-canvas');if(!c)return;
     const ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
-    const pad=50;const qM=Qmax*1.2,dpM=Pset*1.2;
-    const tx=q=>pad+q/qM*(W-2*pad), ty=dp=>H-pad-dp/dpM*(H-2*pad);
-    ctx.strokeStyle='#2a2a4a';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(pad,ty(0));ctx.lineTo(W-pad,ty(0));ctx.stroke();
-    ctx.beginPath();ctx.moveTo(tx(0),pad);ctx.lineTo(tx(0),H-pad);ctx.stroke();
-    ctx.fillStyle='#888';ctx.font='11px Consolas';ctx.textAlign='center';
-    for(let q=0;q<=qM;q+=2){ctx.fillText(q.toFixed(0),tx(q),H-pad+16);}
-    ctx.textAlign='right';for(let dp=0;dp<=dpM;dp+=50){ctx.fillText(dp.toFixed(0),pad-8,ty(dp)+4);}
-    ctx.fillStyle='#6fc3f7';ctx.textAlign='center';ctx.fillText('Q [m³/h]',W/2,H-5);
-    ctx.save();ctx.translate(12,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('ΔP [bar]',0,0);ctx.restore();
-    ctx.strokeStyle='#e94560';ctx.lineWidth=2;ctx.setLineDash([6,4]);
-    ctx.beginPath();ctx.moveTo(tx(0),ty(Pset));ctx.lineTo(tx(qM),ty(Pset));ctx.stroke();
-    ctx.setLineDash([]);ctx.strokeStyle='#6fc3f7';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(tx(0),ty(Pset));ctx.lineTo(tx(Qmax),ty(Pset));ctx.lineTo(tx(Qmax),ty(0));ctx.stroke();
-    ctx.fillStyle='#ffdd44';ctx.beginPath();ctx.arc(tx(Qmax),ty(Pset),5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#aac';ctx.font='10px Consolas';ctx.textAlign='left';
-    ctx.fillText('Pset='+Pset+' bar',tx(0.3),ty(Pset)-8);
-    ctx.fillText('Qmax='+Qmax,tx(Qmax)+8,ty(Pset/2));
+    const pad=50,qMin=0,qMax=Qmax*1.2,dpMin=0,dpMax=Pset*1.2;
+    const tx=q=>pad+(q-qMin)/(qMax-qMin)*(W-2*pad), ty=dp=>H-pad-(dp-dpMin)/(dpMax-dpMin)*(H-2*pad);
+    qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty);
+    ctx.strokeStyle='#1e3a8a';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(tx(0),ty(Pset));ctx.lineTo(tx(Qmax),ty(Pset));ctx.lineTo(tx(Qmax),ty(0));ctx.stroke();
+    ctx.fillStyle='#1e3a8a';ctx.beginPath();ctx.arc(tx(Qmax),ty(Pset),4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#aac';ctx.font='10px Consolas';ctx.textAlign='left';ctx.fillText('Pset',tx(0.2),ty(Pset)-6);ctx.fillText('Qmax',tx(Qmax)+6,ty(Pset/2));
 }
 function qrDrawPtuChart(eta,Rd){
     const c=document.getElementById('qr-canvas');if(!c)return;
     const ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
-    const pad=50;const qM=2,dpM=500;
-    const tx=q=>pad+q/qM*(W-2*pad), ty=dp=>H-pad-dp/dpM*(H-2*pad);
-    ctx.strokeStyle='#2a2a4a';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(pad,ty(0));ctx.lineTo(W-pad,ty(0));ctx.stroke();
-    ctx.fillStyle='#888';ctx.font='11px Consolas';ctx.textAlign='center';
-    for(let q=0;q<=qM;q+=0.5){ctx.fillText(q.toFixed(1),tx(q),H-pad+16);}
-    ctx.textAlign='right';for(let dp=0;dp<=dpM;dp+=100){ctx.fillText(dp.toFixed(0),pad-8,ty(dp)+4);}
-    ctx.fillStyle='#6fc3f7';ctx.textAlign='center';ctx.fillText('Q [m³/h]',W/2,H-5);
-    ctx.save();ctx.translate(12,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('ΔP [bar]',0,0);ctx.restore();
-    ctx.strokeStyle='#ff8844';ctx.lineWidth=2;ctx.beginPath();
-    for(let i=0;i<=80;i++){const q=0.01+qM*i/80;const dp=Rd*q;if(i===0)ctx.moveTo(tx(q),ty(dp));else ctx.lineTo(tx(q),ty(Math.min(dp,dpM)));}
-    ctx.stroke();
-    ctx.strokeStyle='#6fc3f7';ctx.lineWidth=2;ctx.beginPath();
-    for(let i=0;i<=80;i++){const q=0.01+qM*i/80;const dp=eta*Rd*q;if(i===0)ctx.moveTo(tx(q),ty(dp));else ctx.lineTo(tx(q),ty(Math.min(dp,dpM)));}
-    ctx.stroke();
-    ctx.fillStyle='#ff8844';ctx.font='11px Consolas';ctx.fillText('Motor ΔP_a = Rd·Q',tx(1.2),ty(Rd*1.2)-10);
-    ctx.fillStyle='#6fc3f7';ctx.fillText('Pump ΔP_b = η·Rd·Q',tx(1.2),ty(eta*Rd*1.2)-10);
+    const pad=50,qMin=0,qMax=2,dpMin=0,dpMax=Rd*2*1.1;
+    const tx=q=>pad+(q-qMin)/(qMax-qMin)*(W-2*pad), ty=dp=>H-pad-(dp-dpMin)/(dpMax-dpMin)*(H-2*pad);
+    qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty);
+    ctx.strokeStyle='#e94560';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(tx(0),ty(0));ctx.lineTo(tx(2),ty(Rd*2));ctx.stroke();
+    ctx.strokeStyle='#6fc3f7';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(tx(0),ty(0));ctx.lineTo(tx(2),ty(eta*Rd*2));ctx.stroke();
+    ctx.font='10px Consolas';ctx.textAlign='left';
+    ctx.fillStyle='#e94560';ctx.fillText('Motor: ΔP_a = Rd·Q',tx(1.05),ty(Rd*1.05)-8);
+    ctx.fillStyle='#6fc3f7';ctx.fillText('Pump: ΔP_b = η·Rd·Q',tx(1.05),ty(eta*Rd*1.05)+14);
 }
 function qrDrawCircuit(type,p){
     const svg=document.getElementById('qr-circuit');if(!svg)return;
     const pr=qrPresets[type];
-    if(pr.circuit==='ptu'){
-        svg.innerHTML=`<text x="160" y="16" fill="#ff8844" font-size="13" text-anchor="middle">PTU (Upt1a + Upt1b)</text>
-        <text x="60" y="40" fill="#aac" font-size="11" text-anchor="middle">System A</text><text x="260" y="40" fill="#aac" font-size="11" text-anchor="middle">System B</text>
-        <rect x="20" y="55" width="80" height="35" rx="4" fill="none" stroke="#e94560" stroke-width="1.5"/><text x="60" y="77" fill="#e94560" font-size="11" text-anchor="middle">Motor</text>
-        <line x1="100" y1="72" x2="220" y2="72" stroke="#ffdd44" stroke-width="2" stroke-dasharray="6,3"/><text x="160" y="66" fill="#ffdd44" font-size="10" text-anchor="middle">shaft (Q_a=Q_b)</text>
-        <circle cx="260" cy="72" r="20" fill="none" stroke="#6fc3f7" stroke-width="1.5"/><text x="260" y="77" fill="#6fc3f7" font-size="11" text-anchor="middle">Pump</text>
-        <text x="60" y="110" fill="#888" font-size="10" text-anchor="middle">Rd=${p.Rd||200}</text><text x="60" y="125" fill="#888" font-size="10" text-anchor="middle">η=${p['η']||0.85}</text>
-        <text x="260" y="110" fill="#888" font-size="10" text-anchor="middle">Qsc=|Q_motor|</text>
-        <circle cx="60" cy="145" r="3" fill="#ffdd44"/><text x="75" y="149" fill="#aac" font-size="9">N02 (HP)</text>
-        <circle cx="60" cy="170" r="3" fill="#ffdd44"/><text x="75" y="174" fill="#aac" font-size="9">N39 → Tank</text>
-        <circle cx="260" cy="145" r="3" fill="#ffdd44"/><text x="215" y="149" fill="#aac" font-size="9">Tank →</text>
-        <circle cx="260" cy="170" r="3" fill="#ffdd44"/><text x="215" y="174" fill="#aac" font-size="9">→ Load</text>`;
-    } else if(pr.circuit==='upm'){
-        svg.innerHTML=`<text x="160" y="16" fill="#ff8844" font-size="13" text-anchor="middle">Regulated Pump (Upm)</text>
-        <circle cx="160" cy="36" r="4" fill="#ffdd44"/><text x="175" y="40" fill="#aac" font-size="11">Node 2 (HP)</text>
-        <line x1="160" y1="40" x2="160" y2="80" stroke="#6fc3f7" stroke-width="1.5"/>
+    if(pr.special==='ptu'){
+        svg.innerHTML=`<text x="160" y="16" fill="#ff8844" font-size="13" text-anchor="middle">PTU: Upt1a (Motor) + Upt1b (Pump)</text>
+        <text x="60" y="42" fill="#aac" font-size="11" text-anchor="middle">System A</text><text x="260" y="42" fill="#aac" font-size="11" text-anchor="middle">System B</text>
+        <circle cx="60" cy="58" r="3" fill="#ffdd44"/><line x1="60" y1="61" x2="60" y2="75" stroke="#6fc3f7" stroke-width="1.5"/>
+        <rect x="35" y="75" width="50" height="30" rx="4" fill="none" stroke="#e94560" stroke-width="1.5"/><text x="60" y="94" fill="#e94560" font-size="11" text-anchor="middle">M</text>
+        <line x1="60" y1="105" x2="60" y2="120" stroke="#6fc3f7" stroke-width="1.5"/><circle cx="60" cy="123" r="3" fill="#ffdd44"/>
+        <line x1="85" y1="90" x2="240" y2="90" stroke="#ffdd44" stroke-width="2" stroke-dasharray="6,3"/><text x="162" y="84" fill="#ffdd44" font-size="10" text-anchor="middle">shaft: Q_b = Q_a</text>
+        <circle cx="260" cy="58" r="3" fill="#ffdd44"/><line x1="260" y1="61" x2="260" y2="72" stroke="#6fc3f7" stroke-width="1.5"/>
+        <circle cx="260" cy="90" r="18" fill="none" stroke="#6fc3f7" stroke-width="1.5"/><text x="260" y="95" fill="#6fc3f7" font-size="11" text-anchor="middle">P</text>
+        <line x1="260" y1="108" x2="260" y2="120" stroke="#6fc3f7" stroke-width="1.5"/><circle cx="260" cy="123" r="3" fill="#ffdd44"/>
+        <text x="60" y="150" fill="#888" font-size="10" text-anchor="middle">Rd = ${p.Rd}   η = ${p.eta}</text>
+        <text x="260" y="150" fill="#888" font-size="10" text-anchor="middle">Qsc = |Q_motor|</text>
+        <text x="160" y="180" fill="#666" font-size="9" text-anchor="middle">ΔP_a·Q_a·η = ΔP_b·Q_b</text>`;
+    } else if(pr.special==='upm'){
+        svg.innerHTML=`<text x="160" y="16" fill="#ff8844" font-size="13" text-anchor="middle">Upm (Regulated Pump)</text>
+        <circle cx="160" cy="38" r="4" fill="#ffdd44"/><text x="175" y="42" fill="#aac" font-size="11">Node 2 (HP)</text>
+        <line x1="160" y1="42" x2="160" y2="80" stroke="#6fc3f7" stroke-width="1.5"/>
         <circle cx="160" cy="102" r="22" fill="none" stroke="#6fc3f7" stroke-width="1.5"/><text x="160" y="107" fill="#6fc3f7" font-size="11" text-anchor="middle">P</text>
         <line x1="160" y1="124" x2="160" y2="160" stroke="#6fc3f7" stroke-width="1.5"/>
-        <circle cx="160" cy="168" r="4" fill="#ffdd44"/><text x="175" y="172" fill="#aac" font-size="11">Node 1 (Tank)</text>
-        <path d="M185,85 Q210,102 185,119" fill="none" stroke="#e94560" stroke-width="1.5" stroke-dasharray="4,2"/>
-        <text x="220" y="105" fill="#e94560" font-size="10">Pset=${p.Pset||200} bar</text>
-        <text x="220" y="120" fill="#888" font-size="9">Qmax=${p.Qmax||8.4} m³/h</text>`;
-    } else if(pr.circuit==='pump'){
-        svg.innerHTML=`<text x="160" y="16" fill="#6fc3f7" font-size="13" text-anchor="middle">"P" (Positive Displacement)</text>
-        <circle cx="160" cy="36" r="4" fill="#ffdd44"/><text x="175" y="40" fill="#aac" font-size="11">Node 2</text>
-        <line x1="160" y1="40" x2="160" y2="80" stroke="#6fc3f7" stroke-width="1.5"/>
-        <circle cx="160" cy="102" r="22" fill="none" stroke="#6fc3f7" stroke-width="1.5"/><text x="160" y="107" fill="#6fc3f7" font-size="11" text-anchor="middle">P</text>
-        <text x="160" y="78" fill="#888" font-size="9" text-anchor="middle">{Qsc}</text>
-        <line x1="160" y1="124" x2="160" y2="165" stroke="#6fc3f7" stroke-width="1.5"/>
-        <circle cx="160" cy="170" r="4" fill="#ffdd44"/><text x="175" y="174" fill="#aac" font-size="11">Node 1</text>`;
+        <circle cx="160" cy="166" r="4" fill="#ffdd44"/><text x="175" y="170" fill="#aac" font-size="11">Node 1</text>
+        <path d="M182,60 C215,60 215,102 182,102" fill="none" stroke="#e94560" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <polygon points="182,102 190,97 190,107" fill="#e94560"/>
+        <text x="222" y="84" fill="#e94560" font-size="10">Pset = ${p.Pset} bar</text><text x="222" y="98" fill="#888" font-size="9">Qmax = ${p.Qmax} m³/h</text>
+        <text x="160" y="190" fill="#666" font-size="9" text-anchor="middle">Qsc ← Qsc · (Pset / P_actual)</text>`;
     } else {
         const isUcv=type==='Ucv';
-        svg.innerHTML=`<text x="160" y="16" fill="#6fc3f7" font-size="13" text-anchor="middle">"${type}"</text>
+        svg.innerHTML=`<text x="160" y="16" fill="#6fc3f7" font-size="13" text-anchor="middle">${isUcv?'"Ucv"':'"U", "Ucp", …'}</text>
         <circle cx="160" cy="36" r="4" fill="#ffdd44"/><text x="175" y="40" fill="#aac" font-size="11">Node 2</text>
-        <line x1="160" y1="40" x2="160" y2="65" stroke="#6fc3f7" stroke-width="1.5"/>
-        <line x1="100" y1="65" x2="220" y2="65" stroke="#6fc3f7" stroke-width="1.5"/>
-        <line x1="100" y1="65" x2="100" y2="140" stroke="#6fc3f7" stroke-width="1.5"/>
-        <line x1="220" y1="65" x2="220" y2="140" stroke="#6fc3f7" stroke-width="1.5"/>
-        <line x1="100" y1="140" x2="220" y2="140" stroke="#6fc3f7" stroke-width="1.5"/>
-        <line x1="160" y1="140" x2="160" y2="165" stroke="#6fc3f7" stroke-width="1.5"/>
+        <line x1="160" y1="40" x2="160" y2="${isUcv?52:68}" stroke="#6fc3f7" stroke-width="1.5"/>
+        ${isUcv?'<path d="M160,52 l-5,4 l10,4 l-10,4 l10,4 l-5,4" fill="none" stroke="#ff8844" stroke-width="1.5"/><line x1="160" y1="72" x2="160" y2="82" stroke="#6fc3f7" stroke-width="1.5"/><polygon points="154,82 166,82 160,72" fill="none" stroke="#ff8844" stroke-width="1.5"/><line x1="160" y1="82" x2="160" y2="88" stroke="#6fc3f7" stroke-width="1.5"/><line x1="100" y1="88" x2="220" y2="88" stroke="#6fc3f7" stroke-width="1.5"/><line x1="100" y1="88" x2="100" y2="150" stroke="#6fc3f7" stroke-width="1.5"/><line x1="220" y1="88" x2="220" y2="150" stroke="#6fc3f7" stroke-width="1.5"/><line x1="100" y1="150" x2="220" y2="150" stroke="#6fc3f7" stroke-width="1.5"/><line x1="160" y1="150" x2="160" y2="166" stroke="#6fc3f7" stroke-width="1.5"/><rect x="85" y="105" width="30" height="28" rx="3" fill="none" stroke="#e94560" stroke-width="1.5"/><text x="100" y="123" fill="#e94560" font-size="11" text-anchor="middle">R</text><text x="100" y="100" fill="#888" font-size="9" text-anchor="middle">{rd}</text><circle cx="220" cy="119" r="16" fill="none" stroke="#6fc3f7" stroke-width="1.5"/><text x="220" y="124" fill="#6fc3f7" font-size="11" text-anchor="middle">P</text><text x="220" y="100" fill="#888" font-size="9" text-anchor="middle">{Qsc}</text>'
+        :'<line x1="100" y1="68" x2="220" y2="68" stroke="#6fc3f7" stroke-width="1.5"/><line x1="100" y1="68" x2="100" y2="140" stroke="#6fc3f7" stroke-width="1.5"/><line x1="220" y1="68" x2="220" y2="140" stroke="#6fc3f7" stroke-width="1.5"/><line x1="100" y1="140" x2="220" y2="140" stroke="#6fc3f7" stroke-width="1.5"/><line x1="160" y1="140" x2="160" y2="166" stroke="#6fc3f7" stroke-width="1.5"/><rect x="85" y="90" width="30" height="28" rx="3" fill="none" stroke="#e94560" stroke-width="1.5"/><text x="100" y="108" fill="#e94560" font-size="11" text-anchor="middle">R</text><text x="100" y="85" fill="#888" font-size="9" text-anchor="middle">{rd}</text><circle cx="220" cy="104" r="16" fill="none" stroke="#6fc3f7" stroke-width="1.5"/><text x="220" y="109" fill="#6fc3f7" font-size="11" text-anchor="middle">P</text><text x="220" y="85" fill="#888" font-size="9" text-anchor="middle">{Qsc}</text>'}
         <circle cx="160" cy="170" r="4" fill="#ffdd44"/><text x="175" y="174" fill="#aac" font-size="11">Node 1</text>
-        <rect x="80" y="88" width="40" height="28" rx="4" fill="none" stroke="#e94560" stroke-width="1.5"/>
-        <text x="100" y="107" fill="#e94560" font-size="11" text-anchor="middle">R</text>
-        <text x="100" y="82" fill="#888" font-size="9" text-anchor="middle">{rd}</text>
-        <circle cx="220" cy="102" r="18" fill="none" stroke="#6fc3f7" stroke-width="1.5"/>
-        <text x="220" y="107" fill="#6fc3f7" font-size="11" text-anchor="middle">P</text>
-        <text x="220" y="82" fill="#888" font-size="9" text-anchor="middle">{Qsc}</text>
-        ${isUcv?'<polygon points="155,72 165,72 160,58" fill="none" stroke="#ff8844" stroke-width="1.5"/><line x1="152" y1="58" x2="168" y2="58" stroke="#ff8844" stroke-width="1.5"/><text x="175" y="62" fill="#ff8844" font-size="9">check valve</text>':''}`;
+        ${isUcv?'<text x="160" y="195" fill="#666" font-size="9" text-anchor="middle">Spring: valve opens if ΔP &gt; ΔPoc</text>':''}`;
     }
 }
 qrBuildRadios();setTimeout(qrSelect,100);

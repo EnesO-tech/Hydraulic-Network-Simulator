@@ -337,38 +337,43 @@ td.c.custom-color{color:#fff}
 
 <div id="tab-qr" class="tab-content">
 <div style="flex:1;padding:20px;overflow:auto;">
-<h2 style="color:#e94560;">QRUnivComp – Component Diagram</h2>
+<h2 style="color:#e94560;">QRUnivComp – Universal Component</h2>
 <div style="display:flex;flex-wrap:wrap;gap:20px;margin-top:15px;">
-<div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#6fc3f7;">Component Types</h3>
-<div style="margin-top:10px;">
-<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid #1a2a4a;font-size:12px;"><span style="color:#6fc3f7;">R</span><span>Pipe Resistance</span></div>
-<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid #1a2a4a;font-size:12px;"><span style="color:#6fc3f7;">RZ</span><span>Discrete Resistance (Zeta)</span></div>
-<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid #1a2a4a;font-size:12px;"><span style="color:#6fc3f7;">RK</span><span>Kv Valve</span></div>
-<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid #1a2a4a;font-size:12px;"><span style="color:#6fc3f7;">RL</span><span>Linear Resistance</span></div>
-<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid #1a2a4a;font-size:12px;"><span style="color:#e94560;">P</span><span>Positive Displacement Pump</span></div>
-<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid #1a2a4a;font-size:12px;"><span style="color:#e94560;">UCP</span><span>Centrifugal Pump</span></div>
-<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid #1a2a4a;font-size:12px;"><span style="color:#e94560;">UPR</span><span>Pressure Regulator</span></div>
-<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid #1a2a4a;font-size:12px;"><span style="color:#e94560;">UCV</span><span>Check Valve</span></div>
-<div style="display:flex;justify-content:space-between;padding:4px 8px;border-bottom:1px solid #1a2a4a;font-size:12px;"><span style="color:#ff8844;">PTU</span><span>Power Transfer Unit</span></div>
-<div style="display:flex;justify-content:space-between;padding:4px 8px;font-size:12px;"><span style="color:#ff8844;">MPP</span><span>Multi-Piston Pump</span></div>
+
+<div style="flex:1;min-width:340px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;">Parameters</h3>
+<div id="qr-radios" style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;">
+<label style="font-size:11px;cursor:pointer;padding:4px 10px;border:1px solid #2a2a4a;border-radius:4px;background:#1a1a2e;color:#aac;"><input type="radio" name="qrType" value="U" checked onchange="qrUpdate()" style="margin-right:4px;">U</label>
+<label style="font-size:11px;cursor:pointer;padding:4px 10px;border:1px solid #2a2a4a;border-radius:4px;background:#1a1a2e;color:#aac;"><input type="radio" name="qrType" value="Ucp" onchange="qrUpdate()" style="margin-right:4px;">Ucp</label>
+<label style="font-size:11px;cursor:pointer;padding:4px 10px;border:1px solid #2a2a4a;border-radius:4px;background:#1a1a2e;color:#aac;"><input type="radio" name="qrType" value="Upr" onchange="qrUpdate()" style="margin-right:4px;">Upr</label>
+<label style="font-size:11px;cursor:pointer;padding:4px 10px;border:1px solid #2a2a4a;border-radius:4px;background:#1a1a2e;color:#aac;"><input type="radio" name="qrType" value="Ucv" onchange="qrUpdate()" style="margin-right:4px;">Ucv</label>
+<label style="font-size:11px;cursor:pointer;padding:4px 10px;border:1px solid #2a2a4a;border-radius:4px;background:#1a1a2e;color:#aac;"><input type="radio" name="qrType" value="P" onchange="qrUpdate()" style="margin-right:4px;">Pos. Displ. Pump</label>
+<label style="font-size:11px;cursor:pointer;padding:4px 10px;border:1px solid #2a2a4a;border-radius:4px;background:#1a1a2e;color:#aac;"><input type="radio" name="qrType" value="RL" onchange="qrUpdate()" style="margin-right:4px;">Linear Resistance</label>
+</div>
+<table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:8px;">
+<thead><tr style="color:#6fc3f7;border-bottom:1px solid #2a2a4a;"><th style="text-align:left;padding:4px;">Parameter</th><th style="text-align:right;padding:4px;">Value</th><th style="text-align:left;padding:4px;">Unit</th></tr></thead>
+<tbody id="qr-params"></tbody>
+</table>
+<div style="margin-top:12px;padding:8px;background:#1a1a2e;border-radius:4px;font-family:Consolas,monospace;font-size:13px;color:#ffdd44;" id="qr-syntax"></div>
+
+<h3 style="color:#6fc3f7;margin-top:18px;">Diagram Points</h3>
+<table style="width:100%;font-size:12px;border-collapse:collapse;">
+<thead><tr style="color:#6fc3f7;border-bottom:1px solid #2a2a4a;"><th style="padding:4px;">Point</th><th style="padding:4px;">Meaning</th><th style="text-align:right;padding:4px;">Q [m³/h]</th><th style="text-align:right;padding:4px;">ΔP [bar]</th></tr></thead>
+<tbody id="qr-points"></tbody>
+</table>
+</div>
+
+<div style="flex:1;min-width:380px;display:flex;flex-direction:column;gap:20px;">
+<div style="background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;">Q – ΔP Characteristic</h3>
+<canvas id="qr-canvas" width="460" height="340" style="width:100%;background:#0a0a1a;border-radius:4px;margin-top:8px;"></canvas>
+</div>
+<div style="background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;">Equivalent Circuit</h3>
+<svg id="qr-circuit" viewBox="0 0 320 200" style="width:100%;max-width:320px;margin-top:8px;"></svg>
 </div>
 </div>
-<div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#6fc3f7;">Component Syntax</h3>
-<div style="margin-top:10px;font-family:Consolas,monospace;font-size:11px;color:#aac;">
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">R [Length] [Diameter] [Orientation]</div>
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">RZ [Zeta] [Diameter] [Orientation]</div>
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">RK [Kv] [Orientation]</div>
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">RL [R] [Diameter] [Orientation]</div>
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">P [Qsc] [Diameter] [Orientation]</div>
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">UCP [Qsc] [DPoc] [Diameter] [Orientation]</div>
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">UPR [DPoc] [R] [Diameter] [Orientation]</div>
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">UCV [DPoc] [R] [Diameter] [Orientation]</div>
-<div style="padding:4px 8px;border-bottom:1px solid #1a2a4a;">PTU [PressureRatio] [FlowRatio] [Diameter] [Orientation]</div>
-<div style="padding:4px 8px;">MPP [Strokes] [Displacement] [Speed] [Diameter] [Orientation]</div>
-</div>
-</div>
+
 </div>
 </div>
 </div>
@@ -376,6 +381,120 @@ td.c.custom-color{color:#fff}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 <script>
+const qrPresets = {
+    U:   {suffix:'7lin', DPoc:0.02, Qsc:-0.01, rd:2, D:19.6, dir:'>'},
+    Ucp: {suffix:'4', DPoc:-2, Qsc:0.01, rd:0, D:19.6, dir:'^'},
+    Upr: {suffix:'4', DPoc:-2, Qsc:1, rd:0, D:19.6, dir:'^'},
+    Ucv: {suffix:'05', DPoc:2, Qsc:0, rd:0.01, D:19.6, dir:'<'},
+    P:   {suffix:'_6', DPoc:-100, Qsc:1, rd:0, D:19.6, dir:'v'},
+    RL:  {suffix:'7lin', DPoc:0.02, Qsc:-0.01, rd:2, D:19.6, dir:'>'}
+};
+function qrUpdate(){
+    const t=document.querySelector('input[name="qrType"]:checked').value;
+    const p=qrPresets[t];
+    const tbody=document.getElementById('qr-params');
+    const isUcv=t==='Ucv', isP=t==='P', isRL=t==='RL';
+    tbody.innerHTML=[
+        ['Suffix',p.suffix,'-'],
+        ['ΔPoc',p.DPoc,'bar'],
+        ['Qsc',p.Qsc,'m³/h'],
+        ['rd = ∂ΔP/∂Q',p.rd,'bar/(m³/h)'],
+        ['Diameter',p.D,'mm'],
+        ['Direction',p.dir,'-']
+    ].map(r=>{
+        const active=(r[0]==='rd'&&!isUcv&&!isRL)?'color:#444':'color:#e0e0e0';
+        return `<tr style="${active};border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${r[0]}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${r[1]}</td><td style="padding:4px;color:#888;">${r[2]}</td></tr>`;
+    }).join('');
+    const name=t+(p.suffix||'');
+    document.getElementById('qr-syntax').textContent=
+        `${name} ${p.DPoc} ${p.Qsc} ${p.D} ${p.dir}`;
+    const rd=p.rd||0.001;
+    const Qsc=p.Qsc;
+    const DPoc=p.DPoc;
+    const Qmax=1.5, pts=[];
+    const Q1=Qsc-Math.abs(DPoc+rd*Qmax)/rd*Math.sign(rd)||(-Qmax);
+    pts.push({label:'Qsc min',Q:(-Qmax+Qsc).toFixed(2), DP:(DPoc+rd*(-Qmax)).toFixed(2)});
+    pts.push({label:'open circuit',Q:Qsc.toFixed(2), DP:'0'});
+    pts.push({label:'short circuit',Q:'0', DP:DPoc.toFixed(2)});
+    pts.push({label:'Qsc max',Q:(Qmax+Qsc).toFixed(2), DP:(DPoc+rd*Qmax).toFixed(2)});
+    document.getElementById('qr-points').innerHTML=pts.map((p,i)=>
+        `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${i+1}</td><td style="padding:4px;">${p.label}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${p.Q}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${p.DP}</td></tr>`
+    ).join('');
+    qrDrawChart(pts,DPoc,Qsc,rd);
+    qrDrawCircuit(t);
+}
+function qrDrawChart(pts,DPoc,Qsc,rd){
+    const c=document.getElementById('qr-canvas');
+    if(!c)return;
+    const ctx=c.getContext('2d');
+    const W=c.width,H=c.height;
+    ctx.clearRect(0,0,W,H);
+    const pad=50;
+    const allQ=pts.map(p=>parseFloat(p.Q));
+    const allDP=pts.map(p=>parseFloat(p.DP));
+    const qMin=Math.min(...allQ)-0.3, qMax=Math.max(...allQ)+0.3;
+    const dpMin=Math.min(...allDP)-0.5, dpMax=Math.max(...allDP)+0.5;
+    const sx=(W-2*pad)/(qMax-qMin), sy=(H-2*pad)/(dpMax-dpMin);
+    function tx(q){return pad+(q-qMin)*sx}
+    function ty(dp){return H-pad-(dp-dpMin)*sy}
+    ctx.strokeStyle='#2a2a4a';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad,ty(0));ctx.lineTo(W-pad,ty(0));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(tx(0),pad);ctx.lineTo(tx(0),H-pad);ctx.stroke();
+    ctx.fillStyle='#888';ctx.font='11px Consolas';ctx.textAlign='center';
+    for(let q=Math.ceil(qMin*2)/2;q<=qMax;q+=0.5){
+        ctx.fillText(q.toFixed(1),tx(q),H-pad+16);
+        ctx.strokeStyle='#1a2a4a';ctx.beginPath();ctx.moveTo(tx(q),pad);ctx.lineTo(tx(q),H-pad);ctx.stroke();
+    }
+    ctx.textAlign='right';
+    for(let dp=Math.ceil(dpMin);dp<=dpMax;dp+=1){
+        ctx.fillText(dp.toFixed(0),pad-8,ty(dp)+4);
+        ctx.strokeStyle='#1a2a4a';ctx.beginPath();ctx.moveTo(pad,ty(dp));ctx.lineTo(W-pad,ty(dp));ctx.stroke();
+    }
+    ctx.fillStyle='#6fc3f7';ctx.textAlign='center';
+    ctx.fillText('Q [m³/h]',W/2,H-5);
+    ctx.save();ctx.translate(12,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('ΔP [bar]',0,0);ctx.restore();
+    ctx.strokeStyle='#6fc3f7';ctx.lineWidth=2;
+    ctx.beginPath();
+    const steps=80;
+    for(let i=0;i<=steps;i++){
+        const q=parseFloat(pts[0].Q)+(parseFloat(pts[3].Q)-parseFloat(pts[0].Q))*i/steps;
+        const dp=DPoc+rd*(q-Qsc);
+        if(i===0)ctx.moveTo(tx(q),ty(dp));else ctx.lineTo(tx(q),ty(dp));
+    }
+    ctx.stroke();
+    ctx.fillStyle='#ffdd44';
+    pts.forEach(p=>{
+        const x=tx(parseFloat(p.Q)),y=ty(parseFloat(p.DP));
+        ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();
+    });
+    ctx.fillStyle='#aac';ctx.font='10px Consolas';ctx.textAlign='left';
+    pts.forEach((p,i)=>{
+        ctx.fillText((i+1)+': '+p.label,tx(parseFloat(p.Q))+8,ty(parseFloat(p.DP))-6);
+    });
+}
+function qrDrawCircuit(type){
+    const svg=document.getElementById('qr-circuit');
+    const isUcv=type==='Ucv';
+    svg.innerHTML=`
+    <text x="160" y="16" fill="#6fc3f7" font-size="13" text-anchor="middle">"${type==='U'?'U, Ucp':type}"</text>
+    <circle cx="160" cy="36" r="4" fill="#ffdd44"/><text x="170" y="40" fill="#aac" font-size="11">Node 2</text>
+    <line x1="160" y1="40" x2="160" y2="65" stroke="#6fc3f7" stroke-width="1.5"/>
+    <line x1="100" y1="65" x2="220" y2="65" stroke="#6fc3f7" stroke-width="1.5"/>
+    <line x1="100" y1="65" x2="100" y2="140" stroke="#6fc3f7" stroke-width="1.5"/>
+    <line x1="220" y1="65" x2="220" y2="140" stroke="#6fc3f7" stroke-width="1.5"/>
+    <line x1="100" y1="140" x2="220" y2="140" stroke="#6fc3f7" stroke-width="1.5"/>
+    <line x1="160" y1="140" x2="160" y2="165" stroke="#6fc3f7" stroke-width="1.5"/>
+    <circle cx="160" cy="170" r="4" fill="#ffdd44"/><text x="170" y="174" fill="#aac" font-size="11">Node 1</text>
+    <rect x="80" y="88" width="40" height="28" rx="4" fill="none" stroke="#e94560" stroke-width="1.5"/>
+    <text x="100" y="107" fill="#e94560" font-size="11" text-anchor="middle">R</text>
+    <text x="100" y="82" fill="#888" font-size="9" text-anchor="middle">{rd}</text>
+    <circle cx="220" cy="102" r="18" fill="none" stroke="#6fc3f7" stroke-width="1.5"/>
+    <text x="220" y="107" fill="#6fc3f7" font-size="11" text-anchor="middle">P</text>
+    <text x="220" y="82" fill="#888" font-size="9" text-anchor="middle">{Qsc}</text>
+    ${isUcv?'<polygon points="155,72 165,72 160,58" fill="none" stroke="#ff8844" stroke-width="1.5"/><line x1="152" y1="58" x2="168" y2="58" stroke="#ff8844" stroke-width="1.5"/><text x="175" y="62" fill="#ff8844" font-size="9">check valve</text>':''}
+    `;
+}
+setTimeout(qrUpdate,100);
 const customColors = {};
 let loadedResults = null;
 let rlfState = true;

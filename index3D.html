@@ -70,7 +70,7 @@ main{display:flex;flex:1;overflow:hidden}
 .cell-ref{width:55px;text-align:center;font-family:Consolas,monospace;font-size:12px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;padding:2px 4px;border-radius:3px}
 .formula-input{flex:1;padding:2px 8px;background:#1a1a2e;border:1px solid #2a2a4a;color:#e0e0e0;font-size:13px;border-radius:3px}
 .grid-wrap{flex:1;overflow:auto;background:#0f0f1f;padding:4px}
-table.grid{border-collapse:collapse;table-layout:fixed;width:100%}
+table.grid{border-collapse:collapse;table-layout:fixed}
 table.grid th{background:#0f3460;color:#fff;font-weight:700;font-size:12px;height:22px;width:75px;min-width:75px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2}
 table.grid th:first-child{width:32px;min-width:32px;z-index:3;left:0}
 table.grid td.rh{background:#0f3460;color:#fff;font-weight:700;font-size:12px;width:32px;min-width:32px;border:1px solid #1a2a4a;position:sticky;left:0;z-index:1;text-align:center}
@@ -1520,7 +1520,6 @@ aero:'N01 10|P1 8.4 15.875 >|R01 0.5 28.2|S 35',
 info.innerHTML='<p style="color:#4caf50;font-size:13px;">Loaded: '+type+' schematic. Switch to Comp tab to see it.</p><pre style="color:#aac;font-size:11px;margin-top:10px;background:#1a1a2e;padding:10px;border-radius:4px;">'+schematics[type]+'</pre>';
 }
 
-init();
 
 try{
     init();

@@ -277,6 +277,25 @@ td.c.custom-color{color:#fff}
 <div class="node-meta" id="selectedNodeDesc"></div>
 <div class="node-meta" id="selectedNodeLoc"></div>
 <div class="node-connections" id="selectedNodeConnections"></div>
+<div id="nodeEditor" style="margin-top:10px;padding-top:10px;border-top:1px solid #3b3b62;">
+<div style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Edit Position</div>
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+<span style="width:14px;color:#e94560;font-weight:700;">X</span>
+<input type="range" id="edX" min="-3" max="3" step="0.01" oninput="nodeEditLive('x',this.value)" style="flex:1;">
+<input type="number" id="edXn" step="0.01" onchange="nodeEditLive('x',this.value)" style="width:60px;background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:3px;padding:2px 4px;font-size:11px;font-family:Consolas,monospace;text-align:right;">
+</div>
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+<span style="width:14px;color:#4caf50;font-weight:700;">Y</span>
+<input type="range" id="edY" min="-2" max="2" step="0.01" oninput="nodeEditLive('y',this.value)" style="flex:1;">
+<input type="number" id="edYn" step="0.01" onchange="nodeEditLive('y',this.value)" style="width:60px;background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:3px;padding:2px 4px;font-size:11px;font-family:Consolas,monospace;text-align:right;">
+</div>
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+<span style="width:14px;color:#6fc3f7;font-weight:700;">Z</span>
+<input type="range" id="edZ" min="-3" max="3" step="0.01" oninput="nodeEditLive('z',this.value)" style="flex:1;">
+<input type="number" id="edZn" step="0.01" onchange="nodeEditLive('z',this.value)" style="width:60px;background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:3px;padding:2px 4px;font-size:11px;font-family:Consolas,monospace;text-align:right;">
+</div>
+<button onclick="exportNodePositions()" style="width:100%;padding:6px;background:#0f3460;color:#fff;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;font-size:12px;">💾 Export a320_network.json</button>
+</div>
 </div>
 <div id="statusInfo">3D View</div>
 </div>
@@ -670,6 +689,59 @@ if (connEl) connEl.textContent = connected.length
 ? 'Connected: ' + connected.join(', ')
 : 'No connected components found';
 if (panel) panel.style.display = 'block';
+
+const ex=document.getElementById('edX'),exn=document.getElementById('edXn');
+const ey=document.getElementById('edY'),eyn=document.getElementById('edYn');
+const ez=document.getElementById('edZ'),ezn=document.getElementById('edZn');
+if(ex){ex.value=p.x||0;exn.value=(p.x||0).toFixed(2);}
+if(ey){ey.value=p.y||0;eyn.value=(p.y||0).toFixed(2);}
+if(ez){ez.value=p.z||0;ezn.value=(p.z||0).toFixed(2);}
+}
+
+function nodeEditLive(axis,val){
+    if(!selectedNodeMesh||!selectedNodeMesh.userData)return;
+    const name=selectedNodeMesh.userData.name;
+    if(!name||!nodePositions[name])return;
+    const v=parseFloat(val)||0;
+    nodePositions[name][axis]=v;
+    document.getElementById('ed'+axis.toUpperCase()).value=v;
+    document.getElementById('ed'+axis.toUpperCase()+'n').value=v.toFixed(2);
+    const np=nodePoint3D(nodePositions[name]);
+    selectedNodeMesh.position.copy(np);
+    if(selectedNodeMesh.userData.label)selectedNodeMesh.userData.label.position.set(np.x,np.y+0.12,np.z);
+    redrawPipesForNode(name);
+}
+
+function redrawPipesForNode(name){
+    if(!window.pipeSegments)return;
+    window.pipeSegments.forEach(seg=>{
+        if(seg.n1===name||seg.n2===name){
+            const a=nodePositions[seg.n1],b=nodePositions[seg.n2];
+            if(a&&b){seg.line.geometry.setFromPoints([nodePoint3D(a),nodePoint3D(b)]);seg.line.geometry.attributes.position.needsUpdate=true;}
+        }
+    });
+}
+
+function exportNodePositions(){
+    const nodes=Object.keys(nodePositions).map(id=>({
+        id:id,
+        x:nodePositions[id].x,
+        y:nodePositions[id].y,
+        z:nodePositions[id].z,
+        desc:nodePositions[id].desc||'',
+        loc:nodePositions[id].loc||''
+    }));
+    const out={
+        info:'A320 Hydraulik-Knotenpositionen – editiert im Browser',
+        nodes:nodes,
+        components:(networkJsonComponents||[])
+    };
+    const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='a320_network.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
 }
 
 // ---- LADE A320 KOORDINATEN AUS JSON ----
@@ -957,9 +1029,12 @@ const label = makeTextSprite(name);
 label.position.copy(pp);
 label.position.y += 0.12;
 pipeGroup.add(label);
+sphere.userData.label = label;
 
 renderedNodes++;
 });
+
+window.pipeSegments = [];
 
 let renderedComponents = 0;
 let skippedComponents = [];
@@ -983,6 +1058,7 @@ const color = kind === 'P' ? 0xe94560 : (kind.startsWith('U') ? 0xff8844 : 0x4fc
 const line = new THREE.Line(geo, new THREE.LineBasicMaterial({color}));
 line.userData = {kind: 'component', name: c.name, n1: c.n1, n2: c.n2};
 pipeGroup.add(line);
+window.pipeSegments.push({line:line, n1:c.n1, n2:c.n2});
 renderedComponents++;
 });
 

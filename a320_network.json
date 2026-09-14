@@ -1,341 +1,341 @@
 {
-  "info": "A320 hydraulic node positions for 3D display, calibrated to the STL model. Coordinates affect only the 3D visualization; hydraulic topology and physics stay in the solver.",
+  "info": "A320 Hydraulik-Knotenpositionen – BOHEME 3D calibration v15. Z=Längsachse (positiv=Nase), X=Spannweite (positiv=rechts/Steuerbord), Y=Höhe (positiv=oben). Diese Koordinaten steuern nur die 3D-Darstellung; hydraulische Topologie und Physik bleiben im Schematic/Bachelorthesis.py.",
   "nodes": [
     {
       "id": "N01",
-      "x": 0.208,
-      "y": 1.642,
-      "z": -0.128,
-      "desc": "Reservoir outlet (pump suction side)",
-      "loc": "Fuselage center bottom, next to hydraulic tank"
+      "x": 0.0,
+      "y": -0.58,
+      "z": 0.05,
+      "desc": "Reservoir-Ausgang (Pumpe Saugseite)",
+      "loc": "Rumpf Mitte unten, neben Hydrauliktank"
     },
     {
       "id": "N02",
-      "x": 0.246,
-      "y": 1.695,
-      "z": -0.128,
-      "desc": "Pump P1 outlet (high pressure ~209 bar)",
-      "loc": "Fuselage center, pressure line"
+      "x": 0.0,
+      "y": -0.52,
+      "z": 0.12,
+      "desc": "Pumpe P1 Ausgang (Hochdruck ~209 bar)",
+      "loc": "Rumpf Mitte, Druckleitung"
     },
     {
       "id": "N03",
-      "x": 0.318,
-      "y": 1.73,
-      "z": -0.128,
-      "desc": "Distributor after pump (after R03)",
-      "loc": "Fuselage center, main distributor"
+      "x": 0.0,
+      "y": -0.48,
+      "z": 0.25,
+      "desc": "Verteiler nach Pumpe (nach R03)",
+      "loc": "Rumpf Mitte, Hauptverteiler"
     },
     {
       "id": "N04",
-      "x": 0.153,
-      "y": 1.555,
-      "z": -0.128,
-      "desc": "Return manifold node",
-      "loc": "Fuselage bottom, return collector"
+      "x": 0.0,
+      "y": -0.68,
+      "z": -0.05,
+      "desc": "Rücklauf-Sammelknoten (Return Manifold)",
+      "loc": "Rumpf unten, Rücklaufsammler"
     },
     {
       "id": "N05",
-      "x": 0.18,
-      "y": 1.695,
-      "z": -1.312,
-      "desc": "Left wing inner branch (before Spoiler 1)",
-      "loc": "Left wing root"
+      "x": -0.9,
+      "y": 0.55,
+      "z": 0.0,
+      "desc": "Linke Tragfläche Abzweig innen (vor Spoiler 1)",
+      "loc": "Linker Flügelansatz"
     },
     {
       "id": "N06",
-      "x": 0.136,
-      "y": 1.713,
-      "z": -1.641,
-      "desc": "Left wing return node",
-      "loc": "Left wing inner"
+      "x": -1.15,
+      "y": 0.53,
+      "z": -0.08,
+      "desc": "Linke Tragfläche Rücklauf-Knoten",
+      "loc": "Linker Flügel innen"
     },
     {
       "id": "N07",
-      "x": -0.068,
-      "y": 1.73,
-      "z": -2.431,
-      "desc": "Aileron Left inlet (before UAL)",
-      "loc": "Left wing center"
+      "x": -1.75,
+      "y": 0.49,
+      "z": -0.45,
+      "desc": "Querruder Links Eingang (vor UAL)",
+      "loc": "Linker Flügel Mitte"
     },
     {
       "id": "N08",
-      "x": -0.123,
-      "y": 1.73,
-      "z": -2.628,
-      "desc": "Aileron Left outlet (after UAL)",
-      "loc": "Left wing center"
+      "x": -1.9,
+      "y": 0.48,
+      "z": -0.55,
+      "desc": "Querruder Links Ausgang (nach UAL)",
+      "loc": "Linker Flügel Mitte"
     },
     {
       "id": "N09",
-      "x": 0.042,
-      "y": 1.713,
-      "z": -2.036,
-      "desc": "Spoiler 5 Left outlet (after U5L)",
-      "loc": "Left wing inner-center"
+      "x": -1.45,
+      "y": 0.51,
+      "z": -0.25,
+      "desc": "Spoiler 5 Links Ausgang (nach U5L)",
+      "loc": "Linker Flügel innen-mitte"
     },
     {
       "id": "N10",
-      "x": 0.125,
-      "y": 1.713,
-      "z": -1.444,
-      "desc": "Spoiler 1 Left outlet (after U1L)",
-      "loc": "Left wing root"
+      "x": -1.0,
+      "y": 0.54,
+      "z": -0.1,
+      "desc": "Spoiler 1 Links Ausgang (nach U1L)",
+      "loc": "Linker Flügelansatz"
     },
     {
       "id": "N11",
-      "x": -0.068,
-      "y": 1.695,
-      "z": -0.523,
-      "desc": "Distributor center-left (fuselage)",
-      "loc": "Fuselage center left"
+      "x": -0.3,
+      "y": -0.52,
+      "z": -0.45,
+      "desc": "Verteiler Mitte-Links (Rumpf)",
+      "loc": "Rumpf Mitte links"
     },
     {
       "id": "N12",
-      "x": -0.14,
-      "y": 1.695,
-      "z": -0.128,
-      "desc": "Distributor center (fuselage)",
-      "loc": "Fuselage center"
+      "x": 0.0,
+      "y": -0.52,
+      "z": -0.58,
+      "desc": "Verteiler Mitte (Rumpf)",
+      "loc": "Rumpf Mitte"
     },
     {
       "id": "N13",
-      "x": -1.116,
-      "y": 1.888,
-      "z": -0.128,
-      "desc": "Trimmable Horizontal Stabilizer THS (before UTS)",
-      "loc": "Tail, horizontal stabilizer center"
+      "x": 0.0,
+      "y": -0.3,
+      "z": -2.35,
+      "desc": "Trimmbare Höhenflosse THS (vor UTS)",
+      "loc": "Heck, Höhenleitwerk Mitte"
     },
     {
       "id": "N14",
-      "x": -1.089,
-      "y": 1.888,
-      "z": -0.983,
-      "desc": "Elevator Left inlet (before ULE)",
-      "loc": "Tail, left elevator"
+      "x": -0.65,
+      "y": -0.3,
+      "z": -2.3,
+      "desc": "Höhenruder Links Eingang (vor ULE)",
+      "loc": "Heck, linkes Höhenruder"
     },
     {
       "id": "N15",
-      "x": -1.006,
-      "y": 1.905,
-      "z": -0.128,
-      "desc": "Yaw Damper inlet (before UYD)",
-      "loc": "Tail, before rudder"
+      "x": 0.0,
+      "y": -0.28,
+      "z": -2.15,
+      "desc": "Gierungsdämpfer Eingang (vor UYD)",
+      "loc": "Heck, vor Seitenruder"
     },
     {
       "id": "N16",
-      "x": -1.171,
-      "y": 2.412,
-      "z": -0.128,
-      "desc": "Rudder Upper inlet (before URU)",
-      "loc": "Vertical stabilizer top"
+      "x": 0.0,
+      "y": 0.3,
+      "z": -2.45,
+      "desc": "Seitenruder Oben Eingang (vor URU)",
+      "loc": "Seitenleitwerk oben"
     },
     {
       "id": "N17",
-      "x": -1.227,
-      "y": 2.544,
-      "z": -0.128,
-      "desc": "Rudder Upper outlet (after URU)",
-      "loc": "Vertical stabilizer top"
+      "x": 0.0,
+      "y": 0.45,
+      "z": -2.55,
+      "desc": "Seitenruder Oben Ausgang (nach URU)",
+      "loc": "Seitenleitwerk oben"
     },
     {
       "id": "N18",
-      "x": -1.061,
-      "y": 1.905,
-      "z": -0.128,
-      "desc": "Yaw Damper outlet (after UYD)",
-      "loc": "Tail, after rudder"
+      "x": 0.0,
+      "y": -0.28,
+      "z": -2.25,
+      "desc": "Gierungsdämpfer Ausgang (nach UYD)",
+      "loc": "Heck, nach Seitenruder"
     },
     {
       "id": "N19",
-      "x": -1.144,
-      "y": 1.888,
-      "z": -1.049,
-      "desc": "Elevator Left outlet (after ULE)",
-      "loc": "Tail, left elevator"
+      "x": -0.7,
+      "y": -0.3,
+      "z": -2.4,
+      "desc": "Höhenruder Links Ausgang (nach ULE)",
+      "loc": "Heck, linkes Höhenruder"
     },
     {
       "id": "N20",
-      "x": -1.199,
-      "y": 1.905,
-      "z": -0.128,
-      "desc": "THS outlet (after UTS)",
-      "loc": "Tail, horizontal stabilizer"
+      "x": 0.0,
+      "y": -0.28,
+      "z": -2.5,
+      "desc": "THS Ausgang (nach UTS)",
+      "loc": "Heck, Höhenleitwerk"
     },
     {
       "id": "N21",
-      "x": -0.068,
-      "y": 1.695,
-      "z": 0.267,
-      "desc": "Distributor center-right (fuselage)",
-      "loc": "Fuselage center right"
+      "x": 0.3,
+      "y": -0.52,
+      "z": -0.45,
+      "desc": "Verteiler Mitte-Rechts (Rumpf)",
+      "loc": "Rumpf Mitte rechts"
     },
     {
       "id": "N22",
-      "x": -0.162,
-      "y": 1.642,
-      "z": 0.293,
-      "desc": "Return center-right",
-      "loc": "Fuselage center right"
+      "x": 0.32,
+      "y": -0.58,
+      "z": -0.62,
+      "desc": "Rücklauf Mitte-Rechts",
+      "loc": "Rumpf Mitte rechts"
     },
     {
       "id": "N23",
-      "x": -0.272,
-      "y": 1.695,
-      "z": 0.503,
-      "desc": "Right side distributor",
-      "loc": "Fuselage right"
+      "x": 0.48,
+      "y": -0.52,
+      "z": -0.82,
+      "desc": "Rechte Seite Verteiler",
+      "loc": "Rumpf rechts"
     },
     {
       "id": "N24",
-      "x": 0.097,
-      "y": 1.66,
-      "z": -0.128,
-      "desc": "Flaps inlet (before UFL)",
-      "loc": "Fuselage center, under wing"
+      "x": 0.0,
+      "y": -0.56,
+      "z": -0.15,
+      "desc": "Landeklappen Eingang (vor UFL)",
+      "loc": "Rumpf Mitte, unter Flügel"
     },
     {
       "id": "N25",
-      "x": -0.013,
-      "y": 1.66,
-      "z": -0.128,
-      "desc": "Flaps outlet (after UFL)",
-      "loc": "Fuselage center, under wing"
+      "x": 0.0,
+      "y": -0.56,
+      "z": -0.35,
+      "desc": "Landeklappen Ausgang (nach UFL)",
+      "loc": "Rumpf Mitte, unter Flügel"
     },
     {
       "id": "N26",
-      "x": 0.373,
-      "y": 1.73,
-      "z": -1.312,
-      "desc": "Slats Left inlet (before USL)",
-      "loc": "Left wing leading edge"
+      "x": -0.9,
+      "y": 0.55,
+      "z": 1.05,
+      "desc": "Vorflügel Links Eingang (vor USL)",
+      "loc": "Linker Flügel Vorderkante"
     },
     {
       "id": "N27",
-      "x": 0.346,
-      "y": 1.747,
-      "z": -2.036,
-      "desc": "Slats Left outlet (after USL)",
-      "loc": "Left wing leading edge"
+      "x": -1.45,
+      "y": 0.51,
+      "z": 1.0,
+      "desc": "Vorflügel Links Ausgang (nach USL)",
+      "loc": "Linker Flügel Vorderkante"
     },
     {
       "id": "N28",
-      "x": -0.785,
-      "y": 1.747,
-      "z": 0.503,
-      "desc": "Right side tail distributor",
-      "loc": "Fuselage right rear"
+      "x": 0.48,
+      "y": -0.46,
+      "z": -1.75,
+      "desc": "Rechte Seite Heck-Verteiler",
+      "loc": "Rumpf rechts hinten"
     },
     {
       "id": "N29",
-      "x": 0.042,
-      "y": 1.695,
-      "z": 0.267,
-      "desc": "Right side after RLF",
-      "loc": "Fuselage right"
+      "x": 0.3,
+      "y": -0.52,
+      "z": -0.25,
+      "desc": "Rechte Seite nach RLF",
+      "loc": "Rumpf rechts"
     },
     {
       "id": "N30",
-      "x": 0.18,
-      "y": 1.695,
-      "z": 1.056,
-      "desc": "Right wing branch (before Spoiler 1R)",
-      "loc": "Right wing root"
+      "x": 0.9,
+      "y": 0.55,
+      "z": 0.0,
+      "desc": "Rechte Tragfläche Abzweig (vor Spoiler 1R)",
+      "loc": "Rechter Flügelansatz"
     },
     {
       "id": "N31",
-      "x": 0.136,
-      "y": 1.713,
-      "z": 1.385,
-      "desc": "Right wing return",
-      "loc": "Right wing inner"
+      "x": 1.15,
+      "y": 0.53,
+      "z": -0.08,
+      "desc": "Rechte Tragfläche Rücklauf",
+      "loc": "Rechter Flügel innen"
     },
     {
       "id": "N32",
-      "x": -0.068,
-      "y": 1.73,
-      "z": 2.174,
-      "desc": "Aileron Right inlet (before UAR)",
-      "loc": "Right wing center"
+      "x": 1.75,
+      "y": 0.49,
+      "z": -0.45,
+      "desc": "Querruder Rechts Eingang (vor UAR)",
+      "loc": "Rechter Flügel Mitte"
     },
     {
       "id": "N33",
-      "x": -0.123,
-      "y": 1.73,
-      "z": 2.372,
-      "desc": "Aileron Right outlet (after UAR)",
-      "loc": "Right wing center"
+      "x": 1.9,
+      "y": 0.48,
+      "z": -0.55,
+      "desc": "Querruder Rechts Ausgang (nach UAR)",
+      "loc": "Rechter Flügel Mitte"
     },
     {
       "id": "N34",
-      "x": 0.042,
-      "y": 1.713,
-      "z": 1.78,
-      "desc": "Spoiler 5 Right outlet (after U5R)",
-      "loc": "Right wing inner-center"
+      "x": 1.45,
+      "y": 0.51,
+      "z": -0.25,
+      "desc": "Spoiler 5 Rechts Ausgang (nach U5R)",
+      "loc": "Rechter Flügel innen-mitte"
     },
     {
       "id": "N35",
-      "x": 0.125,
-      "y": 1.713,
-      "z": 1.188,
-      "desc": "Spoiler 1 Right outlet (after U1R)",
-      "loc": "Right wing root"
+      "x": 1.0,
+      "y": 0.54,
+      "z": -0.1,
+      "desc": "Spoiler 1 Rechts Ausgang (nach U1R)",
+      "loc": "Rechter Flügelansatz"
     },
     {
       "id": "N36",
-      "x": 0.015,
-      "y": 1.555,
-      "z": -0.128,
-      "desc": "Return manifold node 2",
-      "loc": "Fuselage bottom"
+      "x": 0.0,
+      "y": -0.68,
+      "z": -0.3,
+      "desc": "Rücklauf-Sammelknoten 2",
+      "loc": "Rumpf unten"
     },
     {
       "id": "N37",
-      "x": 0.373,
-      "y": 1.73,
-      "z": -0.128,
-      "desc": "Distributor after R04 (center)",
-      "loc": "Fuselage center"
+      "x": 0.0,
+      "y": -0.48,
+      "z": 0.35,
+      "desc": "Verteiler nach R04 (Mitte)",
+      "loc": "Rumpf Mitte"
     },
     {
       "id": "N38",
-      "x": 0.114,
-      "y": 1.625,
-      "z": -0.128,
-      "desc": "Return before reservoir",
-      "loc": "Fuselage bottom, near tank"
+      "x": 0.0,
+      "y": -0.6,
+      "z": -0.12,
+      "desc": "Rücklauf vor Reservoir",
+      "loc": "Rumpf unten, nahe Tank"
     },
     {
       "id": "N39",
-      "x": 0.136,
-      "y": 1.59,
-      "z": 0.069,
-      "desc": "PTU motor return",
-      "loc": "Fuselage bottom center (PTU)"
+      "x": 0.15,
+      "y": -0.64,
+      "z": -0.08,
+      "desc": "PTU Motor Rücklauf",
+      "loc": "Rumpf unten Mitte (PTU)"
     },
     {
       "id": "N40",
-      "x": 0.18,
-      "y": 1.59,
-      "z": -0.326,
-      "desc": "PTU System B inlet",
-      "loc": "Fuselage bottom center (PTU)"
+      "x": -0.15,
+      "y": -0.64,
+      "z": 0.0,
+      "desc": "PTU System B Zulauf",
+      "loc": "Rumpf unten Mitte (PTU)"
     },
     {
       "id": "N41",
-      "x": 0.246,
-      "y": 1.608,
-      "z": -0.326,
-      "desc": "PTU System B after pump",
-      "loc": "Fuselage bottom center (PTU)"
+      "x": -0.15,
+      "y": -0.62,
+      "z": 0.12,
+      "desc": "PTU System B nach Pumpe",
+      "loc": "Rumpf unten Mitte (PTU)"
     },
     {
       "id": "N42",
-      "x": 0.313,
-      "y": 1.625,
-      "z": -0.365,
-      "desc": "PTU System B after actuator",
-      "loc": "Fuselage bottom center (PTU)"
+      "x": -0.18,
+      "y": -0.6,
+      "z": 0.24,
+      "desc": "PTU System B nach Aktuator",
+      "loc": "Rumpf unten Mitte (PTU)"
     }
   ],
   "components": [
@@ -344,210 +344,210 @@
       "from": "N01",
       "to": "N02",
       "type": "P",
-      "desc": "Main pump (EDP)"
+      "desc": "Hauptpumpe (EDP)"
     },
     {
       "name": "Ucv1",
       "from": "N02",
       "to": "N03",
       "type": "Ucv",
-      "desc": "Relief valve 205 bar"
+      "desc": "Überdruckventil 205 bar"
     },
     {
       "name": "R01",
       "from": "N01",
       "to": "S",
       "type": "R",
-      "desc": "Reservoir line"
+      "desc": "Reservoir-Leitung"
     },
     {
       "name": "R03",
       "from": "N02",
       "to": "N03",
       "type": "R",
-      "desc": "High pressure distributor"
+      "desc": "Hochdruck-Verteiler"
     },
     {
       "name": "R04",
       "from": "N03",
       "to": "N37",
       "type": "R",
-      "desc": "Main distributor"
+      "desc": "Hauptverteiler"
     },
     {
       "name": "R05",
       "from": "N04",
       "to": "N05",
       "type": "R",
-      "desc": "Supply line left wing"
+      "desc": "Zuleitung linker Flügel"
     },
     {
       "name": "R06",
       "from": "N05",
       "to": "N06",
       "type": "R",
-      "desc": "Left wing pressure line"
+      "desc": "Linker Flügel Druckleitung"
     },
     {
       "name": "R07",
       "from": "N06",
       "to": "N07",
       "type": "R",
-      "desc": "To aileron left"
+      "desc": "Zum Querruder links"
     },
     {
       "name": "UAL",
       "from": "N07",
       "to": "N08",
       "type": "U",
-      "desc": "Aileron Left"
+      "desc": "Querruder Links (Aileron Left)"
     },
     {
       "name": "U5L",
       "from": "N06",
       "to": "N09",
       "type": "U",
-      "desc": "Spoiler 5 Left"
+      "desc": "Spoiler 5 Links"
     },
     {
       "name": "U1L",
       "from": "N05",
       "to": "N10",
       "type": "U",
-      "desc": "Spoiler 1 Left"
+      "desc": "Spoiler 1 Links"
     },
     {
       "name": "R11",
       "from": "N11",
       "to": "N12",
       "type": "R",
-      "desc": "Fuselage line center"
+      "desc": "Rumpfleitung Mitte"
     },
     {
       "name": "R13",
       "from": "N12",
       "to": "N13",
       "type": "R",
-      "desc": "Supply line THS"
+      "desc": "Zuleitung THS"
     },
     {
       "name": "UTS",
       "from": "N13",
       "to": "N20",
       "type": "U",
-      "desc": "Trimmable Horizontal Stabilizer (THS)"
+      "desc": "Trimmbare Höhenflosse (THS)"
     },
     {
       "name": "ULE",
       "from": "N14",
       "to": "N19",
       "type": "U",
-      "desc": "Elevator Left"
+      "desc": "Höhenruder Links (Elevator Left)"
     },
     {
       "name": "R16",
       "from": "N15",
       "to": "N16",
       "type": "R",
-      "desc": "Supply line rudder"
+      "desc": "Zuleitung Seitenruder"
     },
     {
       "name": "URU",
       "from": "N16",
       "to": "N17",
       "type": "U",
-      "desc": "Rudder Upper"
+      "desc": "Seitenruder Oben (Rudder Upper)"
     },
     {
       "name": "UYD",
       "from": "N15",
       "to": "N18",
       "type": "U",
-      "desc": "Yaw Damper"
+      "desc": "Gierungsdämpfer (Yaw Damper)"
     },
     {
       "name": "UFL",
       "from": "N24",
       "to": "N25",
       "type": "U",
-      "desc": "Flaps"
+      "desc": "Landeklappen (Flaps)"
     },
     {
       "name": "USL",
       "from": "N26",
       "to": "N27",
       "type": "U",
-      "desc": "Slats Left"
+      "desc": "Vorflügel Links (Slats Left)"
     },
     {
       "name": "R30",
       "from": "N30",
       "to": "N31",
       "type": "R",
-      "desc": "Right wing pressure line"
+      "desc": "Rechter Flügel Druckleitung"
     },
     {
       "name": "UAR",
       "from": "N32",
       "to": "N33",
       "type": "U",
-      "desc": "Aileron Right"
+      "desc": "Querruder Rechts (Aileron Right)"
     },
     {
       "name": "U5R",
       "from": "N31",
       "to": "N34",
       "type": "U",
-      "desc": "Spoiler 5 Right"
+      "desc": "Spoiler 5 Rechts"
     },
     {
       "name": "U1R",
       "from": "N30",
       "to": "N35",
       "type": "U",
-      "desc": "Spoiler 1 Right"
+      "desc": "Spoiler 1 Rechts"
     },
     {
       "name": "Upt1a",
       "from": "N39",
       "to": "N02",
       "type": "Upt",
-      "desc": "PTU motor (System A)"
+      "desc": "PTU Motor (System A)"
     },
     {
       "name": "Upt1b",
       "from": "N40",
       "to": "N41",
       "type": "Upt",
-      "desc": "PTU pump (System B)"
+      "desc": "PTU Pumpe (System B)"
     },
     {
       "name": "Rz40",
       "from": "N41",
       "to": "N42",
       "type": "Rz",
-      "desc": "PTU System B actuator"
+      "desc": "PTU System B Aktuator"
     },
     {
       "name": "R39",
       "from": "N39",
       "to": "S",
       "type": "R",
-      "desc": "PTU motor return"
+      "desc": "PTU Motor Rücklauf"
     },
     {
       "name": "R40",
       "from": "S",
       "to": "N40",
       "type": "R",
-      "desc": "PTU System B inlet"
+      "desc": "PTU System B Zulauf"
     },
     {
       "name": "R41",
       "from": "N42",
       "to": "S",
       "type": "R",
-      "desc": "PTU System B return"
+      "desc": "PTU System B Rücklauf"
     }
   ]
 }

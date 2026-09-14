@@ -1,11 +1,11 @@
 {
-  "info": "A320 hydraulic node coordinates, calibrated to the STL model and verified inside the hull. x=span (positive=starboard), y=height (positive=up), z=longitudinal (positive=tail, negative=nose). Reservoir S omitted. Coordinates affect only the 3D visualization; hydraulic topology and physics stay in the solver.",
+  "info": "A320 hydraulic node coordinates, calibrated to the STL model and verified inside the hull. x=span (positive=starboard), y=height (positive=up), z=longitudinal (positive=nose, negative=tail). Reservoir S omitted. Coordinates affect only the 3D visualization; hydraulic topology and physics stay in the solver.",
   "nodes": [
     {
       "id": "N01",
       "x": -0.133,
       "y": -0.487,
-      "z": -1.346,
+      "z": 1.09,
       "desc": "Reservoir outlet (pump suction side)",
       "loc": "Fuselage center bottom, next to hydraulic tank"
     },
@@ -13,7 +13,7 @@
       "id": "N02",
       "x": 0.133,
       "y": -0.225,
-      "z": -1.154,
+      "z": 0.898,
       "desc": "Pump P1 outlet (high pressure ~209 bar)",
       "loc": "Fuselage center, pressure line"
     },
@@ -21,7 +21,7 @@
       "id": "N03",
       "x": 0.0,
       "y": -0.1,
-      "z": -0.962,
+      "z": 0.706,
       "desc": "Distributor after pump (after R03)",
       "loc": "Fuselage center, main distributor"
     },
@@ -29,7 +29,7 @@
       "id": "N04",
       "x": 0.0,
       "y": -0.6,
-      "z": -0.577,
+      "z": 0.321,
       "desc": "Return manifold node",
       "loc": "Fuselage bottom, return collector"
     },
@@ -37,7 +37,7 @@
       "id": "N05",
       "x": -0.8,
       "y": -0.45,
-      "z": -0.365,
+      "z": 0.109,
       "desc": "Left wing inner branch (before Spoiler 1)",
       "loc": "Left wing root"
     },
@@ -45,7 +45,7 @@
       "id": "N06",
       "x": -1.333,
       "y": -0.325,
-      "z": -0.218,
+      "z": -0.038,
       "desc": "Left wing return node",
       "loc": "Left wing inner"
     },
@@ -53,7 +53,7 @@
       "id": "N07",
       "x": -2.4,
       "y": -0.1,
-      "z": 0.16,
+      "z": -0.416,
       "desc": "Aileron Left inlet (before UAL)",
       "loc": "Left wing center"
     },
@@ -61,7 +61,7 @@
       "id": "N08",
       "x": -2.6,
       "y": -0.045,
-      "z": 0.237,
+      "z": -0.493,
       "desc": "Aileron Left outlet (after UAL)",
       "loc": "Left wing center"
     },
@@ -69,7 +69,7 @@
       "id": "N09",
       "x": -2.067,
       "y": -0.163,
-      "z": 0.04,
+      "z": -0.296,
       "desc": "Spoiler 5 Left outlet (after U5L)",
       "loc": "Left wing inner-center"
     },
@@ -77,7 +77,7 @@
       "id": "N10",
       "x": -1.733,
       "y": -0.233,
-      "z": -0.078,
+      "z": -0.178,
       "desc": "Spoiler 1 Left outlet (after U1L)",
       "loc": "Left wing root"
     },
@@ -85,7 +85,7 @@
       "id": "N11",
       "x": -0.16,
       "y": 0.1,
-      "z": 0.513,
+      "z": -0.769,
       "desc": "Distributor center-left (fuselage)",
       "loc": "Fuselage center left"
     },
@@ -93,7 +93,7 @@
       "id": "N12",
       "x": -0.16,
       "y": -0.15,
-      "z": 0.769,
+      "z": -1.025,
       "desc": "Distributor center (fuselage)",
       "loc": "Fuselage center"
     },
@@ -101,7 +101,7 @@
       "id": "N13",
       "x": -0.08,
       "y": -0.175,
-      "z": 2.308,
+      "z": -2.564,
       "desc": "Trimmable Horizontal Stabilizer THS (before UTS)",
       "loc": "Tail, horizontal stabilizer center"
     },
@@ -109,7 +109,7 @@
       "id": "N14",
       "x": -0.4,
       "y": 0.1,
-      "z": 2.372,
+      "z": -2.628,
       "desc": "Elevator Left inlet (before ULE)",
       "loc": "Tail, left elevator"
     },
@@ -117,7 +117,7 @@
       "id": "N15",
       "x": 0.4,
       "y": 0.1,
-      "z": 2.372,
+      "z": -2.628,
       "desc": "Yaw Damper inlet (before UYD)",
       "loc": "Tail, before rudder"
     },
@@ -125,7 +125,7 @@
       "id": "N16",
       "x": 0.0,
       "y": 1.475,
-      "z": 2.372,
+      "z": -2.628,
       "desc": "Rudder Upper inlet (before URU)",
       "loc": "Vertical stabilizer top"
     },
@@ -133,7 +133,7 @@
       "id": "N17",
       "x": 0.0,
       "y": 2.1,
-      "z": 2.628,
+      "z": -2.884,
       "desc": "Rudder Upper outlet (after URU)",
       "loc": "Vertical stabilizer top"
     },
@@ -141,7 +141,7 @@
       "id": "N18",
       "x": 0.4,
       "y": 0.1,
-      "z": 2.5,
+      "z": -2.756,
       "desc": "Yaw Damper outlet (after UYD)",
       "loc": "Tail, after rudder"
     },
@@ -149,7 +149,7 @@
       "id": "N19",
       "x": -0.733,
       "y": 0.2,
-      "z": 2.538,
+      "z": -2.794,
       "desc": "Elevator Left outlet (after ULE)",
       "loc": "Tail, left elevator"
     },
@@ -157,7 +157,7 @@
       "id": "N20",
       "x": 0.0,
       "y": 0.1,
-      "z": 2.628,
+      "z": -2.884,
       "desc": "THS outlet (after UTS)",
       "loc": "Tail, horizontal stabilizer"
     },
@@ -165,7 +165,7 @@
       "id": "N21",
       "x": 0.827,
       "y": 0.275,
-      "z": 2.628,
+      "z": -2.884,
       "desc": "Distributor center-right (fuselage)",
       "loc": "Fuselage center right"
     },
@@ -173,7 +173,7 @@
       "id": "N22",
       "x": 0.16,
       "y": -0.1,
-      "z": 1.346,
+      "z": -1.602,
       "desc": "Return center-right",
       "loc": "Fuselage center right"
     },
@@ -181,7 +181,7 @@
       "id": "N23",
       "x": 0.187,
       "y": -0.15,
-      "z": 0.769,
+      "z": -1.025,
       "desc": "Right side distributor",
       "loc": "Fuselage right"
     },
@@ -189,7 +189,7 @@
       "id": "N24",
       "x": 0.187,
       "y": -0.45,
-      "z": 0.962,
+      "z": -1.218,
       "desc": "Flaps inlet (before UFL)",
       "loc": "Fuselage center, under wing"
     },
@@ -197,7 +197,7 @@
       "id": "N25",
       "x": 0.187,
       "y": -0.55,
-      "z": 1.154,
+      "z": -1.41,
       "desc": "Flaps outlet (after UFL)",
       "loc": "Fuselage center, under wing"
     },
@@ -205,7 +205,7 @@
       "id": "N26",
       "x": -1.333,
       "y": -0.325,
-      "z": -0.474,
+      "z": 0.218,
       "desc": "Slats Left inlet (before USL)",
       "loc": "Left wing leading edge"
     },
@@ -213,7 +213,7 @@
       "id": "N27",
       "x": -2.067,
       "y": -0.163,
-      "z": -0.121,
+      "z": -0.135,
       "desc": "Slats Left outlet (after USL)",
       "loc": "Left wing leading edge"
     },
@@ -221,7 +221,7 @@
       "id": "N28",
       "x": -0.027,
       "y": -0.45,
-      "z": 1.346,
+      "z": -1.602,
       "desc": "Right side tail distributor",
       "loc": "Fuselage right rear"
     },
@@ -229,7 +229,7 @@
       "id": "N29",
       "x": 0.16,
       "y": 0.1,
-      "z": 0.513,
+      "z": -0.769,
       "desc": "Right side after RLF",
       "loc": "Fuselage right"
     },
@@ -237,7 +237,7 @@
       "id": "N30",
       "x": 0.8,
       "y": -0.45,
-      "z": -0.365,
+      "z": 0.109,
       "desc": "Right wing branch (before Spoiler 1R)",
       "loc": "Right wing root"
     },
@@ -245,7 +245,7 @@
       "id": "N31",
       "x": 1.333,
       "y": -0.325,
-      "z": -0.218,
+      "z": -0.038,
       "desc": "Right wing return",
       "loc": "Right wing inner"
     },
@@ -253,7 +253,7 @@
       "id": "N32",
       "x": 2.4,
       "y": -0.1,
-      "z": 0.16,
+      "z": -0.416,
       "desc": "Aileron Right inlet (before UAR)",
       "loc": "Right wing center"
     },
@@ -261,7 +261,7 @@
       "id": "N33",
       "x": 2.6,
       "y": -0.045,
-      "z": 0.237,
+      "z": -0.493,
       "desc": "Aileron Right outlet (after UAR)",
       "loc": "Right wing center"
     },
@@ -269,7 +269,7 @@
       "id": "N34",
       "x": 2.067,
       "y": -0.163,
-      "z": 0.04,
+      "z": -0.296,
       "desc": "Spoiler 5 Right outlet (after U5R)",
       "loc": "Right wing inner-center"
     },
@@ -277,7 +277,7 @@
       "id": "N35",
       "x": 1.733,
       "y": -0.233,
-      "z": -0.078,
+      "z": -0.178,
       "desc": "Spoiler 1 Right outlet (after U1R)",
       "loc": "Right wing root"
     },
@@ -285,7 +285,7 @@
       "id": "N36",
       "x": 0.0,
       "y": -0.65,
-      "z": 1.154,
+      "z": -1.41,
       "desc": "Return manifold node 2",
       "loc": "Fuselage bottom"
     },
@@ -293,7 +293,7 @@
       "id": "N37",
       "x": -0.133,
       "y": 0.1,
-      "z": -0.769,
+      "z": 0.513,
       "desc": "Distributor after R04 (center)",
       "loc": "Fuselage center"
     },
@@ -301,7 +301,7 @@
       "id": "N38",
       "x": -0.187,
       "y": -0.55,
-      "z": 0.962,
+      "z": -1.218,
       "desc": "Return before reservoir",
       "loc": "Fuselage bottom, near tank"
     },
@@ -309,7 +309,7 @@
       "id": "N39",
       "x": 0.16,
       "y": -0.65,
-      "z": -0.385,
+      "z": 0.129,
       "desc": "PTU motor return",
       "loc": "Fuselage bottom center (PTU)"
     },
@@ -317,7 +317,7 @@
       "id": "N40",
       "x": -0.2,
       "y": -0.7,
-      "z": -0.192,
+      "z": -0.064,
       "desc": "PTU System B inlet",
       "loc": "Fuselage bottom center (PTU)"
     },
@@ -325,7 +325,7 @@
       "id": "N41",
       "x": -0.2,
       "y": -0.7,
-      "z": 0.0,
+      "z": -0.256,
       "desc": "PTU System B after pump",
       "loc": "Fuselage bottom center (PTU)"
     },
@@ -333,7 +333,7 @@
       "id": "N42",
       "x": -0.107,
       "y": -0.8,
-      "z": 0.192,
+      "z": -0.448,
       "desc": "PTU System B after actuator",
       "loc": "Fuselage bottom center (PTU)"
     }

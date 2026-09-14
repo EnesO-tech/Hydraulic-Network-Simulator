@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "N01",
-      "x": -0.133,
+      "x": 0.133,
       "y": -0.487,
       "z": 1.09,
       "desc": "Reservoir outlet (pump suction side)",
@@ -11,7 +11,7 @@
     },
     {
       "id": "N02",
-      "x": 0.133,
+      "x": -0.133,
       "y": -0.225,
       "z": 0.898,
       "desc": "Pump P1 outlet (high pressure ~209 bar)",
@@ -19,7 +19,7 @@
     },
     {
       "id": "N03",
-      "x": 0.0,
+      "x": -0.0,
       "y": -0.1,
       "z": 0.706,
       "desc": "Distributor after pump (after R03)",
@@ -27,7 +27,7 @@
     },
     {
       "id": "N04",
-      "x": 0.0,
+      "x": -0.0,
       "y": -0.6,
       "z": 0.321,
       "desc": "Return manifold node",
@@ -35,7 +35,7 @@
     },
     {
       "id": "N05",
-      "x": -0.8,
+      "x": 0.8,
       "y": -0.45,
       "z": 0.109,
       "desc": "Left wing inner branch (before Spoiler 1)",
@@ -43,7 +43,7 @@
     },
     {
       "id": "N06",
-      "x": -1.333,
+      "x": 1.333,
       "y": -0.325,
       "z": -0.038,
       "desc": "Left wing return node",
@@ -51,7 +51,7 @@
     },
     {
       "id": "N07",
-      "x": -2.4,
+      "x": 2.4,
       "y": -0.1,
       "z": -0.416,
       "desc": "Aileron Left inlet (before UAL)",
@@ -59,7 +59,7 @@
     },
     {
       "id": "N08",
-      "x": -2.6,
+      "x": 2.6,
       "y": -0.045,
       "z": -0.493,
       "desc": "Aileron Left outlet (after UAL)",
@@ -67,7 +67,7 @@
     },
     {
       "id": "N09",
-      "x": -2.067,
+      "x": 2.067,
       "y": -0.163,
       "z": -0.296,
       "desc": "Spoiler 5 Left outlet (after U5L)",
@@ -75,7 +75,7 @@
     },
     {
       "id": "N10",
-      "x": -1.733,
+      "x": 1.733,
       "y": -0.233,
       "z": -0.178,
       "desc": "Spoiler 1 Left outlet (after U1L)",
@@ -83,7 +83,7 @@
     },
     {
       "id": "N11",
-      "x": -0.16,
+      "x": 0.16,
       "y": 0.1,
       "z": -0.769,
       "desc": "Distributor center-left (fuselage)",
@@ -91,7 +91,7 @@
     },
     {
       "id": "N12",
-      "x": -0.16,
+      "x": 0.16,
       "y": -0.15,
       "z": -1.025,
       "desc": "Distributor center (fuselage)",
@@ -99,7 +99,7 @@
     },
     {
       "id": "N13",
-      "x": -0.08,
+      "x": 0.08,
       "y": -0.175,
       "z": -2.564,
       "desc": "Trimmable Horizontal Stabilizer THS (before UTS)",
@@ -107,7 +107,7 @@
     },
     {
       "id": "N14",
-      "x": -0.4,
+      "x": 0.4,
       "y": 0.1,
       "z": -2.628,
       "desc": "Elevator Left inlet (before ULE)",
@@ -115,7 +115,7 @@
     },
     {
       "id": "N15",
-      "x": 0.4,
+      "x": -0.4,
       "y": 0.1,
       "z": -2.628,
       "desc": "Yaw Damper inlet (before UYD)",
@@ -123,7 +123,7 @@
     },
     {
       "id": "N16",
-      "x": 0.0,
+      "x": -0.0,
       "y": 1.475,
       "z": -2.628,
       "desc": "Rudder Upper inlet (before URU)",
@@ -131,7 +131,7 @@
     },
     {
       "id": "N17",
-      "x": 0.0,
+      "x": -0.0,
       "y": 2.1,
       "z": -2.884,
       "desc": "Rudder Upper outlet (after URU)",
@@ -139,7 +139,7 @@
     },
     {
       "id": "N18",
-      "x": 0.4,
+      "x": -0.4,
       "y": 0.1,
       "z": -2.756,
       "desc": "Yaw Damper outlet (after UYD)",
@@ -147,7 +147,7 @@
     },
     {
       "id": "N19",
-      "x": -0.733,
+      "x": 0.733,
       "y": 0.2,
       "z": -2.794,
       "desc": "Elevator Left outlet (after ULE)",
@@ -155,7 +155,7 @@
     },
     {
       "id": "N20",
-      "x": 0.0,
+      "x": -0.0,
       "y": 0.1,
       "z": -2.884,
       "desc": "THS outlet (after UTS)",
@@ -163,7 +163,7 @@
     },
     {
       "id": "N21",
-      "x": 0.827,
+      "x": -0.827,
       "y": 0.275,
       "z": -2.884,
       "desc": "Distributor center-right (fuselage)",
@@ -171,7 +171,7 @@
     },
     {
       "id": "N22",
-      "x": 0.16,
+      "x": -0.16,
       "y": -0.1,
       "z": -1.602,
       "desc": "Return center-right",
@@ -179,7 +179,7 @@
     },
     {
       "id": "N23",
-      "x": 0.187,
+      "x": -0.187,
       "y": -0.15,
       "z": -1.025,
       "desc": "Right side distributor",
@@ -187,7 +187,7 @@
     },
     {
       "id": "N24",
-      "x": 0.187,
+      "x": -0.187,
       "y": -0.45,
       "z": -1.218,
       "desc": "Flaps inlet (before UFL)",
@@ -195,7 +195,7 @@
     },
     {
       "id": "N25",
-      "x": 0.187,
+      "x": -0.187,
       "y": -0.55,
       "z": -1.41,
       "desc": "Flaps outlet (after UFL)",
@@ -203,7 +203,7 @@
     },
     {
       "id": "N26",
-      "x": -1.333,
+      "x": 1.333,
       "y": -0.325,
       "z": 0.218,
       "desc": "Slats Left inlet (before USL)",
@@ -211,7 +211,7 @@
     },
     {
       "id": "N27",
-      "x": -2.067,
+      "x": 2.067,
       "y": -0.163,
       "z": -0.135,
       "desc": "Slats Left outlet (after USL)",
@@ -219,7 +219,7 @@
     },
     {
       "id": "N28",
-      "x": -0.027,
+      "x": 0.027,
       "y": -0.45,
       "z": -1.602,
       "desc": "Right side tail distributor",
@@ -227,7 +227,7 @@
     },
     {
       "id": "N29",
-      "x": 0.16,
+      "x": -0.16,
       "y": 0.1,
       "z": -0.769,
       "desc": "Right side after RLF",
@@ -235,7 +235,7 @@
     },
     {
       "id": "N30",
-      "x": 0.8,
+      "x": -0.8,
       "y": -0.45,
       "z": 0.109,
       "desc": "Right wing branch (before Spoiler 1R)",
@@ -243,7 +243,7 @@
     },
     {
       "id": "N31",
-      "x": 1.333,
+      "x": -1.333,
       "y": -0.325,
       "z": -0.038,
       "desc": "Right wing return",
@@ -251,7 +251,7 @@
     },
     {
       "id": "N32",
-      "x": 2.4,
+      "x": -2.4,
       "y": -0.1,
       "z": -0.416,
       "desc": "Aileron Right inlet (before UAR)",
@@ -259,7 +259,7 @@
     },
     {
       "id": "N33",
-      "x": 2.6,
+      "x": -2.6,
       "y": -0.045,
       "z": -0.493,
       "desc": "Aileron Right outlet (after UAR)",
@@ -267,7 +267,7 @@
     },
     {
       "id": "N34",
-      "x": 2.067,
+      "x": -2.067,
       "y": -0.163,
       "z": -0.296,
       "desc": "Spoiler 5 Right outlet (after U5R)",
@@ -275,7 +275,7 @@
     },
     {
       "id": "N35",
-      "x": 1.733,
+      "x": -1.733,
       "y": -0.233,
       "z": -0.178,
       "desc": "Spoiler 1 Right outlet (after U1R)",
@@ -283,7 +283,7 @@
     },
     {
       "id": "N36",
-      "x": 0.0,
+      "x": -0.0,
       "y": -0.65,
       "z": -1.41,
       "desc": "Return manifold node 2",
@@ -291,7 +291,7 @@
     },
     {
       "id": "N37",
-      "x": -0.133,
+      "x": 0.133,
       "y": 0.1,
       "z": 0.513,
       "desc": "Distributor after R04 (center)",
@@ -299,7 +299,7 @@
     },
     {
       "id": "N38",
-      "x": -0.187,
+      "x": 0.187,
       "y": -0.55,
       "z": -1.218,
       "desc": "Return before reservoir",
@@ -307,7 +307,7 @@
     },
     {
       "id": "N39",
-      "x": 0.16,
+      "x": -0.16,
       "y": -0.65,
       "z": 0.129,
       "desc": "PTU motor return",
@@ -315,7 +315,7 @@
     },
     {
       "id": "N40",
-      "x": -0.2,
+      "x": 0.2,
       "y": -0.7,
       "z": -0.064,
       "desc": "PTU System B inlet",
@@ -323,7 +323,7 @@
     },
     {
       "id": "N41",
-      "x": -0.2,
+      "x": 0.2,
       "y": -0.7,
       "z": -0.256,
       "desc": "PTU System B after pump",
@@ -331,7 +331,7 @@
     },
     {
       "id": "N42",
-      "x": -0.107,
+      "x": 0.107,
       "y": -0.8,
       "z": -0.448,
       "desc": "PTU System B after actuator",

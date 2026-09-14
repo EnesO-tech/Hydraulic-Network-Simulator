@@ -1,5 +1,5 @@
 {
-  "info": "A320 hydraulic node positions for 3D display. X=span (positive=starboard), Y=height (positive=up), Z=longitudinal. These coordinates affect only the 3D visualization; hydraulic topology and physics stay in the solver.",
+  "info": "A320 hydraulic node positions for 3D display. X=span, Y=height, Z=longitudinal. Coordinates affect only 3D visualization; topology and physics stay in the solver.",
   "nodes": [
     {
       "id": "N01",
@@ -36,7 +36,7 @@
     {
       "id": "N05",
       "x": -1.263,
-      "y": 1.281,
+      "y": 0.475,
       "z": -0.128,
       "desc": "Left wing inner branch (before Spoiler 1)",
       "loc": "Left wing root"
@@ -44,7 +44,7 @@
     {
       "id": "N06",
       "x": -1.614,
-      "y": 1.256,
+      "y": 0.475,
       "z": -0.217,
       "desc": "Left wing return node",
       "loc": "Left wing inner"
@@ -52,7 +52,7 @@
     {
       "id": "N07",
       "x": -2.456,
-      "y": 1.206,
+      "y": 0.475,
       "z": -0.626,
       "desc": "Aileron Left inlet (before UAL)",
       "loc": "Left wing center"
@@ -60,7 +60,7 @@
     {
       "id": "N08",
       "x": -2.667,
-      "y": 1.194,
+      "y": 0.475,
       "z": -0.737,
       "desc": "Aileron Left outlet (after UAL)",
       "loc": "Left wing center"
@@ -68,7 +68,7 @@
     {
       "id": "N09",
       "x": -2.035,
-      "y": 1.231,
+      "y": 0.475,
       "z": -0.405,
       "desc": "Spoiler 5 Left outlet (after U5L)",
       "loc": "Left wing inner-center"
@@ -76,7 +76,7 @@
     {
       "id": "N10",
       "x": -1.404,
-      "y": 1.268,
+      "y": 0.475,
       "z": -0.239,
       "desc": "Spoiler 1 Left outlet (after U1L)",
       "loc": "Left wing root"
@@ -204,7 +204,7 @@
     {
       "id": "N26",
       "x": -1.263,
-      "y": 1.281,
+      "y": 0.475,
       "z": 1.033,
       "desc": "Slats Left inlet (before USL)",
       "loc": "Left wing leading edge"
@@ -212,7 +212,7 @@
     {
       "id": "N27",
       "x": -2.035,
-      "y": 1.231,
+      "y": 0.475,
       "z": 0.978,
       "desc": "Slats Left outlet (after USL)",
       "loc": "Left wing leading edge"
@@ -236,7 +236,7 @@
     {
       "id": "N30",
       "x": 1.263,
-      "y": 1.281,
+      "y": 0.475,
       "z": -0.128,
       "desc": "Right wing branch (before Spoiler 1R)",
       "loc": "Right wing root"
@@ -244,7 +244,7 @@
     {
       "id": "N31",
       "x": 1.614,
-      "y": 1.256,
+      "y": 0.475,
       "z": -0.217,
       "desc": "Right wing return",
       "loc": "Right wing inner"
@@ -252,7 +252,7 @@
     {
       "id": "N32",
       "x": 2.456,
-      "y": 1.206,
+      "y": 0.475,
       "z": -0.626,
       "desc": "Aileron Right inlet (before UAR)",
       "loc": "Right wing center"
@@ -260,7 +260,7 @@
     {
       "id": "N33",
       "x": 2.667,
-      "y": 1.194,
+      "y": 0.475,
       "z": -0.737,
       "desc": "Aileron Right outlet (after UAR)",
       "loc": "Right wing center"
@@ -268,7 +268,7 @@
     {
       "id": "N34",
       "x": 2.035,
-      "y": 1.231,
+      "y": 0.475,
       "z": -0.405,
       "desc": "Spoiler 5 Right outlet (after U5R)",
       "loc": "Right wing inner-center"
@@ -276,7 +276,7 @@
     {
       "id": "N35",
       "x": 1.404,
-      "y": 1.268,
+      "y": 0.475,
       "z": -0.239,
       "desc": "Spoiler 1 Right outlet (after U1R)",
       "loc": "Right wing root"

@@ -354,15 +354,32 @@ td.c.custom-color{color:#fff}
 </div>
 
 <div id="tab-schematic" class="tab-content">
-<div style="flex:1;padding:20px;overflow:auto;">
+<div style="flex:1;padding:18px;overflow:auto;">
 <h2 style="color:#e94560;">Schematic Parking</h2>
-<div style="display:flex;flex-wrap:wrap;gap:15px;margin-top:15px;">
-<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('default')"><h3 style="color:#6fc3f7;">Default A320</h3><p style="color:#888;font-size:12px;">Standard Green System</p></div>
-<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('standard')"><h3 style="color:#6fc3f7;">Standard Sizing</h3><p style="color:#888;font-size:12px;">DIN ISO 8575</p></div>
-<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('aero')"><h3 style="color:#6fc3f7;">Aero Sizing</h3><p style="color:#888;font-size:12px;">Optimized for mass</p></div>
-<div style="flex:1;min-width:200px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;cursor:pointer;" onclick="loadSchematic('5000psi')"><h3 style="color:#6fc3f7;">5000 psi System</h3><p style="color:#888;font-size:12px;">High pressure variant</p></div>
+<p style="color:#888;font-size:12px;margin-top:4px;">Store network variants and load them back into the Comp grid. Useful for parameter studies and for keeping a reference case.</p>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:14px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Variant name</div>
+<input id="spName" type="text" placeholder="e.g. Baseline 28.2 mm" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:6px 9px;font-size:12px;width:230px;"></div>
+<div style="flex:1;min-width:220px;"><div style="color:#888;font-size:11px;margin-bottom:4px;">Note (optional)</div>
+<input id="spNote" type="text" placeholder="what is different in this variant" style="background:#1a1a2e;color:#e0e0e0;border:1px solid #2a2a4a;border-radius:4px;padding:6px 9px;font-size:12px;width:100%;"></div>
+<button onclick="spPark()" style="padding:7px 16px;background:#0f3460;color:#fff;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;font-size:12px;">Park current grid</button>
+<button onclick="document.getElementById('spFile').click()" style="padding:7px 14px;background:#1a1a2e;color:#aac;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;font-size:12px;">Import file</button>
+<input type="file" id="spFile" accept=".json" style="display:none" onchange="spImport(event)">
 </div>
-<div id="schematicInfo" style="margin-top:20px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;"><p style="color:#888;font-size:13px;">Click on a schematic to load it into the Comp tab.</p></div>
+
+<div id="spMsg" style="margin-top:10px;font-size:12px;"></div>
+
+<div style="margin-top:14px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;font-size:14px;">Parked variants</h3>
+<div style="overflow:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;">
+<thead><tr style="background:#0f3460;color:#fff;">
+<th style="padding:6px 8px;text-align:left;">Name</th><th style="padding:6px 8px;text-align:left;">Note</th>
+<th style="padding:6px 8px;">Parked</th><th style="padding:6px 8px;">Comp.</th><th style="padding:6px 8px;">Nodes</th>
+<th style="padding:6px 8px;">Actions</th></tr></thead>
+<tbody id="spBody"></tbody></table></div>
+</div>
+
 </div>
 </div>
 
@@ -1894,16 +1911,105 @@ renderer.setSize(rect.width,rect.height,false);
 }
 }
 
-function loadSchematic(type){
-let info=document.getElementById('schematicInfo');
-let schematics={
-default:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',
-standard:'N01 10|P1 8.4 19.6 >|R01 0.5 34.4|S 35',
-aero:'N01 10|P1 8.4 15.875 >|R01 0.5 28.2|S 35',
-'5000psi':'N01 10|P1 5.04 15.875 >|R01 0.5 25.4|S 35'
-};
-info.innerHTML='<p style="color:#4caf50;font-size:13px;">Loaded: '+type+' schematic. Switch to Comp tab to see it.</p><pre style="color:#aac;font-size:11px;margin-top:10px;background:#1a1a2e;padding:10px;border-radius:4px;">'+schematics[type]+'</pre>';
+const SP_KEY='boheme_parking';
+function spAll(){ try{ return JSON.parse(localStorage.getItem(SP_KEY)||'[]'); }catch(e){ return []; } }
+function spWrite(a){ localStorage.setItem(SP_KEY, JSON.stringify(a)); }
+function spSay(t,ok){ const m=document.getElementById('spMsg'); if(m){ m.textContent=t; m.style.color=ok?'#4caf50':'#e94560'; setTimeout(()=>{m.textContent='';},4000);} }
+function spCount(d){
+  let co=0, ns=new Set();
+  for(const ky in d){
+    const [r,c]=ky.split(',').map(Number);
+    if(r<SR1||r>SR2||c<SC1||c>SC2) continue;
+    const v=(d[ky]||'').trim(), h=v[0];
+    if('RPU'.includes(h)) co++;
+    if(h==='N'){ const n=parseInt(v.substring(1)); if(!isNaN(n)) ns.add(n); }
+  }
+  return {c:co, n:ns.size};
 }
+function spPark(){
+  const nameEl=document.getElementById('spName'), noteEl=document.getElementById('spNote');
+  const name=(nameEl.value||'').trim();
+  if(!name){ spSay('Please enter a name for the variant.',false); return; }
+  const arr=spAll();
+  const idx=arr.findIndex(v=>v.name===name);
+  if(idx>=0 && !confirm('A variant named "'+name+'" already exists. Overwrite it?')) return;
+  const entry={name:name, note:(noteEl.value||'').trim(), ts:new Date().toISOString(),
+               D:JSON.parse(JSON.stringify(D)), customColors:JSON.parse(JSON.stringify(customColors))};
+  if(idx>=0) arr[idx]=entry; else arr.push(entry);
+  spWrite(arr); spRender(); noteEl.value='';
+  spSay('Parked "'+name+'".',true);
+}
+function spLoad(name){
+  const v=spAll().find(x=>x.name===name);
+  if(!v){ spSay('Variant not found.',false); return; }
+  if(!confirm('Load "'+name+'"? This replaces the current grid.')) return;
+  Object.keys(D).forEach(x=>delete D[x]);
+  Object.assign(D, v.D||{});
+  Object.keys(customColors).forEach(x=>delete customColors[x]);
+  Object.assign(customColors, v.customColors||{});
+  localStorage.setItem('boheme_data', JSON.stringify({D,customColors}));
+  renderGridData();
+  const tabs=document.querySelectorAll('.tab-btn');
+  for(const t of tabs){ if(t.textContent.trim()==='Comp'){ t.click(); break; } }
+  spSay('Loaded "'+name+'".',true);
+}
+function spDelete(name){
+  if(!confirm('Delete variant "'+name+'"?')) return;
+  spWrite(spAll().filter(x=>x.name!==name)); spRender();
+  spSay('Deleted "'+name+'".',true);
+}
+function spExport(name){
+  const v=spAll().find(x=>x.name===name); if(!v) return;
+  const blob=new Blob([JSON.stringify(v,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='boheme_'+name.replace(/[^a-zA-Z0-9_-]+/g,'_')+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function spImport(ev){
+  const f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const v=JSON.parse(e.target.result);
+      if(!v||typeof v.D!=='object') throw new Error('no grid data in file');
+      v.name=v.name||f.name.replace(/\.json$/,'');
+      v.ts=v.ts||new Date().toISOString();
+      const arr=spAll(); const i=arr.findIndex(x=>x.name===v.name);
+      if(i>=0){ if(!confirm('Variant "'+v.name+'" exists. Overwrite?')) return; arr[i]=v; } else arr.push(v);
+      spWrite(arr); spRender(); spSay('Imported "'+v.name+'".',true);
+    }catch(err){ spSay('Import failed: '+err.message,false); }
+  };
+  rd.readAsText(f); ev.target.value='';
+}
+function spRender(){
+  const tb=document.getElementById('spBody'); if(!tb) return;
+  const arr=spAll();
+  if(!arr.length){
+    tb.innerHTML='<tr><td colspan="6" style="padding:12px;color:#888;text-align:center;">No variants parked yet. Build a network in the Comp tab and park it here.</td></tr>';
+    return;
+  }
+  const bs='padding:3px 9px;border-radius:3px;cursor:pointer;font-size:11px;margin-right:4px;border:1px solid #2a4a7a;';
+  tb.innerHTML=arr.map(v=>{
+    const st=spCount(v.D||{});
+    const d=new Date(v.ts);
+    const ds=isNaN(d)?'—':d.toLocaleDateString()+' '+d.toLocaleTimeString().slice(0,5);
+    const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    const jn=v.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return '<tr style="border-bottom:1px solid #1a2a4a;">'+
+      '<td style="padding:6px 8px;color:#ffdd44;font-weight:bold;">'+esc(v.name)+'</td>'+
+      '<td style="padding:6px 8px;color:#aac;">'+esc(v.note)+'</td>'+
+      '<td style="padding:6px 8px;text-align:center;color:#888;">'+ds+'</td>'+
+      '<td style="padding:6px 8px;text-align:center;">'+st.c+'</td>'+
+      '<td style="padding:6px 8px;text-align:center;">'+st.n+'</td>'+
+      '<td style="padding:6px 8px;text-align:center;white-space:nowrap;">'+
+        '<button onclick="spLoad(\''+jn+'\')" style="'+bs+'background:#0f3460;color:#fff;">Load</button>'+
+        '<button onclick="spExport(\''+jn+'\')" style="'+bs+'background:#1a1a2e;color:#aac;">Export</button>'+
+        '<button onclick="spDelete(\''+jn+'\')" style="'+bs+'background:#1a1a2e;color:#e94560;">Delete</button>'+
+      '</td></tr>';
+  }).join('');
+}
+setTimeout(spRender,200);
 
 try{
     init();

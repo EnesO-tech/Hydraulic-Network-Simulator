@@ -304,56 +304,52 @@ td.c.custom-color{color:#fff}
 </div>
 
 <div id="tab-iso" class="tab-content">
-<div style="flex:1;padding:20px;overflow:auto;">
-<h2 style="color:#e94560;">ISO 8575 – Hydraulic Tubing Standards</h2>
-<div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:15px;">
-<div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#6fc3f7;">HP Lines (3000 psi) – Titanium</h3>
-<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;">
-<tr style="background:#0f3460;"><th>Dash</th><th>OD (mm)</th><th>WT (mm)</th><th>ID (mm)</th></tr>
-<tr><td>04</td><td>6.35</td><td>0.64</td><td>5.07</td></tr>
-<tr><td>06</td><td>9.525</td><td>0.76</td><td>8.01</td></tr>
-<tr><td>08</td><td>12.70</td><td>1.02</td><td>10.66</td></tr>
-<tr><td>10</td><td>15.875</td><td>1.27</td><td>13.34</td></tr>
-<tr><td>12</td><td>19.05</td><td>1.50</td><td>16.05</td></tr>
-<tr><td>16</td><td>25.40</td><td>2.01</td><td>21.38</td></tr>
-<tr><td>20</td><td>31.75</td><td>2.49</td><td>26.77</td></tr>
-<tr><td>24</td><td>38.10</td><td>3.18</td><td>31.74</td></tr>
-</table>
+<div style="flex:1;padding:18px;overflow:auto;">
+<h2 style="color:#e94560;">ISO 8575 – Tubing, wall thickness and mass</h2>
+<p style="color:#888;font-size:12px;margin-top:4px;">Dimensions from ISO 8575:2016 Tables 1–3. Densities are standard values for the alloys, not part of the standard.</p>
+
+<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;align-items:flex-end;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Pressure lines</div>
+<select id="isoHP" onchange="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;min-width:250px;"></select></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Suction / return lines</div>
+<select id="isoLP" onchange="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;min-width:250px;"></select></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Fluid density kg/m³</div>
+<input id="isoRho" type="number" value="1008" step="1" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:95px;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Design pressure bar</div>
+<input id="isoPdes" type="number" value="206" step="1" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:95px;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Safety factor</div>
+<input id="isoSF" type="number" value="1.5" step="0.1" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:80px;"></div>
 </div>
-<div style="flex:1;min-width:300px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#ffdd44;">LP Lines (Return) – Aluminium</h3>
-<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;">
-<tr style="background:#0f3460;"><th>Dash</th><th>OD (mm)</th><th>WT (mm)</th><th>ID (mm)</th></tr>
-<tr><td>04</td><td>6.35</td><td>0.89</td><td>4.57</td></tr>
-<tr><td>06</td><td>9.525</td><td>0.89</td><td>7.75</td></tr>
-<tr><td>08</td><td>12.70</td><td>0.89</td><td>10.92</td></tr>
-<tr><td>10</td><td>15.875</td><td>0.89</td><td>14.10</td></tr>
-<tr><td>12</td><td>19.05</td><td>0.89</td><td>17.27</td></tr>
-<tr><td>16</td><td>25.40</td><td>1.22</td><td>22.96</td></tr>
-<tr><td>20</td><td>31.75</td><td>1.52</td><td>28.71</td></tr>
-<tr><td>24</td><td>38.10</td><td>1.85</td><td>34.40</td></tr>
-</table>
+
+<div style="margin-top:16px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;font-size:14px;">Pipes in the network</h3>
+<div id="isoHint" style="color:#888;font-size:12px;margin-top:6px;">Press Solve first, then the pipe list appears here.</div>
+<div style="overflow:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;font-family:Consolas,monospace;">
+<thead><tr style="background:#0f3460;color:#fff;">
+<th style="padding:5px 6px;text-align:left;">Pipe</th><th style="padding:5px 6px;">Line</th><th style="padding:5px 6px;">L m</th>
+<th style="padding:5px 6px;">ID mm</th><th style="padding:5px 6px;">Dash</th><th style="padding:5px 6px;">OD mm</th>
+<th style="padding:5px 6px;">Wall mm</th><th style="padding:5px 6px;">Req. wall</th>
+<th style="padding:5px 6px;">Tube kg</th><th style="padding:5px 6px;">Fluid kg</th></tr></thead>
+<tbody id="isoBody"></tbody>
+<tfoot id="isoFoot"></tfoot></table></div>
 </div>
+
+<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;">
+<div style="flex:1;min-width:420px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;font-size:14px;">Table 1 – Tubing materials</h3>
+<table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;">
+<thead><tr style="background:#0f3460;color:#fff;"><th style="padding:4px;">Code</th><th style="padding:4px;text-align:left;">Material</th><th style="padding:4px;">Rm MPa</th><th style="padding:4px;">Rp0.2 MPa</th><th style="padding:4px;">A %</th><th style="padding:4px;">ρ kg/m³</th></tr></thead>
+<tbody id="isoMatBody"></tbody></table>
 </div>
-<div style="margin-top:20px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#e94560;">Material Properties</h3>
-<table style="width:100%;border-collapse:collapse;font-size:12px;">
-<tr style="background:#0f3460;"><th>Material</th><th>Density (g/cm³)</th><th>Application</th></tr>
-<tr><td>Ti-3Al-2.5V</td><td>4.48</td><td>HP Lines (3000 psi)</td></tr>
-<tr><td>6061-T6</td><td>2.70</td><td>LP Return Lines</td></tr>
-<tr><td>21-6-9</td><td>7.83</td><td>HP Lines (5000 psi)</td></tr>
-</table>
-</div>
-<div style="margin-top:20px;background:#0f0f1f;padding:15px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#e94560;">Legend – Nodes & Pipes</h3>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
-<div><span style="color:#6fc3f7;">● Node (N01)</span> – Position in space with height Z (m)</div>
-<div><span style="color:#4fc3f7;">━ Pipe (R)</span> – Connects two nodes, has length and diameter</div>
-<div><span style="color:#e94560;">━ Pump (P)</span> – Active component, moves fluid</div>
-<div><span style="color:#ffdd44;">● Height (Z)</span> – Vertical position in meters (0 = reference)</div>
+<div style="flex:1;min-width:380px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;font-size:14px;">Selected tube sizes</h3>
+<table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;font-family:Consolas,monospace;">
+<thead><tr style="background:#0f3460;color:#fff;"><th style="padding:4px;">Dash</th><th style="padding:4px;">OD mm</th><th style="padding:4px;">Wall mm</th><th style="padding:4px;">ID mm</th><th style="padding:4px;">kg/m</th></tr></thead>
+<tbody id="isoSizeBody"></tbody></table>
+<div style="color:#888;font-size:11px;margin-top:8px;">Wall thickness check uses Barlow: t = p·OD / (2·Rp0.2/SF).</div>
 </div>
 </div>
+
 </div>
 </div>
 
@@ -584,6 +580,117 @@ function qrDrawCircuit(type,p){
     }
 }
 qrBuildRadios();setTimeout(qrSelect,100);
+
+const ISO_MAT={
+ 1:{n:'304-1/8H, cold worked CRES',rm:725,rp:515,a:20,rho:7900},
+ 2:{n:'21-6-9, high strength CRES',rm:980,rp:825,a:20,rho:7830},
+ 3:{n:'UNS S32100, re-annealed CRES',rm:500,rp:210,a:40,rho:7900},
+ 4:{n:'Ti-3Al-2.5V, cold worked + stress relieved',rm:860,rp:720,a:10,rho:4480},
+ 5:{n:'Ti-3Al-2.5V',rm:690,rp:655,a:14,rho:4480},
+ 6:{n:'TiCP, unalloyed titanium',rm:350,rp:250,a:28,rho:4510},
+ 7:{n:'6061-T6 aluminium',rm:290,rp:240,a:10,rho:2700}};
+const ISO_OD={4:6.35,6:9.525,8:12.70,10:15.875,12:19.05,16:25.40,20:31.75,24:38.10,32:50.80};
+const ISO_HP=[
+ {id:'D1', mat:1, lbl:'Class D 21 000 kPa (3 000 psi) – 304-1/8H', wt:{4:0.51,6:0.71,8:0.89,10:1.24,12:1.47,16:1.65}},
+ {id:'D2', mat:2, lbl:'Class D 21 000 kPa (3 000 psi) – 21-6-9', wt:{4:0.41,6:0.51,8:0.66,10:0.84,12:0.99,16:1.32,20:1.78}},
+ {id:'D45',mat:4, lbl:'Class D 21 000 kPa (3 000 psi) – Ti-3Al-2.5V', wt:{4:0.41,6:0.48,8:0.66,10:0.81,12:0.99,16:1.32,20:1.78}},
+ {id:'JA', mat:4, lbl:'Class J 35 000 kPa (5 000 psi) Type A – Ti-3Al-2.5V', wt:{4:0.64,6:0.76,8:1.02,10:1.27,12:1.50,16:2.01,20:2.49}},
+ {id:'JB', mat:4, lbl:'Class J 35 000 kPa (5 000 psi) Type B – Ti-3Al-2.5V', wt:{4:0.55,6:0.81,8:1.09,10:1.37,12:1.65,16:2.23,20:2.67,24:3.18}}];
+const ISO_LP=[
+ {id:'L7c',mat:7, lbl:'7 000 / 10 500 kPa (1 000 / 1 500 psi) – 6061-T6', wt:{4:0.89,6:0.89,8:0.89,10:0.89,12:0.89,16:1.22,20:1.52,24:1.85}},
+ {id:'L7b',mat:7, lbl:'Class A 4 200 kPa (600 psi) – 6061-T6', wt:{20:1.24,24:1.24}},
+ {id:'L7a',mat:7, lbl:'1 500 kPa (220 psi) – 6061-T6', wt:{20:0.89,24:0.89}},
+ {id:'L2', mat:2, lbl:'4 200 / 7 000 kPa (600 / 1 000 psi) – 21-6-9', wt:{20:0.61,24:0.61}},
+ {id:'L3', mat:3, lbl:'1 500 kPa (220 psi) – UNS S32100', wt:{32:0.71}}];
+
+function isoSel(which){
+  const arr = which==='HP'?ISO_HP:ISO_LP;
+  const el=document.getElementById(which==='HP'?'isoHP':'isoLP');
+  return arr.find(o=>o.id===el.value)||arr[0];
+}
+function isoInit(){
+  const h=document.getElementById('isoHP'), l=document.getElementById('isoLP');
+  if(!h||!l) return;
+  h.innerHTML=ISO_HP.map(o=>`<option value="${o.id}">${o.lbl}</option>`).join('');
+  l.innerHTML=ISO_LP.map(o=>`<option value="${o.id}">${o.lbl}</option>`).join('');
+  h.value='D45'; l.value='L7c';
+  document.getElementById('isoMatBody').innerHTML=Object.keys(ISO_MAT).map(k=>{
+    const m=ISO_MAT[k];
+    return `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;text-align:center;color:#ffdd44;">${k}</td><td style="padding:4px;color:#ccd;">${m.n}</td><td style="padding:4px;text-align:right;">${m.rm}</td><td style="padding:4px;text-align:right;">${m.rp}</td><td style="padding:4px;text-align:right;">${m.a}</td><td style="padding:4px;text-align:right;color:#888;">${m.rho}</td></tr>`;
+  }).join('');
+  isoUpdate();
+}
+// pick the dash size whose ID is closest to the pipe's inner diameter
+function isoMatch(idmm,opt){
+  let best=null;
+  for(const d in opt.wt){
+    const od=ISO_OD[d], wt=opt.wt[d], id=od-2*wt;
+    const err=Math.abs(id-idmm);
+    if(!best||err<best.err) best={dash:+d,od:od,wt:wt,id:id,err:err};
+  }
+  return best;
+}
+function isoUpdate(){
+  const hp=isoSel('HP'), lp=isoSel('LP');
+  const rhoF=parseFloat(document.getElementById('isoRho').value)||1008;
+  const pdes=(parseFloat(document.getElementById('isoPdes').value)||206)*1e5;
+  const sf=parseFloat(document.getElementById('isoSF').value)||1.5;
+
+  // size reference table for the pressure-line selection
+  const mh=ISO_MAT[hp.mat];
+  document.getElementById('isoSizeBody').innerHTML=Object.keys(hp.wt).map(d=>{
+    const od=ISO_OD[d], wt=hp.wt[d], id=od-2*wt;
+    const kgm=Math.PI/4*((od/1000)**2-(id/1000)**2)*mh.rho;
+    return `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;text-align:center;color:#ffdd44;">${d}</td><td style="padding:4px;text-align:right;">${od.toFixed(3)}</td><td style="padding:4px;text-align:right;">${wt.toFixed(2)}</td><td style="padding:4px;text-align:right;">${id.toFixed(2)}</td><td style="padding:4px;text-align:right;color:#6fc3f7;">${kgm.toFixed(3)}</td></tr>`;
+  }).join('');
+
+  const body=document.getElementById('isoBody'), foot=document.getElementById('isoFoot'), hint=document.getElementById('isoHint');
+  const res=(typeof loadedResults!=='undefined')?loadedResults:null;
+  if(!res||!Array.isArray(res.components)){ body.innerHTML=''; foot.innerHTML=''; return; }
+  const pipes=res.components.filter(c=>{
+    const n=(c.name||'').toUpperCase();
+    return n.startsWith('R') && Number(c.l)>0 && Number(c.d)>0;
+  });
+  if(!pipes.length){ body.innerHTML=''; foot.innerHTML=''; return; }
+  hint.style.display='none';
+
+  let mT=0,mF=0,vF=0,warn=0;
+  body.innerHTML=pipes.map(c=>{
+    const L=Number(c.l), idmm=Number(c.d)*1000;
+    // pressure line if the solver's inner diameter matches the HP table better
+    const mHP=isoMatch(idmm,hp), mLP=isoMatch(idmm,lp);
+    const isHP=mHP.err<=mLP.err;
+    const opt=isHP?hp:lp, m=isoMatch(idmm,opt), mat=ISO_MAT[opt.mat];
+    const idm=m.id/1000, odm=m.od/1000;
+    const tubeV=Math.PI/4*(odm*odm-idm*idm)*L, tubeM=tubeV*mat.rho;
+    const fluV=Math.PI/4*idm*idm*L, fluM=fluV*rhoF;
+    // Barlow required wall for pressure lines
+    const sigma=mat.rp*1e6/sf;
+    const treq=isHP? (pdes*m.od/1000)/(2*sigma)*1000 : null;
+    const okWall = treq===null || m.wt>=treq;
+    const fit = m.err<0.6;
+    if(!okWall||!fit) warn++;
+    mT+=tubeM; mF+=fluM; vF+=fluV;
+    const c1=fit?'#e0e0e0':'#e94560', c2=okWall?'#4caf50':'#e94560';
+    return `<tr style="border-bottom:1px solid #1a2a4a;">
+      <td style="padding:4px 6px;color:#6fc3f7;">${c.name}</td>
+      <td style="padding:4px 6px;text-align:center;color:${isHP?'#e94560':'#ffdd44'};">${isHP?'HP':'LP'}</td>
+      <td style="padding:4px 6px;text-align:right;">${L.toFixed(2)}</td>
+      <td style="padding:4px 6px;text-align:right;color:${c1};">${idmm.toFixed(1)}</td>
+      <td style="padding:4px 6px;text-align:center;">${m.dash}</td>
+      <td style="padding:4px 6px;text-align:right;">${m.od.toFixed(2)}</td>
+      <td style="padding:4px 6px;text-align:right;">${m.wt.toFixed(2)}</td>
+      <td style="padding:4px 6px;text-align:right;color:${c2};">${treq===null?'—':treq.toFixed(2)}</td>
+      <td style="padding:4px 6px;text-align:right;color:#6fc3f7;">${tubeM.toFixed(3)}</td>
+      <td style="padding:4px 6px;text-align:right;color:#6fc3f7;">${fluM.toFixed(3)}</td></tr>`;
+  }).join('');
+  foot.innerHTML=`<tr style="background:#16213e;font-weight:bold;">
+    <td colspan="8" style="padding:6px;text-align:right;color:#aac;">Total — ${pipes.length} pipes, fluid volume ${(vF*1000).toFixed(2)} l${warn?`, ${warn} flagged`:''}</td>
+    <td style="padding:6px;text-align:right;color:#ffdd44;">${mT.toFixed(2)}</td>
+    <td style="padding:6px;text-align:right;color:#ffdd44;">${mF.toFixed(2)}</td></tr>`;
+}
+setTimeout(isoInit,150);
+
 
 function togglePanel(which){
     const map={left:['compLeft','ptLeft','◀','▶'],right:['compRight','ptRight','▶','◀'],bottom:['compBottom','ptBottom','▼','▲']};
@@ -1476,6 +1583,7 @@ loadedResults = result;
 
 drawNetwork(result);
 updateResultTable(result);
+if(typeof isoUpdate==='function') isoUpdate();
 
 status.textContent = 'Done: ' + result.ncomp + ' components, ' + result.nnode +
 ' nodes | iterations: ' + result.iterations +

@@ -1,553 +1,700 @@
 {
-  "info": "A320 hydraulic node positions for 3D display. X=span, Y=height, Z=longitudinal. Coordinates affect only 3D visualization; topology and physics stay in the solver.",
+  "info": "A320 hydraulic node coordinates for 3D display, derived from the verified schematic layout. x=span (positive=starboard), y=height (positive=up), z=longitudinal (positive=nose). Reservoir S omitted. Coordinates affect only the 3D visualization; hydraulic topology and physics stay in the solver.",
   "nodes": [
     {
       "id": "N01",
-      "x": 0.0,
-      "y": -0.118,
-      "z": -0.073,
+      "x": 0.422,
+      "y": 0.55,
+      "z": 2.692,
       "desc": "Reservoir outlet (pump suction side)",
       "loc": "Fuselage center bottom, next to hydraulic tank"
     },
     {
       "id": "N02",
-      "x": 0.0,
-      "y": -0.044,
-      "z": 0.005,
+      "x": 0.422,
+      "y": 0.55,
+      "z": 2.314,
       "desc": "Pump P1 outlet (high pressure ~209 bar)",
       "loc": "Fuselage center, pressure line"
     },
     {
       "id": "N03",
       "x": 0.0,
-      "y": 0.006,
-      "z": 0.148,
+      "y": 0.55,
+      "z": 1.99,
       "desc": "Distributor after pump (after R03)",
       "loc": "Fuselage center, main distributor"
     },
     {
       "id": "N04",
       "x": 0.0,
-      "y": -0.242,
-      "z": -0.184,
+      "y": -0.15,
+      "z": 1.309,
       "desc": "Return manifold node",
       "loc": "Fuselage bottom, return collector"
     },
     {
       "id": "N05",
-      "x": -1.263,
-      "y": 0.475,
-      "z": -0.128,
+      "x": -0.737,
+      "y": 0.45,
+      "z": 0.274,
       "desc": "Left wing inner branch (before Spoiler 1)",
       "loc": "Left wing root"
     },
     {
       "id": "N06",
-      "x": -1.614,
-      "y": 0.475,
-      "z": -0.217,
+      "x": -1.114,
+      "y": 0.45,
+      "z": 0.196,
       "desc": "Left wing return node",
       "loc": "Left wing inner"
     },
     {
       "id": "N07",
-      "x": -2.456,
-      "y": 0.475,
-      "z": -0.626,
+      "x": -2.29,
+      "y": 0.45,
+      "z": -0.013,
       "desc": "Aileron Left inlet (before UAL)",
       "loc": "Left wing center"
     },
     {
       "id": "N08",
       "x": -2.667,
-      "y": 0.475,
-      "z": -0.737,
+      "y": 0.45,
+      "z": -0.093,
       "desc": "Aileron Left outlet (after UAL)",
       "loc": "Left wing center"
     },
     {
       "id": "N09",
-      "x": -2.035,
-      "y": 0.475,
-      "z": -0.405,
+      "x": -1.844,
+      "y": 0.45,
+      "z": 0.045,
       "desc": "Spoiler 5 Left outlet (after U5L)",
       "loc": "Left wing inner-center"
     },
     {
       "id": "N10",
-      "x": -1.404,
-      "y": 0.475,
-      "z": -0.239,
+      "x": -1.49,
+      "y": 0.45,
+      "z": 0.072,
       "desc": "Spoiler 1 Left outlet (after U1L)",
       "loc": "Left wing root"
     },
     {
       "id": "N11",
-      "x": -0.421,
-      "y": -0.044,
-      "z": -0.626,
+      "x": -0.447,
+      "y": 0.55,
+      "z": -0.463,
       "desc": "Distributor center-left (fuselage)",
       "loc": "Fuselage center left"
     },
     {
       "id": "N12",
-      "x": 0.0,
-      "y": -0.044,
-      "z": -0.77,
+      "x": -0.447,
+      "y": 0.55,
+      "z": -0.82,
       "desc": "Distributor center (fuselage)",
       "loc": "Fuselage center"
     },
     {
       "id": "N13",
       "x": 0.0,
-      "y": 0.229,
-      "z": -2.728,
+      "y": 0.55,
+      "z": -2.171,
       "desc": "Trimmable Horizontal Stabilizer THS (before UTS)",
       "loc": "Tail, horizontal stabilizer center"
     },
     {
       "id": "N14",
-      "x": -0.912,
-      "y": 0.229,
-      "z": -2.672,
+      "x": -0.422,
+      "y": 0.55,
+      "z": -2.171,
       "desc": "Elevator Left inlet (before ULE)",
       "loc": "Tail, left elevator"
     },
     {
       "id": "N15",
-      "x": 0.0,
-      "y": 0.253,
-      "z": -2.506,
+      "x": 0.422,
+      "y": 0.55,
+      "z": -2.171,
       "desc": "Yaw Damper inlet (before UYD)",
       "loc": "Tail, before rudder"
     },
     {
       "id": "N16",
-      "x": 0.0,
-      "y": 0.971,
-      "z": -2.838,
+      "x": -0.422,
+      "y": 1.85,
+      "z": -2.56,
       "desc": "Rudder Upper inlet (before URU)",
       "loc": "Vertical stabilizer top"
     },
     {
       "id": "N17",
-      "x": 0.0,
-      "y": 1.157,
+      "x": -0.422,
+      "y": 1.85,
       "z": -2.949,
       "desc": "Rudder Upper outlet (after URU)",
       "loc": "Vertical stabilizer top"
     },
     {
       "id": "N18",
-      "x": 0.0,
-      "y": 0.253,
-      "z": -2.617,
+      "x": 0.422,
+      "y": 0.55,
+      "z": -2.56,
       "desc": "Yaw Damper outlet (after UYD)",
       "loc": "Tail, after rudder"
     },
     {
       "id": "N19",
-      "x": -0.982,
-      "y": 0.229,
-      "z": -2.783,
+      "x": -0.924,
+      "y": 0.55,
+      "z": -2.766,
       "desc": "Elevator Left outlet (after ULE)",
       "loc": "Tail, left elevator"
     },
     {
       "id": "N20",
       "x": 0.0,
-      "y": 0.253,
-      "z": -2.893,
+      "y": 0.55,
+      "z": -2.949,
       "desc": "THS outlet (after UTS)",
       "loc": "Tail, horizontal stabilizer"
     },
     {
       "id": "N21",
-      "x": 0.421,
-      "y": -0.044,
-      "z": -0.626,
+      "x": 0.422,
+      "y": 0.55,
+      "z": -2.949,
       "desc": "Distributor center-right (fuselage)",
       "loc": "Fuselage center right"
     },
     {
       "id": "N22",
-      "x": 0.449,
-      "y": -0.118,
-      "z": -0.814,
+      "x": 0.422,
+      "y": 0.55,
+      "z": -1.846,
       "desc": "Return center-right",
       "loc": "Fuselage center right"
     },
     {
       "id": "N23",
-      "x": 0.674,
-      "y": -0.044,
-      "z": -1.035,
+      "x": 0.447,
+      "y": 0.55,
+      "z": -0.82,
       "desc": "Right side distributor",
       "loc": "Fuselage right"
     },
     {
       "id": "N24",
-      "x": 0.0,
-      "y": -0.093,
-      "z": -0.294,
+      "x": 0.472,
+      "y": 0.55,
+      "z": -1.166,
       "desc": "Flaps inlet (before UFL)",
       "loc": "Fuselage center, under wing"
     },
     {
       "id": "N25",
-      "x": 0.0,
-      "y": -0.093,
-      "z": -0.515,
+      "x": 0.472,
+      "y": 0.55,
+      "z": -1.501,
       "desc": "Flaps outlet (after UFL)",
       "loc": "Fuselage center, under wing"
     },
     {
       "id": "N26",
-      "x": -1.263,
-      "y": 0.475,
-      "z": 1.033,
+      "x": -1.167,
+      "y": 0.45,
+      "z": 0.557,
       "desc": "Slats Left inlet (before USL)",
       "loc": "Left wing leading edge"
     },
     {
       "id": "N27",
-      "x": -2.035,
-      "y": 0.475,
-      "z": 0.978,
+      "x": -1.656,
+      "y": 0.45,
+      "z": 0.428,
       "desc": "Slats Left outlet (after USL)",
       "loc": "Left wing leading edge"
     },
     {
       "id": "N28",
-      "x": 0.674,
-      "y": 0.031,
-      "z": -2.064,
+      "x": 0.0,
+      "y": 0.55,
+      "z": -1.846,
       "desc": "Right side tail distributor",
       "loc": "Fuselage right rear"
     },
     {
       "id": "N29",
-      "x": 0.421,
-      "y": -0.044,
-      "z": -0.405,
+      "x": 0.447,
+      "y": 0.55,
+      "z": -0.463,
       "desc": "Right side after RLF",
       "loc": "Fuselage right"
     },
     {
       "id": "N30",
-      "x": 1.263,
-      "y": 0.475,
-      "z": -0.128,
+      "x": 0.737,
+      "y": 0.45,
+      "z": 0.274,
       "desc": "Right wing branch (before Spoiler 1R)",
       "loc": "Right wing root"
     },
     {
       "id": "N31",
-      "x": 1.614,
-      "y": 0.475,
-      "z": -0.217,
+      "x": 1.114,
+      "y": 0.45,
+      "z": 0.196,
       "desc": "Right wing return",
       "loc": "Right wing inner"
     },
     {
       "id": "N32",
-      "x": 2.456,
-      "y": 0.475,
-      "z": -0.626,
+      "x": 2.29,
+      "y": 0.45,
+      "z": -0.013,
       "desc": "Aileron Right inlet (before UAR)",
       "loc": "Right wing center"
     },
     {
       "id": "N33",
       "x": 2.667,
-      "y": 0.475,
-      "z": -0.737,
+      "y": 0.45,
+      "z": -0.093,
       "desc": "Aileron Right outlet (after UAR)",
       "loc": "Right wing center"
     },
     {
       "id": "N34",
-      "x": 2.035,
-      "y": 0.475,
-      "z": -0.405,
+      "x": 1.844,
+      "y": 0.45,
+      "z": 0.045,
       "desc": "Spoiler 5 Right outlet (after U5R)",
       "loc": "Right wing inner-center"
     },
     {
       "id": "N35",
-      "x": 1.404,
-      "y": 0.475,
-      "z": -0.239,
+      "x": 1.49,
+      "y": 0.45,
+      "z": 0.072,
       "desc": "Spoiler 1 Right outlet (after U1R)",
       "loc": "Right wing root"
     },
     {
       "id": "N36",
       "x": 0.0,
-      "y": -0.242,
-      "z": -0.46,
+      "y": -0.15,
+      "z": -1.501,
       "desc": "Return manifold node 2",
       "loc": "Fuselage bottom"
     },
     {
       "id": "N37",
-      "x": 0.0,
-      "y": 0.006,
-      "z": 0.259,
+      "x": -0.447,
+      "y": 0.55,
+      "z": 1.676,
       "desc": "Distributor after R04 (center)",
       "loc": "Fuselage center"
     },
     {
       "id": "N38",
-      "x": 0.0,
-      "y": -0.143,
-      "z": -0.261,
+      "x": -0.472,
+      "y": -0.15,
+      "z": -1.166,
       "desc": "Return before reservoir",
       "loc": "Fuselage bottom, near tank"
     },
     {
       "id": "N39",
-      "x": 0.211,
-      "y": -0.192,
-      "z": -0.217,
+      "x": -0.546,
+      "y": -0.45,
+      "z": 0.963,
       "desc": "PTU motor return",
       "loc": "Fuselage bottom center (PTU)"
     },
     {
       "id": "N40",
-      "x": -0.211,
-      "y": -0.192,
-      "z": -0.128,
+      "x": -0.273,
+      "y": -0.45,
+      "z": 0.715,
       "desc": "PTU System B inlet",
       "loc": "Fuselage bottom center (PTU)"
     },
     {
       "id": "N41",
-      "x": -0.211,
-      "y": -0.167,
-      "z": 0.005,
+      "x": 0.285,
+      "y": -0.45,
+      "z": 0.715,
       "desc": "PTU System B after pump",
       "loc": "Fuselage bottom center (PTU)"
     },
     {
       "id": "N42",
-      "x": -0.253,
-      "y": -0.143,
-      "z": 0.137,
+      "x": 0.559,
+      "y": -0.45,
+      "z": 0.963,
       "desc": "PTU System B after actuator",
       "loc": "Fuselage bottom center (PTU)"
     }
   ],
   "components": [
     {
-      "name": "P1",
-      "from": "N01",
-      "to": "N02",
-      "type": "P",
-      "desc": "Main pump (EDP)"
-    },
-    {
-      "name": "Ucv1",
-      "from": "N02",
-      "to": "N03",
-      "type": "Ucv",
-      "desc": "Relief valve 205 bar"
-    },
-    {
-      "name": "R01",
-      "from": "N01",
-      "to": "S",
-      "type": "R",
-      "desc": "Reservoir line"
-    },
-    {
       "name": "R03",
       "from": "N02",
       "to": "N03",
       "type": "R",
-      "desc": "High pressure distributor"
+      "raw": "R03 0.5 28.2 >"
     },
     {
-      "name": "R04",
+      "name": "R048",
       "from": "N03",
       "to": "N37",
       "type": "R",
-      "desc": "Main distributor"
+      "raw": "R04 8 28.2 >"
     },
     {
-      "name": "R05",
-      "from": "N04",
+      "name": "R055",
+      "from": "N05",
+      "to": "N04",
+      "type": "R",
+      "raw": "R05 5 28.2 ^"
+    },
+    {
+      "name": "R067",
+      "from": "N06",
       "to": "N05",
       "type": "R",
-      "desc": "Supply line left wing"
-    },
-    {
-      "name": "R06",
-      "from": "N05",
-      "to": "N06",
-      "type": "R",
-      "desc": "Left wing pressure line"
+      "raw": "R06 7 28.2 ^"
     },
     {
       "name": "R07",
-      "from": "N06",
-      "to": "N07",
-      "type": "R",
-      "desc": "To aileron left"
-    },
-    {
-      "name": "UAL",
       "from": "N07",
-      "to": "N08",
-      "type": "U",
-      "desc": "Aileron Left"
+      "to": "N06",
+      "type": "R",
+      "raw": "R07 3 28.2"
     },
     {
-      "name": "U5L",
-      "from": "N06",
+      "name": "R08",
+      "from": "N08",
       "to": "N09",
-      "type": "U",
-      "desc": "Spoiler 5 Left"
+      "type": "R",
+      "raw": "R08 3 34.4"
+    },
+    {
+      "name": "R09",
+      "from": "N09",
+      "to": "N10",
+      "type": "R",
+      "raw": "R09 7 34.4"
+    },
+    {
+      "name": "R10",
+      "from": "N10",
+      "to": "N36",
+      "type": "R",
+      "raw": "R10 5 34.4"
+    },
+    {
+      "name": "R1118",
+      "from": "N11",
+      "to": "N04",
+      "type": "R",
+      "raw": "R11 18 28.2 ^"
+    },
+    {
+      "name": "R122",
+      "from": "N11",
+      "to": "N12",
+      "type": "R",
+      "raw": "R12 2 28.2 >"
+    },
+    {
+      "name": "R132",
+      "from": "N12",
+      "to": "N13",
+      "type": "R",
+      "raw": "R13 2 28.2 >"
+    },
+    {
+      "name": "R142",
+      "from": "N12",
+      "to": "N14",
+      "type": "R",
+      "raw": "R14 2 28.2 >"
+    },
+    {
+      "name": "R152",
+      "from": "N11",
+      "to": "N15",
+      "type": "R",
+      "raw": "R15 2 28.2 >"
+    },
+    {
+      "name": "R162",
+      "from": "N15",
+      "to": "N16",
+      "type": "R",
+      "raw": "R16 2 28.2 >"
+    },
+    {
+      "name": "R172",
+      "from": "N18",
+      "to": "N17",
+      "type": "R",
+      "raw": "R17 2 34.4 v"
+    },
+    {
+      "name": "R182",
+      "from": "N22",
+      "to": "N18",
+      "type": "R",
+      "raw": "R18 2 34.4 v"
+    },
+    {
+      "name": "R192",
+      "from": "N21",
+      "to": "N22",
+      "type": "R",
+      "raw": "R19 2 34.4 >"
+    },
+    {
+      "name": "R202",
+      "from": "N21",
+      "to": "N19",
+      "type": "R",
+      "raw": "R20 2 34.4 v"
+    },
+    {
+      "name": "R212",
+      "from": "N21",
+      "to": "N20",
+      "type": "R",
+      "raw": "R21 2 34.4 ^"
+    },
+    {
+      "name": "R2218",
+      "from": "N22",
+      "to": "N36",
+      "type": "R",
+      "raw": "R22 18 34.4 v"
+    },
+    {
+      "name": "R232",
+      "from": "N29",
+      "to": "N23",
+      "type": "R",
+      "raw": "R23 2 28.2 >"
+    },
+    {
+      "name": "R241",
+      "from": "N23",
+      "to": "N24",
+      "type": "R",
+      "raw": "R24 1 28.2 >"
+    },
+    {
+      "name": "R251",
+      "from": "N28",
+      "to": "N25",
+      "type": "R",
+      "raw": "R25 1 34.4 v"
+    },
+    {
+      "name": "R263",
+      "from": "N23",
+      "to": "N26",
+      "type": "R",
+      "raw": "R26 3 28.2 >"
+    },
+    {
+      "name": "R273",
+      "from": "N28",
+      "to": "N27",
+      "type": "R",
+      "raw": "R27 3 34.4 >"
+    },
+    {
+      "name": "R282",
+      "from": "N36",
+      "to": "N28",
+      "type": "R",
+      "raw": "R28 2 34.4 v"
+    },
+    {
+      "name": "R305",
+      "from": "N30",
+      "to": "N04",
+      "type": "R",
+      "raw": "R30 5 28.2 ^"
+    },
+    {
+      "name": "R317",
+      "from": "N31",
+      "to": "N30",
+      "type": "R",
+      "raw": "R31 7 28.2 ^"
+    },
+    {
+      "name": "R323",
+      "from": "N32",
+      "to": "N31",
+      "type": "R",
+      "raw": "R32 3 28.2 ^"
+    },
+    {
+      "name": "R333",
+      "from": "N33",
+      "to": "N34",
+      "type": "R",
+      "raw": "R33 3 34.4 v"
+    },
+    {
+      "name": "R347",
+      "from": "N34",
+      "to": "N35",
+      "type": "R",
+      "raw": "R34 7 34.4 v"
+    },
+    {
+      "name": "R355",
+      "from": "N35",
+      "to": "N36",
+      "type": "R",
+      "raw": "R35 5 34.4 v"
+    },
+    {
+      "name": "RZ40",
+      "from": "N41",
+      "to": "N42",
+      "type": "Rz",
+      "raw": "RZ 40 5000 28.2 >"
+    },
+    {
+      "name": "Rl_F1",
+      "from": "N04",
+      "to": "N29",
+      "type": "Rz",
+      "raw": "Rl_F 1 999 ^"
+    },
+    {
+      "name": "Rz04",
+      "from": "N37",
+      "to": "N04",
+      "type": "Rz",
+      "raw": "Rz 04 100 28.2 >"
+    },
+    {
+      "name": "Rz29",
+      "from": "N38",
+      "to": "N36",
+      "type": "Rz",
+      "raw": "Rz 29 100 34.4 <"
     },
     {
       "name": "U1L",
       "from": "N05",
       "to": "N10",
       "type": "U",
-      "desc": "Spoiler 1 Left"
-    },
-    {
-      "name": "R11",
-      "from": "N11",
-      "to": "N12",
-      "type": "R",
-      "desc": "Fuselage line center"
-    },
-    {
-      "name": "R13",
-      "from": "N12",
-      "to": "N13",
-      "type": "R",
-      "desc": "Supply line THS"
-    },
-    {
-      "name": "UTS",
-      "from": "N13",
-      "to": "N20",
-      "type": "U",
-      "desc": "Trimmable Horizontal Stabilizer (THS)"
-    },
-    {
-      "name": "ULE",
-      "from": "N14",
-      "to": "N19",
-      "type": "U",
-      "desc": "Elevator Left"
-    },
-    {
-      "name": "R16",
-      "from": "N15",
-      "to": "N16",
-      "type": "R",
-      "desc": "Supply line rudder"
-    },
-    {
-      "name": "URU",
-      "from": "N16",
-      "to": "N17",
-      "type": "U",
-      "desc": "Rudder Upper"
-    },
-    {
-      "name": "UYD",
-      "from": "N15",
-      "to": "N18",
-      "type": "U",
-      "desc": "Yaw Damper"
-    },
-    {
-      "name": "UFL",
-      "from": "N24",
-      "to": "N25",
-      "type": "U",
-      "desc": "Flaps"
-    },
-    {
-      "name": "USL",
-      "from": "N26",
-      "to": "N27",
-      "type": "U",
-      "desc": "Slats Left"
-    },
-    {
-      "name": "R30",
-      "from": "N30",
-      "to": "N31",
-      "type": "R",
-      "desc": "Right wing pressure line"
-    },
-    {
-      "name": "UAR",
-      "from": "N32",
-      "to": "N33",
-      "type": "U",
-      "desc": "Aileron Right"
-    },
-    {
-      "name": "U5R",
-      "from": "N31",
-      "to": "N34",
-      "type": "U",
-      "desc": "Spoiler 5 Right"
+      "raw": "U1L -10 0.01 999 >"
     },
     {
       "name": "U1R",
       "from": "N30",
       "to": "N35",
       "type": "U",
-      "desc": "Spoiler 1 Right"
+      "raw": "U1R   -10 0.01 999 >"
+    },
+    {
+      "name": "U5L",
+      "from": "N06",
+      "to": "N09",
+      "type": "U",
+      "raw": "U5L -10 0.01 999"
+    },
+    {
+      "name": "U5R",
+      "from": "N31",
+      "to": "N34",
+      "type": "U",
+      "raw": "U5R  -10 0.01 999 >"
+    },
+    {
+      "name": "UAL",
+      "from": "N07",
+      "to": "N08",
+      "type": "U",
+      "raw": "UAL  -5 0.01 999 >"
+    },
+    {
+      "name": "UAR",
+      "from": "N32",
+      "to": "N33",
+      "type": "U",
+      "raw": "UAR -5 0.01 999 >"
+    },
+    {
+      "name": "UFL",
+      "from": "N24",
+      "to": "N25",
+      "type": "U",
+      "raw": "UFL   -2 0.01 999 >"
+    },
+    {
+      "name": "ULE",
+      "from": "N14",
+      "to": "N19",
+      "type": "U",
+      "raw": "ULE  -5 0.01 999 >"
+    },
+    {
+      "name": "URU",
+      "from": "N16",
+      "to": "N17",
+      "type": "U",
+      "raw": "URU  -5 0.01 999 >"
+    },
+    {
+      "name": "USL",
+      "from": "N26",
+      "to": "N27",
+      "type": "U",
+      "raw": "USL   -3.3 0.01 999 >"
+    },
+    {
+      "name": "UTS",
+      "from": "N13",
+      "to": "N20",
+      "type": "U",
+      "raw": "UTS -2.5 0.01 999 >"
+    },
+    {
+      "name": "UYD",
+      "from": "N15",
+      "to": "N18",
+      "type": "U",
+      "raw": "UYD  -5 0.01 999 >"
+    },
+    {
+      "name": "Upm1",
+      "from": "N02",
+      "to": "N01",
+      "type": "Upm",
+      "raw": "Upm1 200 8.4 19.6 v"
     },
     {
       "name": "Upt1a",
-      "from": "N39",
-      "to": "N02",
+      "from": "N02",
+      "to": "N39",
       "type": "Upt",
-      "desc": "PTU motor (System A)"
+      "raw": "Upt1a 0.85 200 28.2 ^"
     },
     {
       "name": "Upt1b",
       "from": "N40",
       "to": "N41",
       "type": "Upt",
-      "desc": "PTU pump (System B)"
-    },
-    {
-      "name": "Rz40",
-      "from": "N41",
-      "to": "N42",
-      "type": "Rz",
-      "desc": "PTU System B actuator"
-    },
-    {
-      "name": "R39",
-      "from": "N39",
-      "to": "S",
-      "type": "R",
-      "desc": "PTU motor return"
-    },
-    {
-      "name": "R40",
-      "from": "S",
-      "to": "N40",
-      "type": "R",
-      "desc": "PTU System B inlet"
-    },
-    {
-      "name": "R41",
-      "from": "N42",
-      "to": "S",
-      "type": "R",
-      "desc": "PTU System B return"
+      "raw": "Upt1b 28.2 >"
     }
   ]
 }

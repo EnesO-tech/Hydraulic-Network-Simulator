@@ -305,51 +305,90 @@ td.c.custom-color{color:#fff}
 
 <div id="tab-iso" class="tab-content">
 <div style="flex:1;padding:18px;overflow:auto;">
-<h2 style="color:#e94560;">ISO 8575 – Tubing, wall thickness and mass</h2>
-<p style="color:#888;font-size:12px;margin-top:4px;">Dimensions from ISO 8575:2016 Tables 1–3. Densities are standard values for the alloys, not part of the standard.</p>
+<h2 style="color:#e94560;">ISO 8575 – Pipe sizing, wall thickness and mass</h2>
+<p style="color:#888;font-size:12px;margin-top:4px;">Workflow (Berens, Hydraulic Systems Exercise): 1) Solve → 2) check flow velocities against the limits → 3) check actuator power ≥ 80 % of rating → 4) pick the standard tube (ISO 8575:2016 Tables 2/3) and verify wall thickness with Barlow → 5) sum up the mass. LP return lines must never be smaller than the HP supply lines.</p>
 
 <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;align-items:flex-end;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
-<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Pressure lines</div>
-<select id="isoHP" onchange="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;min-width:250px;"></select></div>
-<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Suction / return lines</div>
-<select id="isoLP" onchange="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;min-width:250px;"></select></div>
-<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Fluid density kg/m³</div>
-<input id="isoRho" type="number" value="1008" step="1" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:95px;"></div>
-<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Design pressure bar</div>
-<input id="isoPdes" type="number" value="206" step="1" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:95px;"></div>
-<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Safety factor</div>
-<input id="isoSF" type="number" value="1.5" step="0.1" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:80px;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Pressure lines (HP)</div><select id="isoHP" onchange="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;min-width:250px;"></select></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Suction / return lines (LP)</div><select id="isoLP" onchange="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;min-width:250px;"></select></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Fluid ρ kg/m³</div><input id="isoRho" type="number" value="1008" step="1" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:80px;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">HP design p bar</div><input id="isoPdes" type="number" value="206" step="1" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:80px;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">LP design p bar</div><input id="isoPdesLP" type="number" value="3.5" step="0.5" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:80px;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Safety factor S</div><input id="isoSF" type="number" value="1.5" step="0.1" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:70px;"></div>
+<div style="width:1px;height:38px;background:#2a2a4a;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">U max HP m/s</div><input id="isoUmaxHP" type="number" value="9" step="0.5" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:70px;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">U max return</div><input id="isoUmaxLP" type="number" value="6" step="0.5" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:70px;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">U max suction</div><input id="isoUmaxS" type="number" value="3" step="0.5" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:70px;"></div>
+<div><div style="color:#888;font-size:11px;margin-bottom:4px;">Min. power %</div><input id="isoPmin" type="number" value="80" step="5" oninput="isoUpdate()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:70px;"></div>
+<div style="display:flex;gap:6px;"><button onclick="isoLimits('std')" style="background:#2a2a4a;border:none;color:#fff;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:11px;">a) Std. hydraulic</button>
+<button onclick="isoLimits('aero')" style="background:#2a2a4a;border:none;color:#fff;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:11px;">b) Aeronautical</button></div>
+</div>
+<div id="isoSummary" style="margin-top:12px;display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:bold;"></div>
+
+<div style="margin-top:16px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;font-size:14px;">Pipes – actual state, required size and recommended standard tube</h3>
+<div id="isoHint" style="color:#888;font-size:12px;margin-top:6px;">Press Solve first, then the pipe list appears here.</div>
+<div style="color:#888;font-size:11px;margin-top:6px;">d<sub>min</sub> = 100/3·√(Q/(π·U<sub>max</sub>)) with Q in m³/h. Recommended = smallest ISO 8575 tube of the selected class with ID ≥ d<sub>min</sub>. Required wall t<sub>req</sub> = p·d<sub>m</sub>/(2·R<sub>p0.2</sub>/S), d<sub>m</sub> = (OD+ID)/2 (Barlow). R01 and R03 belong to the pump model and are excluded from sizing.</div>
+<div style="overflow:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:11px;font-family:Consolas,monospace;white-space:nowrap;">
+<thead><tr style="background:#0f3460;color:#fff;">
+<th style="padding:5px 6px;text-align:left;">Pipe</th><th style="padding:5px 6px;">Line</th><th style="padding:5px 6px;">L m</th>
+<th style="padding:5px 6px;">|Q| m³/h</th><th style="padding:5px 6px;">U m/s</th><th style="padding:5px 6px;">U max</th><th style="padding:5px 6px;">Δp bar</th>
+<th style="padding:5px 6px;background:#16213e;">ID now</th><th style="padding:5px 6px;background:#16213e;">Dash</th><th style="padding:5px 6px;background:#16213e;">Wall</th><th style="padding:5px 6px;background:#16213e;">t req</th>
+<th style="padding:5px 6px;background:#1a2a1a;">d min</th><th style="padding:5px 6px;background:#1a2a1a;">Rec. dash</th><th style="padding:5px 6px;background:#1a2a1a;">Rec. OD×wall</th><th style="padding:5px 6px;background:#1a2a1a;">Rec. ID</th><th style="padding:5px 6px;background:#1a2a1a;">Action</th>
+<th style="padding:5px 6px;">Tube kg</th><th style="padding:5px 6px;">Fluid kg</th></tr></thead>
+<tbody id="isoBody"></tbody><tfoot id="isoFoot"></tfoot></table></div>
 </div>
 
 <div style="margin-top:16px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#6fc3f7;font-size:14px;">Pipes in the network</h3>
-<div id="isoHint" style="color:#888;font-size:12px;margin-top:6px;">Press Solve first, then the pipe list appears here.</div>
+<h3 style="color:#6fc3f7;font-size:14px;">Consumer power check (actuators / motors)</h3>
+<div style="color:#888;font-size:12px;margin-top:6px;">P<sub>actual</sub> = Δp·|Q| from the solver. Too small a supply/return line raises the line losses, lowers Δp<sub>tot</sub> at the actuator and the power drops below the required minimum. Rated power from the exercise; editable and stored locally.</div>
 <div style="overflow:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;font-family:Consolas,monospace;">
-<thead><tr style="background:#0f3460;color:#fff;">
-<th style="padding:5px 6px;text-align:left;">Pipe</th><th style="padding:5px 6px;">Line</th><th style="padding:5px 6px;">L m</th>
-<th style="padding:5px 6px;">ID mm</th><th style="padding:5px 6px;">Dash</th><th style="padding:5px 6px;">OD mm</th>
-<th style="padding:5px 6px;">Wall mm</th><th style="padding:5px 6px;">Req. wall</th>
-<th style="padding:5px 6px;">Tube kg</th><th style="padding:5px 6px;">Fluid kg</th></tr></thead>
-<tbody id="isoBody"></tbody>
-<tfoot id="isoFoot"></tfoot></table></div>
+<thead><tr style="background:#0f3460;color:#fff;"><th style="padding:5px 6px;text-align:left;">Consumer</th><th style="padding:5px 6px;">Nodes</th><th style="padding:5px 6px;">Δp bar</th><th style="padding:5px 6px;">|Q| m³/h</th><th style="padding:5px 6px;">P actual kW</th><th style="padding:5px 6px;">P nom kW</th><th style="padding:5px 6px;">P min kW</th><th style="padding:5px 6px;">%</th><th style="padding:5px 6px;">Status</th></tr></thead>
+<tbody id="isoConsBody"></tbody></table></div>
+<div id="isoConsHint" style="color:#888;font-size:12px;margin-top:6px;"></div>
+</div>
+
+<div style="margin-top:16px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;font-size:14px;">Mass summary by line type (initial vs recommended)</h3>
+<div style="overflow:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;font-family:Consolas,monospace;">
+<thead><tr style="background:#0f3460;color:#fff;"><th style="padding:5px 6px;text-align:left;">Line type</th><th style="padding:5px 6px;">Material</th><th style="padding:5px 6px;">Σ L m</th><th style="padding:5px 6px;">Tube kg (now)</th><th style="padding:5px 6px;">Fluid kg (now)</th><th style="padding:5px 6px;">Tube kg (rec.)</th><th style="padding:5px 6px;">Fluid kg (rec.)</th><th style="padding:5px 6px;">Δ tube kg</th></tr></thead>
+<tbody id="isoMassBody"></tbody></table></div>
+</div>
+
+<div style="margin-top:16px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;font-size:14px;">3 000 psi → 5 000 psi comparison (HP lines, simple estimate)</h3>
+<div style="color:#888;font-size:12px;margin-top:6px;">Constant hydraulic power Δp·Q = const → Q₅₀₀₀/Q₃₀₀₀ = 3/5. Constant velocity → d₅₀₀₀/d₃₀₀₀ = √(3/5) = 0.775. Wall from Barlow with σ<sub>allow</sub> derived from the recommended 3 000 psi tube (σ = p·d<sub>m</sub>/(2t)), then t₅₀₀₀ = p₅₀₀₀·d<sub>m,5000</sub>/(2σ).</div>
+<div id="iso5000" style="margin-top:8px;font-family:Consolas,monospace;font-size:12px;color:#aac;"></div>
 </div>
 
 <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;">
-<div style="flex:1;min-width:420px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#6fc3f7;font-size:14px;">Table 1 – Tubing materials</h3>
+<div style="flex:1;min-width:380px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;font-size:14px;">Design limits – flow velocity (GS-Hydro / aero)</h3>
+<table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;">
+<thead><tr style="background:#0f3460;color:#fff;"><th style="padding:4px;text-align:left;">Domain</th><th style="padding:4px;">U typ. m/s</th><th style="padding:4px;">U max std.</th><th style="padding:4px;">U max aero</th></tr></thead>
+<tbody>
+<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;color:#e94560;">HP supply</td><td style="padding:4px;text-align:center;">5.0 – 5.5</td><td style="padding:4px;text-align:center;">6</td><td style="padding:4px;text-align:center;">9</td></tr>
+<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;color:#ffdd44;">LP return</td><td style="padding:4px;text-align:center;">1.0 – 3.0</td><td style="padding:4px;text-align:center;">4</td><td style="padding:4px;text-align:center;">6</td></tr>
+<tr><td style="padding:4px;color:#ffdd44;">LP suction</td><td style="padding:4px;text-align:center;">0.5 – 1.0</td><td style="padding:4px;text-align:center;">1.5</td><td style="padding:4px;text-align:center;">3</td></tr>
+</tbody></table>
+<h3 style="color:#6fc3f7;font-size:14px;margin-top:14px;">Rated actuator power (kW)</h3>
+<table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;">
+<thead><tr style="background:#0f3460;color:#fff;"><th style="padding:4px;text-align:left;">Domain</th><th style="padding:4px;text-align:left;">Actuator</th><th style="padding:4px;">P nom</th><th style="padding:4px;">P min (80 %)</th></tr></thead>
+<tbody id="isoPnomBody"></tbody></table>
+<div style="color:#888;font-size:11px;margin-top:8px;">Useful mechanical power is lower (η ≈ 0.8–0.9). Master caution at ≈ ½ nominal pressure; actuators still work, only slower.</div>
+</div>
+<div style="flex:1;min-width:380px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
+<h3 style="color:#6fc3f7;font-size:14px;">Table 1 – Tubing materials (ISO 8575)</h3>
 <table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;">
 <thead><tr style="background:#0f3460;color:#fff;"><th style="padding:4px;">Code</th><th style="padding:4px;text-align:left;">Material</th><th style="padding:4px;">Rm MPa</th><th style="padding:4px;">Rp0.2 MPa</th><th style="padding:4px;">A %</th><th style="padding:4px;">ρ kg/m³</th></tr></thead>
 <tbody id="isoMatBody"></tbody></table>
-</div>
-<div style="flex:1;min-width:380px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#6fc3f7;font-size:14px;">Selected tube sizes</h3>
+<div style="color:#888;font-size:11px;margin-top:6px;">A320: HP lines Ti-3Al-2.5V (4.48 g/cm³), LP/suction 6061-T6 (2.70 g/cm³), fire zones 21-6-9 CRES (7.83 g/cm³). Densities are alloy standard values, not part of ISO 8575.</div>
+<h3 style="color:#6fc3f7;font-size:14px;margin-top:14px;">Selected tube class – sizes</h3>
 <table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;font-family:Consolas,monospace;">
-<thead><tr style="background:#0f3460;color:#fff;"><th style="padding:4px;">Dash</th><th style="padding:4px;">OD mm</th><th style="padding:4px;">Wall mm</th><th style="padding:4px;">ID mm</th><th style="padding:4px;">kg/m</th></tr></thead>
+<thead><tr style="background:#0f3460;color:#fff;"><th style="padding:4px;">Dash</th><th style="padding:4px;">OD mm</th><th style="padding:4px;">Wall mm</th><th style="padding:4px;">ID mm</th><th style="padding:4px;">t req</th><th style="padding:4px;">kg/m</th></tr></thead>
 <tbody id="isoSizeBody"></tbody></table>
-<div style="color:#888;font-size:11px;margin-top:8px;">Wall thickness check uses Barlow: t = p·OD / (2·Rp0.2/SF).</div>
 </div>
 </div>
-
 </div>
 </div>
 
@@ -620,6 +659,26 @@ const ISO_LP=[
  {id:'L2', mat:2, lbl:'4 200 / 7 000 kPa (600 / 1 000 psi) – 21-6-9', wt:{20:0.61,24:0.61}},
  {id:'L3', mat:3, lbl:'1 500 kPa (220 psi) – UNS S32100', wt:{32:0.71}}];
 
+// Rated actuator power [kW] from the exercise specification (Berens, Hydraulic Systems Exercise).
+// Key = component name prefix (case-insensitive). Editable in the ISO tab, persisted in localStorage.
+const ISO_PNOM_DEFAULT={UAL:2.0,UAR:2.0,U5L:1.0,U5R:1.0,U1L:1.0,U1R:1.0,UTS:4.0,ULE:2.0,URE:2.0,UYD:2.0,URU:2.0,USL:3.0,UFL:5.0};
+function isoPnomAll(){ try{ return Object.assign({},ISO_PNOM_DEFAULT,JSON.parse(localStorage.getItem('boheme_pnom')||'{}')); }catch(e){ return Object.assign({},ISO_PNOM_DEFAULT); } }
+function isoPnomGet(name){ const m=isoPnomAll(); const u=(name||'').toUpperCase(); if(m[u]!==undefined) return m[u]; const k=Object.keys(m).find(k=>u.startsWith(k)); return k?m[k]:null; }
+function isoPnomSet(name,val){ const m=isoPnomAll(); const v=parseFloat(val); if(!isFinite(v)||v<=0) delete m[name.toUpperCase()]; else m[name.toUpperCase()]=v; localStorage.setItem('boheme_pnom',JSON.stringify(m)); isoUpdate(); }
+function isoLimits(which){
+  const v=which==='aero'?{hp:9,lp:6,s:3}:{hp:6,lp:4,s:1.5};
+  document.getElementById('isoUmaxHP').value=v.hp; document.getElementById('isoUmaxLP').value=v.lp; document.getElementById('isoUmaxS').value=v.s;
+  isoUpdate();
+}
+function isoIsConsumer(c){
+  const n=(c.name||'').toUpperCase(), t=(c.type||'').toUpperCase();
+  if(!n.startsWith('U')) return false;
+  if(/^U(CV|PR|CP|PM|PT)/.test(n)) return false;         // valves, regulators, pumps, PTU are not loads
+  if(/^(UCV|UPR|UCP|UPM|UPT)$/.test(t)) return false;
+  return true;
+}
+function isoPow(c){ const p=Number(c.pow); if(Number.isFinite(p)&&p!==0) return Math.abs(p); const dp=Math.abs(Number(c.dp)||0), q=Math.abs(Number(c.absQ)||Number(c.q)||0); return dp*q/36; } // bar·m³/h /36 = kW
+
 function isoSel(which){
   const arr = which==='HP'?ISO_HP:ISO_LP;
   const el=document.getElementById(which==='HP'?'isoHP':'isoLP');
@@ -647,62 +706,130 @@ function isoMatch(idmm,opt){
   }
   return best;
 }
+function isoTreq(pPa,od,id,mat,sf){ const dm=(od+id)/2/1000; return pPa*dm/(2*mat.rp*1e6/sf)*1000; } // mm
+function isoRecommend(dmin,opt){ // smallest standard tube with ID >= dmin
+  let best=null;
+  for(const d in opt.wt){ const od=ISO_OD[d], wt=opt.wt[d], id=od-2*wt;
+    if(id>=dmin && (!best||id<best.id)) best={dash:+d,od,wt,id}; }
+  if(!best){ // nothing large enough -> largest available
+    for(const d in opt.wt){ const od=ISO_OD[d], wt=opt.wt[d], id=od-2*wt; if(!best||id>best.id) best={dash:+d,od,wt,id,overflow:true}; } }
+  return best;
+}
 function isoUpdate(){
   const hp=isoSel('HP'), lp=isoSel('LP');
   const rhoF=parseFloat(document.getElementById('isoRho').value)||1008;
-  const pdes=(parseFloat(document.getElementById('isoPdes').value)||206)*1e5;
+  const pHP=(parseFloat(document.getElementById('isoPdes').value)||206)*1e5;
+  const pLP=(parseFloat(document.getElementById('isoPdesLP').value)||3.5)*1e5;
   const sf=parseFloat(document.getElementById('isoSF').value)||1.5;
+  const uHP=parseFloat(document.getElementById('isoUmaxHP').value)||9;
+  const uLP=parseFloat(document.getElementById('isoUmaxLP').value)||6;
+  const uS =parseFloat(document.getElementById('isoUmaxS').value)||3;
+  const pminPct=(parseFloat(document.getElementById('isoPmin').value)||80)/100;
+  const mh=ISO_MAT[hp.mat], ml=ISO_MAT[lp.mat];
 
-  
-  const mh=ISO_MAT[hp.mat];
+  // size table of selected HP class with required wall
   document.getElementById('isoSizeBody').innerHTML=Object.keys(hp.wt).map(d=>{
-    const od=ISO_OD[d], wt=hp.wt[d], id=od-2*wt;
+    const od=ISO_OD[d], wt=hp.wt[d], id=od-2*wt, tr=isoTreq(pHP,od,id,mh,sf);
     const kgm=Math.PI/4*((od/1000)**2-(id/1000)**2)*mh.rho;
-    return `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;text-align:center;color:#ffdd44;">${d}</td><td style="padding:4px;text-align:right;">${od.toFixed(3)}</td><td style="padding:4px;text-align:right;">${wt.toFixed(2)}</td><td style="padding:4px;text-align:right;">${id.toFixed(2)}</td><td style="padding:4px;text-align:right;color:#6fc3f7;">${kgm.toFixed(3)}</td></tr>`;
+    return `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;text-align:center;color:#ffdd44;">${d}</td><td style="padding:4px;text-align:right;">${od.toFixed(3)}</td><td style="padding:4px;text-align:right;">${wt.toFixed(2)}</td><td style="padding:4px;text-align:right;">${id.toFixed(2)}</td><td style="padding:4px;text-align:right;color:${wt>=tr?'#4caf50':'#e94560'};">${tr.toFixed(2)}</td><td style="padding:4px;text-align:right;color:#6fc3f7;">${kgm.toFixed(3)}</td></tr>`;
   }).join('');
+
+  // rated power reference table
+  const dom={UAL:'Wing',UAR:'Wing',U5L:'Wing',U5R:'Wing',U1L:'Wing',U1R:'Wing',UTS:'Empennage',ULE:'Empennage',URE:'Empennage',UYD:'Empennage',URU:'Empennage',USL:'Slats/Flaps',UFL:'Slats/Flaps'};
+  const pn=isoPnomAll();
+  document.getElementById('isoPnomBody').innerHTML=Object.keys(pn).map(k=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;color:#888;">${dom[k]||'—'}</td><td style="padding:4px;color:#6fc3f7;">${k}</td><td style="padding:4px;text-align:center;">${pn[k].toFixed(1)}</td><td style="padding:4px;text-align:center;color:#ffdd44;">${(pn[k]*pminPct).toFixed(2)}</td></tr>`).join('');
 
   const body=document.getElementById('isoBody'), foot=document.getElementById('isoFoot'), hint=document.getElementById('isoHint');
   const res=(typeof loadedResults!=='undefined')?loadedResults:null;
   if(!res||!Array.isArray(res.components)){ body.innerHTML=''; foot.innerHTML=''; return; }
-  const pipes=res.components.filter(c=>{
-    const n=(c.name||'').toUpperCase();
-    return n.startsWith('R') && Number(c.l)>0 && Number(c.d)>0;
-  });
+  const pipes=res.components.filter(c=>{ const n=(c.name||'').toUpperCase(); return n.startsWith('R') && !n.startsWith('RZ') && !n.startsWith('RK') && !n.startsWith('RL') && Number(c.l)>0 && Number(c.d)>0; });
   if(!pipes.length){ body.innerHTML=''; foot.innerHTML=''; return; }
   hint.style.display='none';
 
-  let mT=0,mF=0,vF=0,warn=0;
+  let mT=0,mF=0,vF=0,warnU=0,warnW=0,nInc=0,nRed=0;
+  const agg={HP:{L:0,t:0,f:0,tr:0,fr:0,mat:mh.n},LP:{L:0,t:0,f:0,tr:0,fr:0,mat:ml.n}};
+  const hpRows=[];
   body.innerHTML=pipes.map(c=>{
-    const L=Number(c.l), idmm=Number(c.d)*1000;
+    const name=(c.name||'').toUpperCase(), L=Number(c.l), idmm=Number(c.d)*1000;
+    const excl = /^R0?1$|^R0?3$/.test(name.replace(/_/g,''));
     const mHP=isoMatch(idmm,hp), mLP=isoMatch(idmm,lp);
     const isHP=mHP.err<=mLP.err;
-    const opt=isHP?hp:lp, m=isoMatch(idmm,opt), mat=ISO_MAT[opt.mat];
-    const idm=m.id/1000, odm=m.od/1000;
-    const tubeV=Math.PI/4*(odm*odm-idm*idm)*L, tubeM=tubeV*mat.rho;
-    const fluV=Math.PI/4*idm*idm*L, fluM=fluV*rhoF;
-    const sigma=mat.rp*1e6/sf;
-    const treq=isHP? (pdes*m.od/1000)/(2*sigma)*1000 : null;
-    const okWall = treq===null || m.wt>=treq;
-    const fit = m.err<0.6;
-    if(!okWall||!fit) warn++;
+    const opt=isHP?hp:lp, m=isoMatch(idmm,opt), mat=ISO_MAT[opt.mat], pdes=isHP?pHP:pLP;
+    const isSuction=!isHP && ((c.n1||'').toUpperCase().startsWith('S')||(c.n2||'').toUpperCase().startsWith('S'));
+    const umax=isHP?uHP:(isSuction?uS:uLP);
+    const u=Math.abs(Number(c.u)||0), absQ=Math.abs(Number(c.absQ)||Number(c.q)||0), dp=Math.abs(Number(c.dp)||0);
+    // now
+    const tubeM=Math.PI/4*((m.od/1000)**2-(m.id/1000)**2)*L*mat.rho, fluV=Math.PI/4*(m.id/1000)**2*L, fluM=fluV*rhoF;
+    const treq=isoTreq(pdes,m.od,m.id,mat,sf), okWall=m.wt>=treq, okU=u<=umax, fit=m.err<0.6;
+    // recommended
+    const dmin=absQ>0?(100/3)*Math.sqrt(absQ/(Math.PI*umax)):0;
+    const rec=isoRecommend(dmin,opt);
+    const recTreq=isoTreq(pdes,rec.od,rec.id,mat,sf), recOk=rec.wt>=recTreq && !rec.overflow;
+    const tubeR=Math.PI/4*((rec.od/1000)**2-(rec.id/1000)**2)*L*mat.rho, fluR=Math.PI/4*(rec.id/1000)**2*L*rhoF;
+    let act, actCol;
+    if(excl){ act='pump model – keep'; actCol='#888'; }
+    else if(!okU||rec.id>m.id+0.05){ act='INCREASE → dash '+rec.dash; actCol='#e94560'; nInc++; }
+    else if(rec.id<m.id-0.05){ act='can reduce → dash '+rec.dash; actCol='#4caf50'; nRed++; }
+    else { act='OK'; actCol='#4caf50'; }
+    if(!okWall) warnW++; if(!okU) warnU++;
     mT+=tubeM; mF+=fluM; vF+=fluV;
-    const c1=fit?'#e0e0e0':'#e94560', c2=okWall?'#4caf50':'#e94560';
-    return `<tr style="border-bottom:1px solid #1a2a4a;">
+    const A=agg[isHP?'HP':'LP']; A.L+=L; A.t+=tubeM; A.f+=fluM; A.tr+=excl?tubeM:tubeR; A.fr+=excl?fluM:fluR;
+    if(isHP&&!excl) hpRows.push({name:c.name,L,rec,mat,absQ});
+    const bg=(!okU||!okWall)?'background:#2a1a1a;':'';
+    const td='padding:4px 6px;text-align:right;';
+    return `<tr style="border-bottom:1px solid #1a2a4a;${bg}">
       <td style="padding:4px 6px;color:#6fc3f7;">${c.name}</td>
-      <td style="padding:4px 6px;text-align:center;color:${isHP?'#e94560':'#ffdd44'};">${isHP?'HP':'LP'}</td>
-      <td style="padding:4px 6px;text-align:right;">${L.toFixed(2)}</td>
-      <td style="padding:4px 6px;text-align:right;color:${c1};">${idmm.toFixed(1)}</td>
-      <td style="padding:4px 6px;text-align:center;">${m.dash}</td>
-      <td style="padding:4px 6px;text-align:right;">${m.od.toFixed(2)}</td>
-      <td style="padding:4px 6px;text-align:right;">${m.wt.toFixed(2)}</td>
-      <td style="padding:4px 6px;text-align:right;color:${c2};">${treq===null?'—':treq.toFixed(2)}</td>
-      <td style="padding:4px 6px;text-align:right;color:#6fc3f7;">${tubeM.toFixed(3)}</td>
-      <td style="padding:4px 6px;text-align:right;color:#6fc3f7;">${fluM.toFixed(3)}</td></tr>`;
+      <td style="padding:4px 6px;text-align:center;color:${isHP?'#e94560':'#ffdd44'};">${isHP?'HP':(isSuction?'LP-S':'LP')}</td>
+      <td style="${td}">${L.toFixed(2)}</td><td style="${td}">${absQ.toFixed(3)}</td>
+      <td style="${td}color:${okU?'#4caf50':'#e94560'};font-weight:${okU?'normal':'bold'};">${u.toFixed(2)}</td>
+      <td style="${td}color:#888;">${umax.toFixed(1)}</td><td style="${td}color:${dp>5?'#ffdd44':'#aac'};">${dp.toFixed(3)}</td>
+      <td style="${td}background:#16213e;color:${fit?'#e0e0e0':'#e94560'};">${idmm.toFixed(1)}</td>
+      <td style="${td}background:#16213e;text-align:center;">${m.dash}</td>
+      <td style="${td}background:#16213e;">${m.wt.toFixed(2)}</td>
+      <td style="${td}background:#16213e;color:${okWall?'#4caf50':'#e94560'};font-weight:bold;">${treq.toFixed(2)}</td>
+      <td style="${td}background:#1a2a1a;">${dmin.toFixed(1)}</td>
+      <td style="${td}background:#1a2a1a;text-align:center;color:#ffdd44;">${rec.dash}${rec.overflow?'!':''}</td>
+      <td style="${td}background:#1a2a1a;">${rec.od.toFixed(2)}×${rec.wt.toFixed(2)}</td>
+      <td style="${td}background:#1a2a1a;color:${recOk?'#4caf50':'#e94560'};">${rec.id.toFixed(2)}</td>
+      <td style="padding:4px 6px;background:#1a2a1a;color:${actCol};font-weight:bold;">${act}</td>
+      <td style="${td}color:#6fc3f7;">${tubeM.toFixed(3)}</td><td style="${td}color:#6fc3f7;">${fluM.toFixed(3)}</td></tr>`;
   }).join('');
-  foot.innerHTML=`<tr style="background:#16213e;font-weight:bold;">
-    <td colspan="8" style="padding:6px;text-align:right;color:#aac;">Total — ${pipes.length} pipes, fluid volume ${(vF*1000).toFixed(2)} l${warn?`, ${warn} flagged`:''}</td>
-    <td style="padding:6px;text-align:right;color:#ffdd44;">${mT.toFixed(2)}</td>
-    <td style="padding:6px;text-align:right;color:#ffdd44;">${mF.toFixed(2)}</td></tr>`;
+  foot.innerHTML=`<tr style="background:#16213e;font-weight:bold;"><td colspan="16" style="padding:6px;text-align:right;color:#aac;">Total — ${pipes.length} pipes, fluid ${(vF*1000).toFixed(2)} l · <span style="color:#e94560">${nInc} increase</span> · <span style="color:#4caf50">${nRed} can reduce</span> · ${warnU} over U max · ${warnW} wall too thin</td><td style="padding:6px;text-align:right;color:#ffdd44;">${mT.toFixed(2)}</td><td style="padding:6px;text-align:right;color:#ffdd44;">${mF.toFixed(2)}</td></tr>`;
+
+  // mass summary
+  document.getElementById('isoMassBody').innerHTML=['HP','LP'].map(k=>{ const A=agg[k]; const d=A.tr-A.t;
+    return `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px 6px;color:${k==='HP'?'#e94560':'#ffdd44'};">${k}</td><td style="padding:4px 6px;text-align:center;color:#ccd;">${A.mat}</td><td style="padding:4px 6px;text-align:right;">${A.L.toFixed(1)}</td><td style="padding:4px 6px;text-align:right;">${A.t.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;">${A.f.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${A.tr.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${A.fr.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:${d<0?'#4caf50':d>0?'#e94560':'#aac'};">${d>=0?'+':''}${d.toFixed(2)} (${A.t?((d/A.t)*100).toFixed(0):0} %)</td></tr>`; }).join('')
+    +`<tr style="background:#16213e;font-weight:bold;"><td style="padding:4px 6px;">Σ</td><td></td><td style="padding:4px 6px;text-align:right;">${(agg.HP.L+agg.LP.L).toFixed(1)}</td><td style="padding:4px 6px;text-align:right;">${(agg.HP.t+agg.LP.t).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;">${(agg.HP.f+agg.LP.f).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${(agg.HP.tr+agg.LP.tr).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${(agg.HP.fr+agg.LP.fr).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;">${((agg.HP.tr+agg.LP.tr)-(agg.HP.t+agg.LP.t)).toFixed(2)}</td></tr>`;
+
+  // 5000 psi estimate
+  let m3=0,m5=0,rows=[];
+  for(const r of hpRows){ const p3=pHP, p5=pHP*5/3;
+    const d3=r.rec.id, dm3=(r.rec.od+r.rec.id)/2, sig=p3*dm3/(2*r.rec.wt); // Pa, mm ratio cancels
+    const d5=d3*Math.sqrt(3/5); const t5=p5*(d5)/(2*sig-p5); // from t=p*(d+t)/(2σ) -> t=p*d/(2σ-p)
+    const od5=d5+2*t5;
+    const M3=Math.PI/4*((r.rec.od/1000)**2-(d3/1000)**2)*r.L*r.mat.rho, M5=Math.PI/4*((od5/1000)**2-(d5/1000)**2)*r.L*r.mat.rho;
+    m3+=M3; m5+=M5; rows.push(`${r.name.padEnd(6)} d₃₀₀₀ ${d3.toFixed(1).padStart(5)} t ${r.rec.wt.toFixed(2)} → d₅₀₀₀ ${d5.toFixed(1).padStart(5)} t ${t5.toFixed(2)}  ${M3.toFixed(3)} → ${M5.toFixed(3)} kg`); }
+  document.getElementById('iso5000').innerHTML = hpRows.length ? `<div style="white-space:pre;">${rows.join('\n')}</div><div style="margin-top:8px;color:#ffdd44;font-weight:bold;">HP tube mass (recommended sizing): 3 000 psi ${m3.toFixed(2)} kg → 5 000 psi ${m5.toFixed(2)} kg (${((m5-m3)/m3*100).toFixed(0)} %)</div><div style="color:#888;font-size:11px;margin-top:4px;">Further arguments for 5 000 psi: smaller actuators and pumps, less fluid, thinner lines fit in thin wings; against: higher leakage/fatigue stress, seal life, more expensive components.</div>` : '<span style="color:#888;">No HP pipes.</span>';
+
+  // consumer power check
+  const cb=document.getElementById('isoConsBody'), ch=document.getElementById('isoConsHint');
+  const cons=res.components.filter(isoIsConsumer); let low=0,nospec=0;
+  cb.innerHTML=cons.map(c=>{
+    const dp=Math.abs(Number(c.dp)||0), absQ=Math.abs(Number(c.absQ)||Number(c.q)||0), pAct=isoPow(c), pnom=isoPnomGet(c.name);
+    const pmin=pnom!==null?pnom*pminPct:null, pct=pnom?pAct/pnom*100:null;
+    let st,col; if(pnom===null){st='no spec';col='#888';nospec++;} else if(pAct>=pmin){st='OK';col='#4caf50';} else {st='LOW';col='#e94560';low++;}
+    return `<tr style="border-bottom:1px solid #1a2a4a;${st==='LOW'?'background:#2a1a1a;':''}"><td style="padding:4px 6px;color:#6fc3f7;">${c.name}</td><td style="padding:4px 6px;text-align:center;color:#888;">${c.n1||'?'} → ${c.n2||'?'}</td><td style="padding:4px 6px;text-align:right;">${dp.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;">${absQ.toFixed(4)}</td><td style="padding:4px 6px;text-align:right;color:${col};font-weight:bold;">${pAct.toFixed(3)}</td><td style="padding:4px 6px;text-align:right;"><input type="number" step="0.1" value="${pnom===null?'':pnom}" placeholder="—" onchange="isoPnomSet('${c.name}',this.value)" style="width:62px;background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:3px;padding:2px 4px;font-size:11px;font-family:Consolas,monospace;text-align:right;"></td><td style="padding:4px 6px;text-align:right;color:#888;">${pmin===null?'—':pmin.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:${col};">${pct===null?'—':pct.toFixed(0)}</td><td style="padding:4px 6px;text-align:center;color:${col};font-weight:bold;">${st}</td></tr>`;
+  }).join('');
+  ch.textContent=cons.length?`${cons.length} consumers checked, ${low} below ${(pminPct*100).toFixed(0)} % of rated power${nospec?`, ${nospec} without rating`:''}.`:'No U-type consumers found.';
+
+  // banner
+  const sum=document.getElementById('isoSummary'); sum.style.display='block';
+  if(!low&&!warnU&&!warnW){ sum.style.cssText+='background:#0f2a1a;border:1px solid #4caf50;color:#4caf50;'; sum.innerHTML='✔ All checks passed: velocity limits, wall thickness and consumer power ('+(pminPct*100).toFixed(0)+' %).'+(nRed?` ${nRed} pipe(s) could still be reduced to save mass – see “Action”.`:''); }
+  else { sum.style.cssText+='background:#2a1a1a;border:1px solid #e94560;color:#e94560;'; const p=[];
+    if(low) p.push(`${low} consumer(s) below ${(pminPct*100).toFixed(0)} % rated power → increase the lines feeding them`);
+    if(warnU) p.push(`${warnU} pipe(s) above U max → see recommended dash`);
+    if(warnW) p.push(`${warnW} pipe(s) wall thinner than Barlow minimum → thicker tube / other class`);
+    sum.innerHTML='⚠ '+p.join(' · '); }
 }
 setTimeout(isoInit,150);
 

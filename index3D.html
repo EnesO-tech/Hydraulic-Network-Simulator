@@ -637,7 +637,7 @@ function isoInit(){
   }).join('');
   isoUpdate();
 }
-// pick the dash size whose ID is closest to the pipe's inner diameter
+
 function isoMatch(idmm,opt){
   let best=null;
   for(const d in opt.wt){
@@ -653,7 +653,7 @@ function isoUpdate(){
   const pdes=(parseFloat(document.getElementById('isoPdes').value)||206)*1e5;
   const sf=parseFloat(document.getElementById('isoSF').value)||1.5;
 
-  // size reference table for the pressure-line selection
+  
   const mh=ISO_MAT[hp.mat];
   document.getElementById('isoSizeBody').innerHTML=Object.keys(hp.wt).map(d=>{
     const od=ISO_OD[d], wt=hp.wt[d], id=od-2*wt;
@@ -674,14 +674,12 @@ function isoUpdate(){
   let mT=0,mF=0,vF=0,warn=0;
   body.innerHTML=pipes.map(c=>{
     const L=Number(c.l), idmm=Number(c.d)*1000;
-    // pressure line if the solver's inner diameter matches the HP table better
     const mHP=isoMatch(idmm,hp), mLP=isoMatch(idmm,lp);
     const isHP=mHP.err<=mLP.err;
     const opt=isHP?hp:lp, m=isoMatch(idmm,opt), mat=ISO_MAT[opt.mat];
     const idm=m.id/1000, odm=m.od/1000;
     const tubeV=Math.PI/4*(odm*odm-idm*idm)*L, tubeM=tubeV*mat.rho;
     const fluV=Math.PI/4*idm*idm*L, fluM=fluV*rhoF;
-    // Barlow required wall for pressure lines
     const sigma=mat.rp*1e6/sf;
     const treq=isHP? (pdes*m.od/1000)/(2*sigma)*1000 : null;
     const okWall = treq===null || m.wt>=treq;
@@ -742,7 +740,7 @@ let solverReadyPromise = null;
 let threeInitialized = false;
 let scene, camera, renderer, controls, aircraftGroup, pipeGroup, hullVisible = true;
 
-// ---- 3D NODE INTERACTION / PLACEMENT ----
+// ---- 3D NODE INTERACTION ----
 let nodeMeshes = [];
 let selectedNodeMesh = null;
 let latestNetworkData = null;
@@ -967,7 +965,7 @@ const adapterSource = await adapterResponse.text();
 pyodide.FS.writeFile('Bachelorthesis.py', thesisSource);
 pyodide.FS.writeFile('boheme_web_solver.py', adapterSource);
 
-// Import only after writing to the virtual Pyodide file system.
+
 await pyodide.runPythonAsync(`
 import importlib
 import Bachelorthesis
@@ -1167,8 +1165,7 @@ data.components.forEach(c => {
 const a = nodePositions[c.n1];
 const b = nodePositions[c.n2];
 
-// 'S' hat in der JSON-Datei bewusst keine physische 3D-Position.
-// Such components are not drawn with an invented position.
+
 if (!a || !b) {
 skippedComponents.push(c.name + ' (' + c.n1 + ' -> ' + c.n2 + ')');
 return;
@@ -1447,7 +1444,7 @@ async function loadDefaultBohemeData(){
 }
 
 function init(){
-    // UI zuerst aufbauen: Tabelle und Tabs dürfen nicht von externen Dateien abhängen.
+    
 loadFromLocalStorage();
     networkLoadPromise = loadNodePositions();
 
@@ -1492,8 +1489,7 @@ h+='</tbody>';
     renderGridData();
 sel(4,2);
 
-    // Wenn no usable local grid data exists,
-    // automatically load the repo file boheme_data.json.
+    
     loadDefaultBohemeData();
 }
 
@@ -1688,7 +1684,7 @@ renderer.setSize(container.clientWidth,container.clientHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 container.appendChild(renderer.domElement);
 
-// Node picking: a short click selects a node; dragging still rotates the view.
+
 raycaster = new THREE.Raycaster();
 pointer = new THREE.Vector2();
 
@@ -1703,7 +1699,7 @@ const dx = event.clientX - pointerDownXY.x;
 const dy = event.clientY - pointerDownXY.y;
 pointerDownXY = null;
 
-// Do not interpret a drag/orbit gesture as a click.
+
 if(Math.hypot(dx,dy) > 5) return;
 
 const rect = renderer.domElement.getBoundingClientRect();
@@ -1720,7 +1716,7 @@ clearSelectedNode();
 }
 });
 
-// ---- HOVER TOOLTIP ----
+
 let hoveredMesh = null;
 const hoverPointer = new THREE.Vector2();
 const hoverRaycaster = new THREE.Raycaster();

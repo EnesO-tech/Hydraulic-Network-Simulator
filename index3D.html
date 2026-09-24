@@ -660,8 +660,6 @@ const ISO_LP=[
  {id:'L2', mat:2, lbl:'4 200 / 7 000 kPa (600 / 1 000 psi) – 21-6-9', wt:{20:0.61,24:0.61}},
  {id:'L3', mat:3, lbl:'1 500 kPa (220 psi) – UNS S32100', wt:{32:0.71}}];
 
-// Rated actuator power [kW] from the exercise specification (Berens, Hydraulic Systems Exercise).
-// Key = component name prefix (case-insensitive). Editable in the ISO tab, persisted in localStorage.
 const ISO_PNOM_DEFAULT={UAL:2.0,UAR:2.0,U5L:1.0,U5R:1.0,U1L:1.0,U1R:1.0,UTS:4.0,ULE:2.0,URE:2.0,UYD:2.0,URU:2.0,USL:3.0,UFL:5.0};
 function isoPnomAll(){ try{ return Object.assign({},ISO_PNOM_DEFAULT,JSON.parse(localStorage.getItem('boheme_pnom')||'{}')); }catch(e){ return Object.assign({},ISO_PNOM_DEFAULT); } }
 function isoPnomGet(name){ const m=isoPnomAll(); const u=(name||'').toUpperCase(); if(m[u]!==undefined) return m[u]; const k=Object.keys(m).find(k=>u.startsWith(k)); return k?m[k]:null; }
@@ -674,11 +672,11 @@ function isoLimits(which){
 function isoIsConsumer(c){
   const n=(c.name||'').toUpperCase(), t=(c.type||'').toUpperCase();
   if(!n.startsWith('U')) return false;
-  if(/^U(CV|PR|CP|PM|PT)/.test(n)) return false;         // valves, regulators, pumps, PTU are not loads
+  if(/^U(CV|PR|CP|PM|PT)/.test(n)) return false;
   if(/^(UCV|UPR|UCP|UPM|UPT)$/.test(t)) return false;
   return true;
 }
-function isoPow(c){ const p=Number(c.pow); if(Number.isFinite(p)&&p!==0) return Math.abs(p); const dp=Math.abs(Number(c.dp)||0), q=Math.abs(Number(c.absQ)||Number(c.q)||0); return dp*q/36; } // bar·m³/h /36 = kW
+function isoPow(c){ const p=Number(c.pow); if(Number.isFinite(p)&&p!==0) return Math.abs(p); const dp=Math.abs(Number(c.dp)||0), q=Math.abs(Number(c.absQ)||Number(c.q)||0); return dp*q/36; }
 
 function isoSel(which){
   const arr = which==='HP'?ISO_HP:ISO_LP;
@@ -707,12 +705,12 @@ function isoMatch(idmm,opt){
   }
   return best;
 }
-function isoTreq(pPa,od,id,mat,sf){ const dm=(od+id)/2/1000; return pPa*dm/(2*mat.rp*1e6/sf)*1000; } // mm
-function isoRecommend(dmin,opt){ // smallest standard tube with ID >= dmin
+function isoTreq(pPa,od,id,mat,sf){ const dm=(od+id)/2/1000; return pPa*dm/(2*mat.rp*1e6/sf)*1000; }
+function isoRecommend(dmin,opt){
   let best=null;
   for(const d in opt.wt){ const od=ISO_OD[d], wt=opt.wt[d], id=od-2*wt;
     if(id>=dmin && (!best||id<best.id)) best={dash:+d,od,wt,id}; }
-  if(!best){ // nothing large enough -> largest available
+  if(!best){
     for(const d in opt.wt){ const od=ISO_OD[d], wt=opt.wt[d], id=od-2*wt; if(!best||id>best.id) best={dash:+d,od,wt,id,overflow:true}; } }
   return best;
 }
@@ -728,14 +726,14 @@ function isoUpdate(){
   const pminPct=(parseFloat(document.getElementById('isoPmin').value)||80)/100;
   const mh=ISO_MAT[hp.mat], ml=ISO_MAT[lp.mat];
 
-  // size table of selected HP class with required wall
+
   document.getElementById('isoSizeBody').innerHTML=Object.keys(hp.wt).map(d=>{
     const od=ISO_OD[d], wt=hp.wt[d], id=od-2*wt, tr=isoTreq(pHP,od,id,mh,sf);
     const kgm=Math.PI/4*((od/1000)**2-(id/1000)**2)*mh.rho;
     return `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;text-align:center;color:#ffdd44;">${d}</td><td style="padding:4px;text-align:right;">${od.toFixed(3)}</td><td style="padding:4px;text-align:right;">${wt.toFixed(2)}</td><td style="padding:4px;text-align:right;">${id.toFixed(2)}</td><td style="padding:4px;text-align:right;color:${wt>=tr?'#4caf50':'#e94560'};">${tr.toFixed(2)}</td><td style="padding:4px;text-align:right;color:#6fc3f7;">${kgm.toFixed(3)}</td></tr>`;
   }).join('');
 
-  // rated power reference table
+
   const dom={UAL:'Wing',UAR:'Wing',U5L:'Wing',U5R:'Wing',U1L:'Wing',U1R:'Wing',UTS:'Empennage',ULE:'Empennage',URE:'Empennage',UYD:'Empennage',URU:'Empennage',USL:'Slats/Flaps',UFL:'Slats/Flaps'};
   const pn=isoPnomAll();
   document.getElementById('isoPnomBody').innerHTML=Object.keys(pn).map(k=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;color:#888;">${dom[k]||'—'}</td><td style="padding:4px;color:#6fc3f7;">${k}</td><td style="padding:4px;text-align:center;">${pn[k].toFixed(1)}</td><td style="padding:4px;text-align:center;color:#ffdd44;">${(pn[k]*pminPct).toFixed(2)}</td></tr>`).join('');
@@ -759,10 +757,10 @@ function isoUpdate(){
     const isSuction=!isHP && ((c.n1||'').toUpperCase().startsWith('S')||(c.n2||'').toUpperCase().startsWith('S'));
     const umax=isHP?uHP:(isSuction?uS:uLP);
     const u=Math.abs(Number(c.u)||0), absQ=Math.abs(Number(c.absQ)||Number(c.q)||0), dp=Math.abs(Number(c.dp)||0);
-    // now
+
     const tubeM=Math.PI/4*((m.od/1000)**2-(m.id/1000)**2)*L*mat.rho, fluV=Math.PI/4*(m.id/1000)**2*L, fluM=fluV*rhoF;
     const treq=isoTreq(pdes,m.od,m.id,mat,sf), okWall=m.wt>=treq, okU=u<=umax, fit=m.err<0.6;
-    // recommended
+
     const dmin=absQ>0?(100/3)*Math.sqrt(absQ/(Math.PI*umax)):0;
     const rec=isoRecommend(dmin,opt);
     const recTreq=isoTreq(pdes,rec.od,rec.id,mat,sf), recOk=rec.wt>=recTreq && !rec.overflow;
@@ -797,22 +795,22 @@ function isoUpdate(){
   }).join('');
   foot.innerHTML=`<tr style="background:#16213e;font-weight:bold;"><td colspan="16" style="padding:6px;text-align:right;color:#aac;">Total — ${pipes.length} pipes, fluid ${(vF*1000).toFixed(2)} l · <span style="color:#e94560">${nInc} increase</span> · <span style="color:#4caf50">${nRed} can reduce</span> · ${warnU} over U max · ${warnW} wall too thin</td><td style="padding:6px;text-align:right;color:#ffdd44;">${mT.toFixed(2)}</td><td style="padding:6px;text-align:right;color:#ffdd44;">${mF.toFixed(2)}</td></tr>`;
 
-  // mass summary
+
   document.getElementById('isoMassBody').innerHTML=['HP','LP'].map(k=>{ const A=agg[k]; const d=A.tr-A.t;
     return `<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px 6px;color:${k==='HP'?'#e94560':'#ffdd44'};">${k}</td><td style="padding:4px 6px;text-align:center;color:#ccd;">${A.mat}</td><td style="padding:4px 6px;text-align:right;">${A.L.toFixed(1)}</td><td style="padding:4px 6px;text-align:right;">${A.t.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;">${A.f.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${A.tr.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${A.fr.toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:${d<0?'#4caf50':d>0?'#e94560':'#aac'};">${d>=0?'+':''}${d.toFixed(2)} (${A.t?((d/A.t)*100).toFixed(0):0} %)</td></tr>`; }).join('')
     +`<tr style="background:#16213e;font-weight:bold;"><td style="padding:4px 6px;">Σ</td><td></td><td style="padding:4px 6px;text-align:right;">${(agg.HP.L+agg.LP.L).toFixed(1)}</td><td style="padding:4px 6px;text-align:right;">${(agg.HP.t+agg.LP.t).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;">${(agg.HP.f+agg.LP.f).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${(agg.HP.tr+agg.LP.tr).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${(agg.HP.fr+agg.LP.fr).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;">${((agg.HP.tr+agg.LP.tr)-(agg.HP.t+agg.LP.t)).toFixed(2)}</td></tr>`;
 
-  // 5000 psi estimate
+
   let m3=0,m5=0,rows=[];
   for(const r of hpRows){ const p3=pHP, p5=pHP*5/3;
-    const d3=r.rec.id, dm3=(r.rec.od+r.rec.id)/2, sig=p3*dm3/(2*r.rec.wt); // Pa, mm ratio cancels
-    const d5=d3*Math.sqrt(3/5); const t5=p5*(d5)/(2*sig-p5); // from t=p*(d+t)/(2σ) -> t=p*d/(2σ-p)
+    const d3=r.rec.id, dm3=(r.rec.od+r.rec.id)/2, sig=p3*dm3/(2*r.rec.wt);
+    const d5=d3*Math.sqrt(3/5); const t5=p5*(d5)/(2*sig-p5);
     const od5=d5+2*t5;
     const M3=Math.PI/4*((r.rec.od/1000)**2-(d3/1000)**2)*r.L*r.mat.rho, M5=Math.PI/4*((od5/1000)**2-(d5/1000)**2)*r.L*r.mat.rho;
     m3+=M3; m5+=M5; rows.push(`${r.name.padEnd(6)} d₃₀₀₀ ${d3.toFixed(1).padStart(5)} t ${r.rec.wt.toFixed(2)} → d₅₀₀₀ ${d5.toFixed(1).padStart(5)} t ${t5.toFixed(2)}  ${M3.toFixed(3)} → ${M5.toFixed(3)} kg`); }
   document.getElementById('iso5000').innerHTML = hpRows.length ? `<div style="white-space:pre;">${rows.join('\n')}</div><div style="margin-top:8px;color:#ffdd44;font-weight:bold;">HP tube mass (recommended sizing): 3 000 psi ${m3.toFixed(2)} kg → 5 000 psi ${m5.toFixed(2)} kg (${((m5-m3)/m3*100).toFixed(0)} %)</div><div style="color:#888;font-size:11px;margin-top:4px;">Further arguments for 5 000 psi: smaller actuators and pumps, less fluid, thinner lines fit in thin wings; against: higher leakage/fatigue stress, seal life, more expensive components.</div>` : '<span style="color:#888;">No HP pipes.</span>';
 
-  // consumer power check
+
   const cb=document.getElementById('isoConsBody'), ch=document.getElementById('isoConsHint');
   const cons=res.components.filter(isoIsConsumer); let low=0,nospec=0;
   cb.innerHTML=cons.map(c=>{
@@ -823,7 +821,7 @@ function isoUpdate(){
   }).join('');
   ch.textContent=cons.length?`${cons.length} consumers checked, ${low} below ${(pminPct*100).toFixed(0)} % of rated power${nospec?`, ${nospec} without rating`:''}.`:'No U-type consumers found.';
 
-  // banner
+
   const sum=document.getElementById('isoSummary'); sum.style.display='block';
   if(!low&&!warnU&&!warnW){ sum.style.cssText+='background:#0f2a1a;border:1px solid #4caf50;color:#4caf50;'; sum.innerHTML='✔ All checks passed: velocity limits, wall thickness and consumer power ('+(pminPct*100).toFixed(0)+' %).'+(nRed?` ${nRed} pipe(s) could still be reduced to save mass – see “Action”.`:''); }
   else { sum.style.cssText+='background:#2a1a1a;border:1px solid #e94560;color:#e94560;'; const p=[];
@@ -833,7 +831,6 @@ function isoUpdate(){
     sum.innerHTML='⚠ '+p.join(' · '); }
 }
 setTimeout(isoInit,150);
-
 
 function togglePanel(which){
     const map={left:['compLeft','ptLeft','◀','▶'],right:['compRight','ptRight','▶','◀'],bottom:['compBottom','ptBottom','▼','▲']};
@@ -868,7 +865,6 @@ let solverReadyPromise = null;
 let threeInitialized = false;
 let scene, camera, renderer, controls, aircraftGroup, pipeGroup, hullVisible = true;
 
-// ---- 3D NODE INTERACTION ----
 let nodeMeshes = [];
 let selectedNodeMesh = null;
 let latestNetworkData = null;
@@ -876,14 +872,11 @@ let raycaster = null;
 let pointer = null;
 let pointerDownXY = null;
 
-// Pull the hydraulic network slightly toward the aircraft centreline so
-// nodes sit more clearly inside the model instead of on/outside the skin.
-// These factors affect ONLY the 3D visualisation, never the hydraulic solver.
-const NODE_VIS_SCALE_X = 0.75;   // wing span unchanged
-const NODE_VIS_SCALE_Y = 0.40;   // vertical spread unchanged
-const NODE_VIS_SCALE_Z = 0.78;   // extend network slightly farther toward nose AND tail
-const NODE_VIS_OFFSET_Y = -0.24; // move whole hydraulic network a little farther down
-const NODE_VIS_OFFSET_Z = 0.10;  // shift whole hydraulic network slightly toward the nose
+const NODE_VIS_SCALE_X = 0.75;
+const NODE_VIS_SCALE_Y = 0.40;
+const NODE_VIS_SCALE_Z = 0.78;
+const NODE_VIS_OFFSET_Y = -0.24;
+const NODE_VIS_OFFSET_Z = 0.10;
 
 function nodePoint3D(p) {
 return new THREE.Vector3(
@@ -994,10 +987,8 @@ function exportNodePositions(){
     URL.revokeObjectURL(a.href);
 }
 
-// ---- LADE A320 KOORDINATEN AUS JSON ----
 async function loadNodePositions() {
-// On GitHub please save the file as "a320_network.json" ablegen.
-// The second name is only a local fallback for the uploaded file.
+
 const candidates = ['a320_network.json', 'a320_network (2).json'];
 let lastError = null;
 
@@ -1031,7 +1022,6 @@ console.warn('No A320 network file loaded:', lastError);
 throw new Error('a320_network.json could not be loaded.');
 }
 
-// ---- PYODIDE / PYTHON-SOLVER ----
 function readNumber(id, fallback) {
 const el = document.getElementById(id);
 const value = el ? Number(el.value) : NaN;
@@ -1054,7 +1044,7 @@ return {
 Mue: readNumber('pMue', 1e-3),
 Rho: readNumber('pRho', 1000),
 G: readNumber('pG', 9.81),
-// Bachelorthesis.py expects Krough in mm and divides internally by MM_PER_M.
+
 Krough: readNumber('pKrough', 0.05),
 DUcrit: readNumber('itDUcrit', 1e-7),
 NiterMax: Math.max(1, Math.trunc(readNumber('itNiter', 100))),
@@ -1092,7 +1082,6 @@ const thesisSource = await thesisResponse.text();
 const adapterSource = await adapterResponse.text();
 pyodide.FS.writeFile('Bachelorthesis.py', thesisSource);
 pyodide.FS.writeFile('boheme_web_solver.py', adapterSource);
-
 
 await pyodide.runPythonAsync(`
 import importlib
@@ -1193,7 +1182,6 @@ json.dumps({
 return JSON.parse(resultJson);
 }
 
-// ---- GLOBALE drawNetwork Funktion ----
 function disposeGroupChildren(group) {
 if (!group) return;
 while (group.children.length) {
@@ -1245,8 +1233,6 @@ document.getElementById('statusInfo').textContent = 'No solver data for 3D';
 return;
 }
 
-// Draw nodes exactly ONCE. The 3D position comes exclusively from
-// a320_network.json; die Topologie (n1/n2) kommt aus Bachelorthesis.py.
 const usedNodeNames = new Set();
 data.components.forEach(c => {
 if (c.n1 && c.n1 !== 'S') usedNodeNames.add(c.n1);
@@ -1293,7 +1279,6 @@ data.components.forEach(c => {
 const a = nodePositions[c.n1];
 const b = nodePositions[c.n2];
 
-
 if (!a || !b) {
 skippedComponents.push(c.name + ' (' + c.n1 + ' -> ' + c.n2 + ')');
 return;
@@ -1326,7 +1311,6 @@ console.warn('3D hints', {missingNodes, skippedComponents});
 }
 }
 
-// ---- RL_F TOGGLE ----
 function toggleRlF(){
 rlfState = !rlfState;
 const btn = document.getElementById('rlFToggle');
@@ -1572,7 +1556,7 @@ async function loadDefaultBohemeData(){
 }
 
 function init(){
-    
+
 loadFromLocalStorage();
     networkLoadPromise = loadNodePositions();
 
@@ -1599,7 +1583,7 @@ h+='</tr>';
 }
 h+='</tbody>';
     document.getElementById('grid').innerHTML=h;
-    
+
     for(let key in D){
         let [r,c] = key.split(',').map(Number);
         let t=document.getElementById(`t${r}_${c}`);
@@ -1617,7 +1601,7 @@ h+='</tbody>';
     renderGridData();
 sel(4,2);
 
-    
+
     loadDefaultBohemeData();
 }
 
@@ -1671,7 +1655,6 @@ if(saved !== null) el.value = saved;
 }catch(e){}
 }
 
-// ---- EXPORT / IMPORT ----
 function saveDataToFile() {
 try {
 const data = localStorage.getItem('boheme_data');
@@ -1796,7 +1779,6 @@ function getCell(r,c){return document.getElementById(`t${r}_${c}`);}
 
 function updateCellStyle(td,value){if(!td)return;td.className=cc(value||'');if(customColors[k(sr,sc)])td.classList.add('custom-color');}
 
-// ---- 3D VIEWER ----
 function initThreeJS(){
 if(threeInitialized)return;
 threeInitialized=true;
@@ -1812,7 +1794,6 @@ renderer.setSize(container.clientWidth,container.clientHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 container.appendChild(renderer.domElement);
 
-
 raycaster = new THREE.Raycaster();
 pointer = new THREE.Vector2();
 
@@ -1826,7 +1807,6 @@ if(!pointerDownXY || !camera || !raycaster) return;
 const dx = event.clientX - pointerDownXY.x;
 const dy = event.clientY - pointerDownXY.y;
 pointerDownXY = null;
-
 
 if(Math.hypot(dx,dy) > 5) return;
 
@@ -1843,7 +1823,6 @@ showSelectedNode(hits[0].object);
 clearSelectedNode();
 }
 });
-
 
 let hoveredMesh = null;
 const hoverPointer = new THREE.Vector2();

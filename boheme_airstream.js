@@ -40,14 +40,14 @@ function resetP(i,rz){pos[i*3]=(Math.random()-0.5)*SPX*2;pos[i*3+1]=(Math.random
 function createParticles(n){if(pts)scene.remove(pts);count=n;pos=new Float32Array(n*3);col=new Float32Array(n*3);for(let i=0;i<n;i++)resetP(i,true);geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));pts=new THREE.Points(geo,new THREE.PointsMaterial({size:0.06,vertexColors:true,transparent:true,opacity:0.75,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true}));scene.add(pts);}
 function animateStream(){if(!pos||!geo)return;const dt=0.016,aoa=aoaDeg*Math.PI/180;for(let i=0;i<count;i++){let x=pos[i*3],y=pos[i*3+1],z=pos[i*3+2],lx=x,ly=y,lz=z;if(steerGrp){const inv=new THREE.Matrix4().copy(steerGrp.matrixWorld).invert();const v=new THREE.Vector3(x,y,z).applyMatrix4(inv);lx=v.x;ly=v.y;lz=v.z;}let vx=0,vy=Math.sin(aoa)*speed*0.4,vz=-Math.cos(aoa)*speed;const r2d=Math.sqrt(lx*lx+ly*ly);if(r2d>0.01&&Math.abs(lz)<L_FUSE*0.55){if(r2d<R_FUSE*3.0){const f=(R_FUSE*R_FUSE)/(r2d*r2d);vx+=(lx/r2d)*speed*f*0.6;vy+=(ly/r2d)*speed*f*0.6;vz-=speed*f*0.2;}if(r2d<R_FUSE*1.08&&Math.abs(lz)<L_FUSE*0.5){const push=R_FUSE*1.2-r2d;vx+=(lx/r2d)*push*12;vy+=(ly/r2d)*push*12;}}if(steerGrp){const vel=new THREE.Vector3(vx,vy,vz).applyQuaternion(steerGrp.quaternion);x+=vel.x*dt;y+=vel.y*dt;z+=vel.z*dt;}else{x+=vx*dt;y+=vy*dt;z+=vz*dt;}pos[i*3]=x;pos[i*3+1]=y;pos[i*3+2]=z;if(colorBySpeed){const spd=Math.sqrt(vx*vx+vy*vy+vz*vz);const t=Math.min(Math.max((spd/speed-0.8)*3,0),1);col[i*3]=0.2+t*0.8;col[i*3+1]=0.5*(1-t)+0.2*t;col[i*3+2]=1.0-t*0.7;}else{col[i*3]=0.35;col[i*3+1]=0.65;col[i*3+2]=1.0;}if(z<ZB-2||z>ZF+2||Math.abs(x)>SPX+2||Math.abs(y)>SPY+2)resetP(i,false);}geo.attributes.position.needsUpdate=true;geo.attributes.color.needsUpdate=true;}
 
-let schlierenActive=false,schlierenGroup=null,schlierenPlanes=[],allUniforms=[];
-const SZ=20;
+let schlierenActive=false,schlierenGroup=null,allUniforms=[];
+const SZ=18;
 
 function makeNoiseTex(sz){const c=document.createElement('canvas');c.width=sz;c.height=sz;const ctx=c.getContext('2d');const img=ctx.createImageData(sz,sz);for(let i=0;i<img.data.length;i+=4){const v=Math.random()*255;img.data[i]=v;img.data[i+1]=v;img.data[i+2]=v;img.data[i+3]=255;}ctx.putImageData(img,0,0);const tex=new THREE.CanvasTexture(c);tex.wrapS=THREE.RepeatWrapping;tex.wrapT=THREE.RepeatWrapping;tex.minFilter=THREE.LinearFilter;tex.magFilter=THREE.LinearFilter;return tex;}
 
 const licVert=`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`;
 
-function makeLicFrag(sz){return `
+const licFrag=`
 precision highp float;
 varying vec2 vUv;
 uniform sampler2D uNoise;
@@ -58,101 +58,89 @@ uniform float uSpeed;
 uniform float uAlpha;
 
 vec2 flowVel(vec2 p){
-  float R2=uRadius*uRadius;
-  float r2=dot(p,p);
-  float r=sqrt(r2);
-  if(r<uRadius*0.9) return vec2(0.0);
+  float R2=uRadius*uRadius,r2=dot(p,p),r=sqrt(r2);
+  if(r<uRadius*0.9)return vec2(0.0);
   float ca=cos(uAoA),sa=sin(uAoA);
-  vec2 Uinf=vec2(-sa,-ca);
-  vec2 rh=p/r;
+  vec2 Uinf=vec2(-sa,-ca),rh=p/r;
   float fac=R2/r2;
   vec2 v=Uinf-Uinf*fac+2.0*dot(Uinf,rh)*rh*fac;
-  float circ=-6.28318*uRadius*sa*1.5;
-  v+=circ/(6.28318*r)*vec2(-p.y/r,p.x/r);
+  v+=(-6.28318*uRadius*sa*1.5)/(6.28318*r)*vec2(-p.y/r,p.x/r);
   return v;
 }
 
+vec3 magma(float t){
+  t=clamp(t,0.0,1.0);
+  if(t<0.25)return mix(vec3(0.0,0.0,0.02),vec3(0.27,0.005,0.33),t*4.0);
+  if(t<0.5)return mix(vec3(0.27,0.005,0.33),vec3(0.72,0.13,0.30),(t-0.25)*4.0);
+  if(t<0.75)return mix(vec3(0.72,0.13,0.30),vec3(0.99,0.45,0.12),(t-0.5)*4.0);
+  return mix(vec3(0.99,0.45,0.12),vec3(1.0,0.98,0.75),(t-0.75)*4.0);
+}
+
 void main(){
-  vec2 p=(vUv-0.5)*2.0*${sz.toFixed(1)};
+  vec2 p=(vUv-0.5)*2.0*${SZ.toFixed(1)};
   float r=length(p);
   float phase=uTime*uSpeed*0.3;
-
-  float bodyMask=smoothstep(uRadius*0.9,uRadius*1.5,r);
-
+  float bodyMask=smoothstep(uRadius*0.85,uRadius*1.6,r);
   float accum=0.0,weight=0.0;
-  float dt=0.05;
+  float dt=0.07;
+
   vec2 fwd=p;
-  for(int i=0;i<60;i++){
-    vec2 v=flowVel(fwd);float s=length(v);if(s<0.0003)break;
+  for(int i=0;i<20;i++){
+    vec2 v=flowVel(fwd);float s=length(v);if(s<0.0005)break;
     fwd+=v/s*dt;
-    vec2 tc=fwd/${(sz*2.0).toFixed(1)}+0.5+normalize(v+vec2(0.001))*phase*0.012;
-    float n=texture2D(uNoise,fract(tc*3.5)).r+texture2D(uNoise,fract(tc*8.1+0.31)).r*0.4;
-    float w=exp(-float(i)*0.045);accum+=n*w;weight+=w;
+    vec2 tc=fwd/${(SZ*2.0).toFixed(1)}+0.5+normalize(v+vec2(0.001))*phase*0.015;
+    float w=exp(-float(i)*0.06);
+    accum+=texture2D(uNoise,fract(tc*4.0)).r*w;weight+=w;
   }
   vec2 bwd=p;
-  for(int i=0;i<60;i++){
-    vec2 v=flowVel(bwd);float s=length(v);if(s<0.0003)break;
+  for(int i=0;i<20;i++){
+    vec2 v=flowVel(bwd);float s=length(v);if(s<0.0005)break;
     bwd-=v/s*dt;
-    vec2 tc=bwd/${(sz*2.0).toFixed(1)}+0.5+normalize(v+vec2(0.001))*phase*0.012;
-    float n=texture2D(uNoise,fract(tc*3.5)).r+texture2D(uNoise,fract(tc*8.1+0.31)).r*0.4;
-    float w=exp(-float(i)*0.045);accum+=n*w;weight+=w;
+    vec2 tc=bwd/${(SZ*2.0).toFixed(1)}+0.5+normalize(v+vec2(0.001))*phase*0.015;
+    float w=exp(-float(i)*0.06);
+    accum+=texture2D(uNoise,fract(tc*4.0)).r*w;weight+=w;
   }
 
   float lic=weight>0.0?accum/weight:0.5;
-  lic=smoothstep(0.25,1.1,lic)*0.75+0.15;
+  lic=smoothstep(0.2,0.85,lic);
 
-  vec2 v=flowVel(p);float spd=length(v);
-  float sf=clamp(spd*0.45,0.0,2.0);
+  vec2 v=flowVel(p);
+  float spd=length(v);
+  float sf=clamp(spd*0.5,0.0,1.0);
 
-  vec3 c1=vec3(0.06,0.09,0.18);
-  vec3 c2=vec3(0.15,0.28,0.55);
-  vec3 c3=vec3(0.50,0.65,0.90);
-  vec3 c4=vec3(0.88,0.93,1.0);
-  vec3 c5=vec3(1.0,0.55,0.22);
-  vec3 col;
-  if(sf<0.4)col=mix(c1,c2,sf/0.4);
-  else if(sf<0.9)col=mix(c2,c3,(sf-0.4)/0.5);
-  else if(sf<1.4)col=mix(c3,c4,(sf-0.9)/0.5);
-  else col=mix(c4,c5,(sf-1.4)/0.6);
-  col*=lic;
+  vec3 col=magma(sf*0.9+lic*0.1)*lic;
 
-  float edgeFade=1.0-smoothstep(0.35,0.50,length(vUv-0.5));
-  float alpha=bodyMask*edgeFade*uAlpha;
-  gl_FragColor=vec4(col,alpha);
+  float edgeFade=1.0-smoothstep(0.36,0.50,length(vUv-0.5));
+  gl_FragColor=vec4(col,bodyMask*edgeFade*uAlpha);
 }
-`;}
+`;
 
 function createSchlieren(){
   schlierenGroup=new THREE.Group();
-  const noiseTex=makeNoiseTex(512);
+  const noiseTex=makeNoiseTex(256);
   const planeGeo=new THREE.PlaneGeometry(SZ*2,SZ*2);
 
-  function addPlane(rotX,rotY,rotZ,px,py,pz,alpha){
-    const u={uNoise:{value:noiseTex},uTime:{value:0},uRadius:{value:R_FUSE},uAoA:{value:aoaDeg*Math.PI/180},uSpeed:{value:speed},uAlpha:{value:alpha}};
+  function addPlane(rx,ry,rz,px,py,pz,a){
+    const u={uNoise:{value:noiseTex},uTime:{value:0},uRadius:{value:R_FUSE},uAoA:{value:aoaDeg*Math.PI/180},uSpeed:{value:speed},uAlpha:{value:a}};
     allUniforms.push(u);
-    const mat=new THREE.ShaderMaterial({vertexShader:licVert,fragmentShader:makeLicFrag(SZ),uniforms:u,transparent:true,side:THREE.DoubleSide,depthWrite:false,blending:THREE.NormalBlending});
-    const m=new THREE.Mesh(planeGeo,mat);
-    m.rotation.set(rotX,rotY,rotZ);
-    m.position.set(px,py,pz);
-    m.renderOrder=-1;
+    const m=new THREE.Mesh(planeGeo,new THREE.ShaderMaterial({vertexShader:licVert,fragmentShader:licFrag,uniforms:u,transparent:true,side:THREE.DoubleSide,depthWrite:false}));
+    m.rotation.set(rx,ry,rz);m.position.set(px,py,pz);m.renderOrder=-1;
     schlierenGroup.add(m);
-    schlierenPlanes.push(m);
   }
 
-  // XY plane (front view) - main slice at z=0
-  addPlane(0,0,0, 0,0,0, 0.55);
+  // 12 radial planes around Z axis (every 30°) – fan pattern
+  for(let i=0;i<12;i++){
+    const angle=i*Math.PI/12;
+    const a=i%3===0?0.35:0.20; // every 3rd plane brighter
+    addPlane(0,0,angle, 0,0,0, a);
+  }
 
-  // XZ plane (top view) at y=0
-  addPlane(-Math.PI/2,0,0, 0,0,0, 0.40);
-
-  // YZ plane (side view) at x=0
-  addPlane(0,Math.PI/2,0, 0,0,0, 0.40);
-
-  // Additional XY cross-sections along the fuselage
-  addPlane(0,0,0, 0,0, 3.5, 0.25);
-  addPlane(0,0,0, 0,0,-3.5, 0.25);
-  addPlane(0,0,0, 0,0, 6.0, 0.18);
-  addPlane(0,0,0, 0,0,-6.0, 0.18);
+  // 5 cross-section slices along fuselage
+  const zPos=[-5,-2.5,0,2.5,5];
+  const zAlpha=[0.12,0.18,0.30,0.18,0.12];
+  for(let i=0;i<zPos.length;i++){
+    addPlane(-Math.PI/2,0,0, 0,0,zPos[i], zAlpha[i]);
+  }
 
   scene.add(schlierenGroup);
 }
@@ -161,13 +149,7 @@ const _origRender=renderer.render.bind(renderer);let _time=0;
 renderer.render=function(s,c){
   _time+=0.016;
   if(active&&pts)animateStream();
-  if(schlierenActive&&allUniforms.length){
-    for(const u of allUniforms){
-      u.uTime.value=_time;
-      u.uAoA.value=aoaDeg*Math.PI/180;
-      u.uSpeed.value=speed;
-    }
-  }
+  if(schlierenActive&&allUniforms.length){for(const u of allUniforms){u.uTime.value=_time;u.uAoA.value=aoaDeg*Math.PI/180;u.uSpeed.value=speed;}}
   _origRender(s,c);
 };
 
@@ -185,6 +167,6 @@ document.getElementById('asPitch').addEventListener('input',applySteer);
 document.getElementById('asYaw').addEventListener('input',applySteer);
 document.getElementById('asRoll').addEventListener('input',applySteer);
 document.getElementById('asResetSteer').addEventListener('click',doResetSteer);
-console.log('boheme_airstream.js v5 loaded');
+console.log('boheme_airstream.js v6 loaded');
 });
 })();

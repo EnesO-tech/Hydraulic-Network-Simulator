@@ -21,6 +21,11 @@ panel.innerHTML=`
     </select>
   </div>
   <div style="display:flex;gap:4px;margin-bottom:6px;">
+    <select id="asCond" style="flex:1;${B}">
+      <option value="cruise" selected>Reiseflug M0.78</option>
+      <option value="approach">Anflug</option>
+      <option value="takeoff">Start</option>
+    </select>
     <select id="asProfile" style="flex:1;${B}">
       <option value="root">Profil: Wurzel</option>
       <option value="mac" selected>Profil: MAC</option>
@@ -30,7 +35,7 @@ panel.innerHTML=`
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Speed</span><input type="range" id="asSpeed" min="0.5" max="5" step="0.1" value="2" style="flex:1;"><span id="asSpeedV" style="color:#aac;font-size:11px;width:30px;text-align:right;">2.0</span></div>
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Count</span><input type="range" id="asCount" min="500" max="8000" step="200" value="3000" style="flex:1;"><span id="asCountV" style="color:#aac;font-size:11px;width:30px;text-align:right;">3000</span></div>
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">AoA</span><input type="range" id="asAoA" min="-10" max="15" step="0.5" value="2" style="flex:1;"><span id="asAoAV" style="color:#aac;font-size:11px;width:30px;text-align:right;">2°</span></div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Engine</span><input type="range" id="asMfr" min="0" max="2" step="0.05" value="1" style="flex:1;"><span id="asMfrV" style="color:#aac;font-size:11px;width:30px;text-align:right;">1.00</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Engine</span><input type="range" id="asMfr" min="0" max="2.5" step="0.05" value="0.7" style="flex:1;"><span id="asMfrV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0.70</span></div>
   <div id="asInfo" style="color:#aac;font-size:11px;line-height:1.5;margin-top:4px;"></div>
 </div>
 <div style="padding:8px 10px;border-bottom:1px solid #2a2a4a;">
@@ -200,8 +205,9 @@ function renderFlow(){
 function updateInfo(){
   let txt,foot;
   if(viewMode==='side'){
-    txt=`<b>A320 Seitenriss</b> – Rumpf + Triebwerk<br>α = ${aoaDeg.toFixed(1)}° · Massenstromverh. MFR = ${mfr.toFixed(2)}`+(sideStats.n?`<br>${sideStats.n} Panels · gerechnet in ${sideStats.ms} ms`:'');
-    foot='2D-Panelverfahren (Hess-Smith, Quellpanels) · Einlauf = Senke, Düse = Quelle<br>inkompressibel · reibungsfrei · Triebwerk in Seitenprojektion';
+    const c=CONDS[condKey],vm=sideVM;
+    txt=`<b>A320 Seitenriss</b> – ${c.name}<br>U = ${c.U} m/s · Re<sub>L</sub> = ${vm?(vm.ReL/1e6).toFixed(0):'–'}·10<sup>6</sup> · α = ${aoaDeg.toFixed(1)}°<br>Grenzschicht am Heck δ ≈ ${vm?vm.dTE.toFixed(2):'–'} m · Strahl V<sub>j</sub>/U = ${c.vj.toFixed(2)} · MFR = ${mfr.toFixed(2)}`+(sideStats.n?`<br>${sideStats.n} Panels · ${sideStats.ms} ms`:'');
+    foot='Potentialströmung (Hess-Smith) + turbulente Grenzschicht (1/7-Gesetz, Haftbedingung)<br>+ Nachlauf (Schlichting) + Triebwerksstrahl + Prandtl-Glauert · halbempirisch, kein CFD<br>Leitwerk halbtransparent (dünn, seitlich umströmt) · Triebwerk in Seitenprojektion';
   }else{
     const ae=aero();
     txt=`<b>${PRESETS[profKey].name}</b> (Joukowsky-Näherung)<br>t/c = ${(prof.tc*100).toFixed(1)} % · f/c = ${(prof.fc*100).toFixed(1)} %<br>α = ${aoaDeg.toFixed(1)}° · α<sub>L0</sub> = ${ae.aL0.toFixed(2)}°<br>C<sub>L</sub> = 2Γ/c = <b>${ae.CL.toFixed(3)}</b>`;
@@ -224,7 +230,7 @@ function enterFlow(){
     <button id="asHudExit" style="position:absolute;top:12px;right:12px;${B}font-size:12px;">✕ Exit Streamlines</button>
     <div style="position:absolute;bottom:40px;left:12px;background:rgba(10,10,26,0.8);border:1px solid #2a4a7a;border-radius:4px;padding:6px 10px;color:#ddd;font-size:11px;">
       <div style="width:220px;height:10px;background:linear-gradient(90deg,#000005,#450154,#b8214d,#fc731f,#fffabf);margin-bottom:3px;"></div>
-      <div style="display:flex;justify-content:space-between;width:220px;"><span>C<sub>p</sub> = 1 (Staupunkt)</span><span>C<sub>p</sub> &lt; 0 (Sog)</span></div>
+      <div style="display:flex;justify-content:space-between;width:220px;"><span>${viewMode==='side'?'V/U = 0 (Staupunkt, Wand)':'C<sub>p</sub> = 1 (Staupunkt)'}</span><span>${viewMode==='side'?'V/U ≥ 2 (Strahl)':'C<sub>p</sub> &lt; 0 (Sog)'}</span></div>
     </div>`;
   ['wheel','pointerdown','mousedown','touchstart','contextmenu'].forEach(ev=>hud.addEventListener(ev,e=>{if(e.target.id!=='asHudExit')e.preventDefault();e.stopPropagation();},{passive:false}));
   host.appendChild(hud);
@@ -249,11 +255,14 @@ function a320SidePolys(){
   const push=(a,x,y)=>a.push([x,y]);
   for(let i=0;i<=24;i++){const th=Math.PI-(Math.PI/2)*i/24;push(f,6.5+6.5*Math.cos(th),-0.35+(R+0.35)*Math.sin(th));}
   for(let x=7.5;x<26;x+=1.0)push(f,x,R);
-  push(f,26,R);push(f,27.5,R+0.3);push(f,29.0,R+0.75);
-  for(let i=1;i<=8;i++){const s=i/8;push(f,29.0+3.6*s,R+0.75+(7.9-R-0.75)*s);}
-  push(f,33.8,8.0);push(f,35.0,7.9);
-  for(let i=1;i<=8;i++){const s=i/8;push(f,35.0+1.9*s,7.9-(7.9-1.35)*s);}
+  const topY=x=>R-(R-0.95)*Math.pow(Math.max(0,(x-26)/11.57),1.8);
+  for(let x=26;x<37.5;x+=0.5)push(f,x,topY(x));
   push(f,37.57,0.95);push(f,37.57,0.65);
+  const fin=[];push(fin,26,R);push(fin,27.5,R+0.3);push(fin,29.0,R+0.75);
+  for(let i=1;i<=8;i++){const s=i/8;push(fin,29.0+3.6*s,R+0.75+(7.9-R-0.75)*s);}
+  push(fin,33.8,8.0);push(fin,35.0,7.9);
+  for(let i=1;i<=8;i++){const s=i/8;push(fin,35.0+1.9*s,7.9-(7.9-1.35)*s);}
+  for(let x=36.9;x>26;x-=0.5)push(fin,x,topY(x));
   for(let i=1;i<=20;i++){const x=37.57-15.57*i/20,s=(x-22)/15.57;push(f,x,-R+(R+0.65)*Math.pow(s,1.7));}
   for(let x=21;x>4.5;x-=1.0)push(f,x,-R);
   for(let i=0;i<24;i++){const th=-Math.PI/2-(Math.PI/2)*i/24;push(f,4.5+4.5*Math.cos(th),-0.35+(R-0.35)*Math.sin(th));}
@@ -263,7 +272,8 @@ function a320SidePolys(){
   for(let i=1;i<4;i++)push(nac,x0+Ln,c+0.75-1.5*i/4);
   for(let i=20;i>=0;i--){const x=x0+Ln*i/20;push(nac,x,c-r(x));}
   for(let i=1;i<4;i++)push(nac,x0,c-1.05+2.1*i/4);
-  return {fus:f,nac,inlet:[x0-0.3,c],nozzle:[x0+Ln+0.3,c],dFan:1.73};
+  const chaikin=(poly,it)=>{let q=poly;for(let k=0;k<it;k++){const o=[];for(let i=0;i<q.length;i++){const a=q[i],b=q[(i+1)%q.length];o.push([0.75*a[0]+0.25*b[0],0.75*a[1]+0.25*b[1]],[0.25*a[0]+0.75*b[0],0.25*a[1]+0.75*b[1]]);}q=o;}return q;};
+  return {fus:chaikin(f,3),fin:chaikin(fin,2),nac:chaikin(nac,2),inlet:[x0-0.35,c],nozzle:[x0+Ln+0.35,c],dFan:1.73};
 }
 function resamplePoly(poly,ds){
   const n=poly.length,segs=[];let tot=0;
@@ -288,10 +298,10 @@ function panelVel(p,px,py,out){
   out[0]=uxi*p.tx+ueta*p.mx;out[1]=uxi*p.ty+ueta*p.my;
 }
 function extVel(g,Q,px,py,out){
-  let dx=px-g.inlet[0],dy=py-g.inlet[1],r2=dx*dx+dy*dy+1e-6;
-  out[0]=-Q/(2*Math.PI)*dx/r2;out[1]=-Q/(2*Math.PI)*dy/r2;
-  dx=px-g.nozzle[0];dy=py-g.nozzle[1];r2=dx*dx+dy*dy+1e-6;
-  out[0]+=Q/(2*Math.PI)*dx/r2;out[1]+=Q/(2*Math.PI)*dy/r2;
+  const K=12,q=Q/(2*Math.PI*K);out[0]=0;out[1]=0;
+  for(let k=0;k<K;k++){const f=(k+0.5)/K-0.5;
+    let dx=px-g.inlet[0],dy=py-(g.inlet[1]+1.9*f),r2=dx*dx+dy*dy+0.04;out[0]-=q*dx/r2;out[1]-=q*dy/r2;
+    dx=px-g.nozzle[0];dy=py-(g.nozzle[1]+1.3*f);r2=dx*dx+dy*dy+0.04;out[0]+=q*dx/r2;out[1]+=q*dy/r2;}
 }
 function solvePanels(P,g,alpha,Q){
   const n=P.length,A=new Float64Array(n*n),b=new Float64Array(n),t=[0,0],e=[0,0],ca=Math.cos(alpha),sa=Math.sin(alpha);
@@ -313,18 +323,55 @@ function velAt(P,sig,g,alpha,Q,x,y,out){
 
 const DOM_MIN=[-14,-22],DOM_SIZE=[68,46],NX=340,NY=230;
 let sideGeo=null,sidePanels=null,sideFusP=null,sideNacP=null,sideSig=null,fieldTex=null,fieldData=null,sideStats={};
-let sideScene=null,sideCam=null,sideQuad=null,sideLicMat=null,sideLicScene=null,rtSide=null,sideBlitMat=null,sideTimer=null,mfr=1.0;
+let sideVM=null,sideScene=null,sideCam=null,sideQuad=null,sideLicMat=null,sideLicScene=null,rtSide=null,sideBlitMat=null,sideTimer=null,mfr=0.70;
+const CONDS={
+  cruise:  {name:'Reiseflug FL350, M 0.78',U:230,nu:3.8e-5,M:0.78,vj:1.40,mfr:0.70},
+  approach:{name:'Anflug, Meereshöhe',     U:70, nu:1.46e-5,M:0.21,vj:1.50,mfr:1.20},
+  takeoff: {name:'Start (Rotation), MSL',  U:75, nu:1.46e-5,M:0.22,vj:4.00,mfr:2.00}
+};
+let condKey='cruise';
+function viscousSetup(){
+  const c=CONDS[condKey],F=sideFusP,n=F.length;
+  let iN=0;for(let i=1;i<n;i++)if(F[i][0]<F[iN][0])iN=i;
+  const cum=[0];for(let i=0;i<n;i++){const a=F[i],b=F[(i+1)%n];cum.push(cum[i]+Math.hypot(b[0]-a[0],b[1]-a[1]));}
+  const per=cum[n],arc=new Float64Array(n);
+  for(let i=0;i<n;i++){const m=(cum[i]+cum[i+1])/2;let d=Math.abs(m-cum[iN]);arc[i]=Math.min(d,per-d);}
+  const delta=x=>{const xs=Math.max(0.2,x);const Rex=c.U*xs/c.nu;return 0.37*xs*Math.pow(Rex,-0.2);};
+  const upsweep=x=>1+2.0*Math.max(0,Math.min(1,(x-26)/11.6));
+  const dTE=delta(37.6)*upsweep(37.6);
+  const theta=2*(7/72)*dTE, Cdd=2*theta;
+  const xi0=Math.pow(dTE/0.57,2)/Cdd;
+  return {c,arc,delta,upsweep,dTE,Cdd,xi0,beta:Math.sqrt(Math.max(0.05,1-c.M*c.M)),ReL:c.U*37.6/c.nu,
+          te:[37.6,0.8],noz:[sideGeo.nozzle[0]-0.35,sideGeo.nozzle[1]],r0:0.75,xc:9.0};
+}
+function segDist(px,py,p){const dx=px-p.x1,dy=py-p.y1;let t=(dx*p.tx+dy*p.ty)/p.L;t=Math.max(0,Math.min(1,t));const qx=p.x1+t*p.tx*p.L-px,qy=p.y1+t*p.ty*p.L-py;return Math.hypot(qx,qy);}
+function applyViscous(vm,x,y,o,nF){
+  const ca=Math.cos(aoaDeg*Math.PI/180),sa=Math.sin(aoaDeg*Math.PI/180);
+  let f=1;
+  if(x>-1.5&&x<39.5&&y>-3.8&&y<3.8){
+    let dmin=1e9,im=0;for(let j=0;j<nF;j++){const d=segDist(x,y,sidePanels[j]);if(d<dmin){dmin=d;im=j;}}
+    const P=sidePanels[im],dl=vm.delta(vm.arc[im])*vm.upsweep(P.cx);
+    if(dmin<dl)f=Math.pow(Math.max(dmin,1e-3)/dl,1/7);
+  }
+  o[0]*=f;o[1]*=f;
+  let dx=x-vm.te[0],dy=y-vm.te[1],xi=dx*ca+dy*sa,eta=-dx*sa+dy*ca;
+  if(xi>0){const xx=xi+vm.xi0,b=0.57*Math.sqrt(xx*vm.Cdd),u1=Math.min(0.6,0.98*Math.sqrt(vm.Cdd/xx));
+    if(Math.abs(eta)<b){const w=1-Math.pow(Math.abs(eta)/b,1.5);const d=u1*w*w;o[0]-=d*ca;o[1]-=d*sa;}}
+  dx=x-vm.noz[0];dy=y-vm.noz[1];xi=dx*ca+dy*sa;eta=-dx*sa+dy*ca;
+  if(xi>0){const dU0=vm.c.vj-1,uc=xi<vm.xc?dU0:dU0*vm.xc/xi,bj=vm.r0+0.09*xi,pw=2+2*Math.max(0,1-xi/vm.xc);
+    const e=uc*Math.exp(-Math.LN2*Math.pow(Math.abs(eta)/bj,pw));o[0]+=e*ca;o[1]+=e*sa;}
+}
 function computeSideField(){
   const t0=performance.now();
   const al=aoaDeg*Math.PI/180,Q=mfr*sideGeo.dFan;
   sideSig=solvePanels(sidePanels,sideGeo,al,Q);
-  const o=[0,0];let vmax=0;
+  const o=[0,0];let vmax=0;const vm=viscousSetup(),nF=sideFusP.length;sideVM=vm;
   for(let j=0;j<NY;j++){const y=DOM_MIN[1]+(j+0.5)/NY*DOM_SIZE[1];
     for(let i=0;i<NX;i++){const x=DOM_MIN[0]+(i+0.5)/NX*DOM_SIZE[0],k=(j*NX+i)*4;
       const inside=(x>-0.5&&x<38&&y>-2.5&&y<8.5&&inPoly(sideFusP,x,y))||(x>10.5&&x<15.5&&y>-5&&y<-2.2&&inPoly(sideNacP,x,y));
-      if(inside){fieldData[k]=0;fieldData[k+1]=0;fieldData[k+2]=1;continue;}
-      velAt(sidePanels,sideSig,sideGeo,al,Q,x,y,o);let s=Math.hypot(o[0],o[1]);if(s>4){o[0]*=4/s;o[1]*=4/s;s=4;}
-      fieldData[k]=o[0];fieldData[k+1]=o[1];fieldData[k+2]=0;if(s>vmax)vmax=s;}}
+      if(inside){fieldData[k]=0;fieldData[k+1]=0;fieldData[k+2]=1;fieldData[k+3]=0;continue;}
+      velAt(sidePanels,sideSig,sideGeo,al,Q,x,y,o);applyViscous(vm,x,y,o,nF);let s=Math.hypot(o[0],o[1]);if(s>5){o[0]*=5/s;o[1]*=5/s;s=5;}
+      fieldData[k]=o[0];fieldData[k+1]=o[1];fieldData[k+2]=0;fieldData[k+3]=Math.max(0,1+(s-1)/vm.beta);if(s>vmax)vmax=s;}}
   fieldTex.needsUpdate=true;
   sideStats={n:sidePanels.length,ms:Math.round(performance.now()-t0),vmax};
   updateInfo();
@@ -340,25 +387,24 @@ precision highp float;varying vec2 vUv;
 uniform sampler2D uField;uniform sampler2D uNoise;
 uniform vec2 uDomMin;uniform vec2 uDomSize;uniform vec2 uGrid;uniform vec2 uVisMin;uniform vec2 uVisSize;
 uniform float uAl;uniform float uDs;uniform float uAnim;uniform float uNs;
-vec3 fld(vec2 p){
+vec4 fld(vec2 p){
   vec2 g=(p-uDomMin)/uDomSize*uGrid-0.5;
-  if(g.x<0.0||g.y<0.0||g.x>uGrid.x-1.0||g.y>uGrid.y-1.0)return vec3(cos(uAl),sin(uAl),0.0);
+  if(g.x<0.0||g.y<0.0||g.x>uGrid.x-1.0||g.y>uGrid.y-1.0)return vec4(cos(uAl),sin(uAl),0.0,1.0);
   vec2 i0=floor(g),f=g-i0;
-  vec3 a=texture2D(uField,(i0+vec2(0.5,0.5))/uGrid).xyz;vec3 b=texture2D(uField,(i0+vec2(1.5,0.5))/uGrid).xyz;
-  vec3 c=texture2D(uField,(i0+vec2(0.5,1.5))/uGrid).xyz;vec3 d=texture2D(uField,(i0+vec2(1.5,1.5))/uGrid).xyz;
+  vec4 a=texture2D(uField,(i0+vec2(0.5,0.5))/uGrid);vec4 b=texture2D(uField,(i0+vec2(1.5,0.5))/uGrid);
+  vec4 c=texture2D(uField,(i0+vec2(0.5,1.5))/uGrid);vec4 d=texture2D(uField,(i0+vec2(1.5,1.5))/uGrid);
   return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);
 }
 uniform vec2 uShift;float nz(vec2 p){return texture2D(uNoise,(p-uShift)*uNs).r;}
 float kern(float s,float L){return exp(-abs(s)/L*1.6);}
 void main(){
-  vec2 z=uVisMin+vUv*uVisSize;vec3 v0=fld(z);
+  vec2 z=uVisMin+vUv*uVisSize;vec4 v0=fld(z);
   if(v0.z>0.5){gl_FragColor=vec4(0.5,0.0,1.0,1.0);return;}
   float L=uDs*28.0;float k=kern(0.0,L);float acc=nz(z)*k,ws=k;vec2 p=z;
-  for(int i=0;i<28;i++){vec3 v=fld(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p+=v.xy/sp*uDs;k=kern(float(i+1)*uDs,L);acc+=nz(p)*k;ws+=k;}
+  for(int i=0;i<28;i++){vec4 v=fld(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p+=v.xy/sp*uDs;k=kern(float(i+1)*uDs,L);acc+=nz(p)*k;ws+=k;}
   p=z;
-  for(int i=0;i<28;i++){vec3 v=fld(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p-=v.xy/sp*uDs;k=kern(-float(i+1)*uDs,L);acc+=nz(p)*k;ws+=k;}
-  float sp=length(v0.xy);float cp=1.0-sp*sp;
-  gl_FragColor=vec4(acc/ws,clamp((1.0-cp)/2.6,0.0,1.0),0.0,1.0);
+  for(int i=0;i<28;i++){vec4 v=fld(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p-=v.xy/sp*uDs;k=kern(-float(i+1)*uDs,L);acc+=nz(p)*k;ws+=k;}
+  gl_FragColor=vec4(acc/ws,clamp(0.03+0.47*v0.w,0.0,1.0),0.0,1.0);
 }`;
 const SIDE_BLIT=`precision highp float;varying vec2 vUv;uniform sampler2D uTex;${MAGMA}
 void main(){vec4 d=texture2D(uTex,vUv);float lic=clamp((d.r-0.5)*3.2+0.5,0.0,1.0);gl_FragColor=vec4(magma(0.12+0.85*d.g)*(0.2+1.05*lic),1.0);}`;
@@ -377,12 +423,12 @@ function initSide(){
   sideBlitMat=new THREE.ShaderMaterial({vertexShader:VERT_3D,fragmentShader:SIDE_BLIT,uniforms:{uTex:{value:rtSide.texture}},depthTest:false,depthWrite:false});
   sideScene=new THREE.Scene();
   sideQuad=new THREE.Mesh(new THREE.PlaneGeometry(1,1),sideBlitMat);sideQuad.renderOrder=0;sideScene.add(sideQuad);
-  const addBody=(poly,fill)=>{
+  const addBody=(poly,fill,op)=>{
     const sh=new THREE.Shape(poly.map(p=>new THREE.Vector2(p[0],p[1])));
-    const m=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({color:fill,depthTest:false}));m.renderOrder=1;sideScene.add(m);
+    const m=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({color:fill,depthTest:false,transparent:op!==undefined,opacity:op===undefined?1:op}));m.renderOrder=1;sideScene.add(m);
     const l=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(poly.map(p=>new THREE.Vector3(p[0],p[1],0))),new THREE.LineBasicMaterial({color:0xd0d4de,depthTest:false}));l.renderOrder=2;sideScene.add(l);
   };
-  addBody(sideGeo.fus,0x2b303c);addBody(sideGeo.nac,0x3a4150);
+  addBody(sideGeo.fin,0x2b303c,0.45);addBody(sideGeo.fus,0x2b303c);addBody(sideGeo.nac,0x3a4150);
   const win=[];for(let x=8.5;x<27;x+=0.55)win.push(new THREE.Vector3(x,0.55,0),new THREE.Vector3(x+0.25,0.55,0));
   const wl=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(win),new THREE.LineBasicMaterial({color:0x6f7890,depthTest:false}));wl.renderOrder=2;sideScene.add(wl);
   sideCam=new THREE.OrthographicCamera(-1,1,1,-1,-10,10);
@@ -419,6 +465,7 @@ document.getElementById('asSpeed').addEventListener('input',function(){speed=par
 document.getElementById('asCount').addEventListener('input',function(){const n=parseInt(this.value);document.getElementById('asCountV').textContent=n;if(n!==count&&active)createParticles(n);});
 document.getElementById('asAoA').addEventListener('input',function(){aoaDeg=parseFloat(this.value);document.getElementById('asAoAV').textContent=aoaDeg.toFixed(1)+'\u00B0';updateInfo();scheduleSide();});
 document.getElementById('asMfr').addEventListener('input',function(){mfr=parseFloat(this.value);document.getElementById('asMfrV').textContent=mfr.toFixed(2);updateInfo();scheduleSide();});
+document.getElementById('asCond').addEventListener('change',function(){condKey=this.value;mfr=CONDS[condKey].mfr;document.getElementById('asMfr').value=mfr;document.getElementById('asMfrV').textContent=mfr.toFixed(2);updateInfo();scheduleSide();});
 document.getElementById('asView').addEventListener('change',function(){viewMode=this.value;if(flowMode){if(viewMode==='side'&&!sideGeo)initSide();if(viewMode==='wing'&&!licMat)initFlow();}updateInfo();});
 
 document.getElementById('asLock').addEventListener('click',()=>{locked=!locked;const btn=document.getElementById('asLock');const sd=document.getElementById('asSteer');if(locked){btn.innerHTML='🔒 Nodes LOCKED';btn.style.background='#4caf50';sd.style.display='block';steerGrp=new THREE.Group();scene.add(steerGrp);if(typeof aircraftGroup!=='undefined'&&aircraftGroup){scene.remove(aircraftGroup);steerGrp.add(aircraftGroup);}if(typeof pipeGroup!=='undefined'&&pipeGroup){scene.remove(pipeGroup);steerGrp.add(pipeGroup);}}else{btn.innerHTML='🔓 Lock Nodes to Aircraft';btn.style.background='#2a2a4a';sd.style.display='none';if(steerGrp){if(typeof aircraftGroup!=='undefined'&&aircraftGroup){steerGrp.remove(aircraftGroup);scene.add(aircraftGroup);}if(typeof pipeGroup!=='undefined'&&pipeGroup){steerGrp.remove(pipeGroup);scene.add(pipeGroup);}scene.remove(steerGrp);steerGrp=null;}doResetSteer();}});
@@ -429,6 +476,6 @@ document.getElementById('asYaw').addEventListener('input',applySteer);
 document.getElementById('asRoll').addEventListener('input',applySteer);
 document.getElementById('asResetSteer').addEventListener('click',doResetSteer);
 
-console.log('boheme_airstream.js v10 loaded – profile',prof);
+console.log('boheme_airstream.js v14 loaded – profile',prof);
 });
 })();

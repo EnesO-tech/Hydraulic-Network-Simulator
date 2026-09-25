@@ -114,7 +114,7 @@ const VERT_3D=`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*
 const LIC_FRAG=GL_COMMON+`
 uniform sampler2D uNoise;uniform float uDs;uniform float uAnim;uniform float uNs;
 float nz(vec2 p){return texture2D(uNoise,p*uNs).r;}
-float kern(float s,float L){return exp(-abs(s)/L*1.6)*(0.6+0.4*sin(6.2831853*s/(0.45*L)-uAnim));}
+float kern(float s,float L){return exp(-abs(s)/L*1.6)*(0.6+0.4*sin(6.2831853*s/(0.45*L)+uAnim));}
 void main(){
   vec2 z=bodyPos(vUv);vec3 v0=vel(z);
   if(v0.z>0.5){gl_FragColor=vec4(0.5,0.0,1.0,1.0);return;}
@@ -349,7 +349,7 @@ vec3 fld(vec2 p){
   return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);
 }
 float nz(vec2 p){return texture2D(uNoise,p*uNs).r;}
-float kern(float s,float L){return exp(-abs(s)/L*1.6)*(0.6+0.4*sin(6.2831853*s/(0.45*L)-uAnim));}
+float kern(float s,float L){return exp(-abs(s)/L*1.6)*(0.6+0.4*sin(6.2831853*s/(0.45*L)+uAnim));}
 void main(){
   vec2 z=uVisMin+vUv*uVisSize;vec3 v0=fld(z);
   if(v0.z>0.5){gl_FragColor=vec4(0.5,0.0,1.0,1.0);return;}

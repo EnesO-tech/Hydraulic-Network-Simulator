@@ -194,7 +194,7 @@ function initFlow(){
 function renderFlow(){
   const ae=aero();
   for(const m of [licMat,sheetMat]){const u=m.uniforms;u.uZ0.value.set(-prof.eps,prof.del);u.uA.value=prof.a;u.uAl.value=ae.al;u.uG.value=ae.G;}
-  {const per=SHEET_W*256.0/RT_W;anim=(anim+0.016*speed*0.6)%per;licMat.uniforms.uShift.value.set(Math.cos(ae.al)*anim,Math.sin(ae.al)*anim);}
+  advance(shiftW,frameDt()*speed*0.6,ae.al,SHEET_W*256.0/RT_W);licMat.uniforms.uShift.value.set(shiftW[0],shiftW[1]);
   wingPivot.rotation.z=-ae.al;
   const sz=renderer.getDrawingBufferSize(new THREE.Vector2());
   if(Math.abs(wtCam.aspect-sz.x/sz.y)>1e-3){wtCam.aspect=sz.x/sz.y;wtCam.updateProjectionMatrix();}
@@ -376,7 +376,32 @@ function computeSideField(){
   sideStats={n:sidePanels.length,ms:Math.round(performance.now()-t0),vmax};
   updateInfo();
 }
-function scheduleSide(){if(!sideGeo)return;clearTimeout(sideTimer);sideTimer=setTimeout(computeSideField,120);}
+let sideJob=null,sideGen=0;
+function computeSideFieldAsync(){
+  const gen=++sideGen,t0=performance.now();
+  const al=aoaDeg*Math.PI/180,Q=mfr*sideGeo.dFan;
+  const sig=solvePanels(sidePanels,sideGeo,al,Q);
+  const vm=viscousSetup(),nF=sideFusP.length,buf=new Float32Array(NX*NY*4),o=[0,0];
+  let j=0;
+  const step=()=>{
+    if(gen!==sideGen)return;
+    const tEnd=performance.now()+6;
+    while(j<NY&&performance.now()<tEnd){
+      const y=DOM_MIN[1]+(j+0.5)/NY*DOM_SIZE[1];
+      for(let i=0;i<NX;i++){const x=DOM_MIN[0]+(i+0.5)/NX*DOM_SIZE[0],k=(j*NX+i)*4;
+        const inside=(x>-0.5&&x<38&&y>-2.5&&y<8.5&&inPoly(sideFusP,x,y))||(x>10.5&&x<15.5&&y>-5&&y<-2.2&&inPoly(sideNacP,x,y));
+        if(inside){buf[k]=0;buf[k+1]=0;buf[k+2]=1;buf[k+3]=0;continue;}
+        velAt(sidePanels,sig,sideGeo,al,Q,x,y,o);applyViscous(vm,x,y,o,nF);let sp=Math.hypot(o[0],o[1]);if(sp>5){o[0]*=5/sp;o[1]*=5/sp;sp=5;}
+        buf[k]=o[0];buf[k+1]=o[1];buf[k+2]=0;buf[k+3]=Math.max(0,1+(sp-1)/vm.beta);}
+      j++;
+    }
+    if(j<NY){sideJob=setTimeout(step,0);return;}
+    sideSig=sig;sideVM=vm;fieldData.set(buf);fieldTex.needsUpdate=true;
+    sideStats={n:sidePanels.length,ms:Math.round(performance.now()-t0)};updateInfo();
+  };
+  step();
+}
+function scheduleSide(){if(!sideGeo)return;clearTimeout(sideTimer);clearTimeout(sideJob);sideTimer=setTimeout(computeSideFieldAsync,60);}
 const MAGMA=`vec3 magma(float t){t=clamp(t,0.0,1.0);
   if(t<0.25)return mix(vec3(0.0,0.0,0.02),vec3(0.27,0.005,0.33),t*4.0);
   if(t<0.5)return mix(vec3(0.27,0.005,0.33),vec3(0.72,0.13,0.30),(t-0.25)*4.0);
@@ -443,11 +468,15 @@ function renderSide(){
   const rw=Math.max(2,Math.floor(sz.x*0.5)),rh=Math.max(2,Math.floor(sz.y*0.5));
   if(rtSide.width!==rw||rtSide.height!==rh)rtSide.setSize(rw,rh);
   const u=sideLicMat.uniforms;u.uVisMin.value.set(vx0,vy0);u.uVisSize.value.set(w,h);u.uAl.value=aoaDeg*Math.PI/180;
-  u.uDs.value=1.3*w/rw;u.uNs.value=rw/(w*256.0);{const per=w*256.0/rw,al=aoaDeg*Math.PI/180;anim=(anim+0.016*speed*2.5)%per;u.uShift.value.set(Math.cos(al)*anim,Math.sin(al)*anim);}
+  u.uDs.value=1.3*w/rw;u.uNs.value=rw/(w*256.0);advance(shiftS,frameDt()*speed*2.5,aoaDeg*Math.PI/180,w*256.0/rw);u.uShift.value.set(shiftS[0],shiftS[1]);
   const prev=renderer.getRenderTarget();
   renderer.setRenderTarget(rtSide);_origRender(sideLicScene,ocam);
   renderer.setRenderTarget(prev);_origRender(sideScene,sideCam);
 }
+/* ---------------- smooth animation clock ---------------- */
+let _lastT=performance.now();const shiftW=[0,0],shiftS=[0,0];
+function frameDt(){const now=performance.now();const dt=Math.min(0.05,Math.max(0,(now-_lastT)/1000));_lastT=now;return dt;}
+function advance(sh,dist,al,per){const m=(v)=>((v%per)+per)%per;sh[0]=m(sh[0]+dist*Math.cos(al));sh[1]=m(sh[1]+dist*Math.sin(al));}
 /* ---------------- render hook ---------------- */
 const _origRender=renderer.render.bind(renderer);
 renderer.render=function(s,c){
@@ -476,6 +505,6 @@ document.getElementById('asYaw').addEventListener('input',applySteer);
 document.getElementById('asRoll').addEventListener('input',applySteer);
 document.getElementById('asResetSteer').addEventListener('click',doResetSteer);
 
-console.log('boheme_airstream.js v14 loaded – profile',prof);
+console.log('boheme_airstream.js v15 loaded – profile',prof);
 });
 })();

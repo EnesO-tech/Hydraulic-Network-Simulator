@@ -99,25 +99,27 @@ vec3 vel(vec2 z){
   float s=length(v);if(s>3.0)v*=3.0/s;
   return vec3(v,0.0);
 }
-vec2 worldPos(vec2 uv){return vec2((uv.x-0.5)*uW,(uv.y-0.5)*uW*uAsp);}
+vec2 rot(vec2 p,float a){float c=cos(a),s=sin(a);return vec2(c*p.x-s*p.y,s*p.x+c*p.y);}
+vec2 bodyPos(vec2 uv){return rot(vec2((uv.x-0.5)*uW,(uv.y-0.5)*uW*uAsp),uAl);}
 `;
-const VERT=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}`;
+const VERT_Q=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}`;
+const VERT_3D=`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`;
 const LIC_FRAG=GL_COMMON+`
 uniform sampler2D uNoise;uniform float uDs;uniform float uAnim;uniform float uNs;
 float nz(vec2 p){return texture2D(uNoise,p*uNs).r;}
 float kern(float s,float L){return exp(-abs(s)/L*1.6)*(0.6+0.4*sin(6.2831853*s/(0.45*L)-uAnim));}
 void main(){
-  vec2 z=worldPos(vUv);vec3 v0=vel(z);
+  vec2 z=bodyPos(vUv);vec3 v0=vel(z);
   if(v0.z>0.5){gl_FragColor=vec4(0.5,0.0,1.0,1.0);return;}
-  float L=uDs*30.0;float k=kern(0.0,L);float acc=nz(z)*k,ws=k;
+  float L=uDs*26.0;float k=kern(0.0,L);float acc=nz(z)*k,ws=k;
   vec2 p=z;
-  for(int i=0;i<30;i++){vec3 v=vel(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p+=v.xy/sp*uDs;float s=float(i+1)*uDs;k=kern(s,L);acc+=nz(p)*k;ws+=k;}
+  for(int i=0;i<26;i++){vec3 v=vel(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p+=v.xy/sp*uDs;float s=float(i+1)*uDs;k=kern(s,L);acc+=nz(p)*k;ws+=k;}
   p=z;
-  for(int i=0;i<30;i++){vec3 v=vel(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p-=v.xy/sp*uDs;float s=-float(i+1)*uDs;k=kern(s,L);acc+=nz(p)*k;ws+=k;}
+  for(int i=0;i<26;i++){vec3 v=vel(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p-=v.xy/sp*uDs;float s=-float(i+1)*uDs;k=kern(s,L);acc+=nz(p)*k;ws+=k;}
   float sp=length(v0.xy);float cp=1.0-sp*sp;
   gl_FragColor=vec4(acc/ws,clamp((1.0-cp)/2.6,0.0,1.0),0.0,1.0);
 }`;
-const BLIT_FRAG=GL_COMMON+`
+const SHEET_FRAG=GL_COMMON+`
 uniform sampler2D uTex;
 vec3 magma(float t){t=clamp(t,0.0,1.0);
   if(t<0.25)return mix(vec3(0.0,0.0,0.02),vec3(0.27,0.005,0.33),t*4.0);
@@ -125,52 +127,74 @@ vec3 magma(float t){t=clamp(t,0.0,1.0);
   if(t<0.75)return mix(vec3(0.72,0.13,0.30),vec3(0.99,0.45,0.12),(t-0.5)*4.0);
   return mix(vec3(0.99,0.45,0.12),vec3(1.0,0.98,0.75),(t-0.75)*4.0);}
 void main(){
-  vec2 z=worldPos(vUv);float rr=length(zetaOf(z)-uZ0)/uA;
-  if(rr<1.0){gl_FragColor=vec4(0.14,0.15,0.18,1.0);return;}
+  vec2 z=bodyPos(vUv);float rr=length(zetaOf(z)-uZ0)/uA;
+  if(rr<1.0)discard;
   vec4 d=texture2D(uTex,vUv);
   float lic=clamp((d.r-0.5)*3.2+0.5,0.0,1.0);
   vec3 c=magma(0.12+0.85*d.g)*(0.2+1.05*lic);
-  c=mix(c,vec3(0.85,0.87,0.9),1.0-smoothstep(0.0,0.012,rr-1.0));
-  gl_FragColor=vec4(c,1.0);
+  float e=max(abs(vUv.x-0.5),abs(vUv.y-0.5));
+  gl_FragColor=vec4(c,1.0-smoothstep(0.40,0.5,e));
 }`;
 
-/* ---------------- 2D wing-section flow mode ---------------- */
-let flowMode=false,rt=null,licMat=null,blitMat=null,licScene=null,blitScene=null,ocam=null,hud=null,camSave=null,anim=0;
-const VIEW_W=6.0,RT_SCALE=0.5;
+/* ---------------- wind-tunnel scene with own wing model ---------------- */
+let flowMode=false,rt=null,licMat=null,sheetMat=null,licScene=null,ocam=null,hud=null,camSave=null,anim=0;
+let wtScene=null,wtCam=null,wingPivot=null,wingMesh=null,wingSrc='';
+const SHEET_W=12.0,SHEET_H=7.5,SPAN=2.2,RT_W=1280,RT_H=800;
+const wingCache={};
 function makeNoiseTex(sz){const d=new Uint8Array(sz*sz*4);for(let i=0;i<sz*sz;i++){const v=Math.floor(Math.random()*256);d[i*4]=v;d[i*4+1]=v;d[i*4+2]=v;d[i*4+3]=255;}const t=new THREE.DataTexture(d,sz,sz,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.minFilter=t.magFilter=THREE.LinearFilter;t.needsUpdate=true;return t;}
-function commonUniforms(){return{uZ0:{value:new THREE.Vector2()},uA:{value:1},uAl:{value:0},uG:{value:0},uW:{value:VIEW_W},uAsp:{value:1}};}
+function commonUniforms(){return{uZ0:{value:new THREE.Vector2()},uA:{value:1},uAl:{value:0},uG:{value:0},uW:{value:SHEET_W},uAsp:{value:SHEET_H/SHEET_W}};}
+function proceduralWing(){
+  const a=prof.a,beta=prof.beta,n=240,shape=new THREE.Shape();
+  for(let k=0;k<n;k++){const th=-beta+2*Math.PI*k/n;const zx=-prof.eps+a*Math.cos(th),zy=prof.del+a*Math.sin(th),r2=zx*zx+zy*zy;const x=zx+zx/r2,y=zy-zy/r2;k===0?shape.moveTo(x,y):shape.lineTo(x,y);}
+  shape.closePath();
+  return new THREE.ExtrudeGeometry(shape,{depth:SPAN,bevelEnabled:false,steps:1,curveSegments:1});
+}
+function setWingGeometry(g){
+  g.computeVertexNormals();
+  if(wingMesh){wingPivot.remove(wingMesh);wingMesh.geometry.dispose();}
+  wingMesh=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0xb8c4d6,specular:0x555566,shininess:45,side:THREE.DoubleSide}));
+  wingPivot.add(wingMesh);updateInfo();
+}
+function loadWing(key){
+  if(wingCache[key]){wingSrc=wingCache[key].src;setWingGeometry(wingCache[key].g.clone());return;}
+  const path='models/a320_wing_'+key+'.stl';
+  const done=(g,src)=>{wingCache[key]={g,src};wingSrc=src;setWingGeometry(g.clone());};
+  if(THREE.STLLoader){new THREE.STLLoader().load(path,g=>done(g,'STL: '+path),undefined,()=>done(proceduralWing(),'prozedural (STL fehlt)'));}
+  else done(proceduralWing(),'prozedural (kein STLLoader)');
+}
 function initFlow(){
   ocam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
-  const quad=new THREE.PlaneGeometry(2,2);
-  const lu=Object.assign(commonUniforms(),{uNoise:{value:makeNoiseTex(256)},uDs:{value:0.01},uAnim:{value:0},uNs:{value:1}});
-  licMat=new THREE.ShaderMaterial({vertexShader:VERT,fragmentShader:LIC_FRAG,uniforms:lu,depthTest:false,depthWrite:false});
-  licScene=new THREE.Scene();licScene.add(new THREE.Mesh(quad,licMat));
-  rt=new THREE.WebGLRenderTarget(2,2,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat,depthBuffer:false});
-  const bu=Object.assign(commonUniforms(),{uTex:{value:rt.texture}});
-  blitMat=new THREE.ShaderMaterial({vertexShader:VERT,fragmentShader:BLIT_FRAG,uniforms:bu,depthTest:false,depthWrite:false});
-  blitScene=new THREE.Scene();blitScene.add(new THREE.Mesh(quad,blitMat));
-}
-function syncUniforms(W,H){
-  const ae=aero();
-  for(const m of [licMat,blitMat]){const u=m.uniforms;u.uZ0.value.set(-prof.eps,prof.del);u.uA.value=prof.a;u.uAl.value=ae.al;u.uG.value=ae.G;u.uAsp.value=H/W;}
-  const rw=Math.max(2,Math.floor(W*RT_SCALE)),rh=Math.max(2,Math.floor(H*RT_SCALE));
-  if(rt.width!==rw||rt.height!==rh)rt.setSize(rw,rh);
-  licMat.uniforms.uDs.value=1.3*VIEW_W/rw;
-  licMat.uniforms.uNs.value=rw/(VIEW_W*256.0);
-  anim+=0.016*speed*2.5;licMat.uniforms.uAnim.value=anim;
+  const lu=Object.assign(commonUniforms(),{uNoise:{value:makeNoiseTex(256)},uDs:{value:1.3*SHEET_W/RT_W},uAnim:{value:0},uNs:{value:RT_W/(SHEET_W*256.0)}});
+  licMat=new THREE.ShaderMaterial({vertexShader:VERT_Q,fragmentShader:LIC_FRAG,uniforms:lu,depthTest:false,depthWrite:false});
+  licScene=new THREE.Scene();licScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),licMat));
+  rt=new THREE.WebGLRenderTarget(RT_W,RT_H,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat,depthBuffer:false});
+  sheetMat=new THREE.ShaderMaterial({vertexShader:VERT_3D,fragmentShader:SHEET_FRAG,uniforms:Object.assign(commonUniforms(),{uTex:{value:rt.texture}}),transparent:true,side:THREE.DoubleSide,depthWrite:false});
+  wtScene=new THREE.Scene();wtScene.background=new THREE.Color(0x05050c);
+  wtScene.add(new THREE.Mesh(new THREE.PlaneGeometry(SHEET_W,SHEET_H),sheetMat));
+  wtScene.add(new THREE.AmbientLight(0xffffff,0.45));
+  const d1=new THREE.DirectionalLight(0xffffff,0.9);d1.position.set(4,8,10);wtScene.add(d1);
+  const d2=new THREE.DirectionalLight(0xffb070,0.35);d2.position.set(-6,-2,4);wtScene.add(d2);
+  wingPivot=new THREE.Group();wtScene.add(wingPivot);
+  wtCam=new THREE.PerspectiveCamera(34,1,0.1,100);
+  wtCam.position.set(-2.6,1.4,10.5);wtCam.lookAt(0.2,-0.1,0.9);
+  loadWing(profKey);
 }
 function renderFlow(){
+  const ae=aero();
+  for(const m of [licMat,sheetMat]){const u=m.uniforms;u.uZ0.value.set(-prof.eps,prof.del);u.uA.value=prof.a;u.uAl.value=ae.al;u.uG.value=ae.G;}
+  anim+=0.016*speed*2.5;licMat.uniforms.uAnim.value=anim;
+  wingPivot.rotation.z=-ae.al;
   const sz=renderer.getDrawingBufferSize(new THREE.Vector2());
-  syncUniforms(sz.x,sz.y);
+  if(Math.abs(wtCam.aspect-sz.x/sz.y)>1e-3){wtCam.aspect=sz.x/sz.y;wtCam.updateProjectionMatrix();}
   const prev=renderer.getRenderTarget();
   renderer.setRenderTarget(rt);_origRender(licScene,ocam);
-  renderer.setRenderTarget(prev);_origRender(blitScene,ocam);
+  renderer.setRenderTarget(prev);_origRender(wtScene,wtCam);
 }
 function updateInfo(){
   const ae=aero();
-  const txt=`<b>${PRESETS[profKey].name}</b> (Joukowsky-Näherung)<br>t/c = ${(prof.tc*100).toFixed(1)} % · f/c = ${(prof.fc*100).toFixed(1)} %<br>α = ${aoaDeg.toFixed(1)}° · α<sub>L0</sub> = ${ae.aL0.toFixed(2)}°<br>C<sub>L</sub> = 2π·(a/(c/4))·sin(α−α<sub>L0</sub>) = <b>${ae.CL.toFixed(3)}</b>`;
+  const txt=`<b>${PRESETS[profKey].name}</b> (Joukowsky-Näherung)<br>t/c = ${(prof.tc*100).toFixed(1)} % · f/c = ${(prof.fc*100).toFixed(1)} %<br>α = ${aoaDeg.toFixed(1)}° · α<sub>L0</sub> = ${ae.aL0.toFixed(2)}°<br>C<sub>L</sub> = 2Γ/c = <b>${ae.CL.toFixed(3)}</b>`;
   document.getElementById('asInfo').innerHTML=flowMode?txt:'';
-  if(hud){hud.querySelector('#asHudTxt').innerHTML=txt+`<br><span style="color:#888">2D-Potentialströmung · inkompressibel · reibungsfrei · Kutta-Bedingung</span>`;}
+  if(hud){hud.querySelector('#asHudTxt').innerHTML=txt+`<br><span style="color:#888">Modell: ${wingSrc||'…'}<br>2D-Potentialströmung · inkompressibel · reibungsfrei · Kutta-Bedingung</span>`;}
 }
 function enterFlow(){
   if(!licMat)initFlow();
@@ -213,7 +237,7 @@ renderer.render=function(s,c){
 /* ---------------- UI ---------------- */
 document.getElementById('asToggle').addEventListener('click',()=>{active=!active;const btn=document.getElementById('asToggle');if(active){btn.textContent='Particles ON';btn.style.background='#4caf50';if(!pts)createParticles(count);else pts.visible=true;}else{btn.textContent='Particles OFF';btn.style.background='#2a2a4a';if(pts)pts.visible=false;}});
 document.getElementById('asFlow').addEventListener('click',toggleFlow);
-document.getElementById('asProfile').addEventListener('change',function(){profKey=this.value;prof=fitProfile(PRESETS[profKey].tc,PRESETS[profKey].fc);updateInfo();});
+document.getElementById('asProfile').addEventListener('change',function(){profKey=this.value;prof=fitProfile(PRESETS[profKey].tc,PRESETS[profKey].fc);if(wingPivot)loadWing(profKey);updateInfo();});
 document.getElementById('asColor').addEventListener('click',()=>{colorBySpeed=!colorBySpeed;const btn=document.getElementById('asColor');btn.textContent=colorBySpeed?'Color: speed':'Color: fixed';btn.style.background=colorBySpeed?'#0f3460':'#2a2a4a';});
 document.getElementById('asSpeed').addEventListener('input',function(){speed=parseFloat(this.value);document.getElementById('asSpeedV').textContent=speed.toFixed(1);});
 document.getElementById('asCount').addEventListener('input',function(){const n=parseInt(this.value);document.getElementById('asCountV').textContent=n;if(n!==count&&active)createParticles(n);});
@@ -227,6 +251,6 @@ document.getElementById('asYaw').addEventListener('input',applySteer);
 document.getElementById('asRoll').addEventListener('input',applySteer);
 document.getElementById('asResetSteer').addEventListener('click',doResetSteer);
 
-console.log('boheme_airstream.js v7 loaded – profile',prof);
+console.log('boheme_airstream.js v8 loaded – profile',prof);
 });
 })();

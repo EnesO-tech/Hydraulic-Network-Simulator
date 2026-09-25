@@ -15,6 +15,12 @@ panel.innerHTML=`
   </div>
   <div style="display:flex;gap:4px;margin-bottom:6px;">
     <button id="asColor" style="flex:1;${B}">Color: fixed</button>
+    <select id="asView" style="flex:1;${B}">
+      <option value="side" selected>Ansicht: Seite</option>
+      <option value="wing">Ansicht: Flügelprofil</option>
+    </select>
+  </div>
+  <div style="display:flex;gap:4px;margin-bottom:6px;">
     <select id="asProfile" style="flex:1;${B}">
       <option value="root">Profil: Wurzel</option>
       <option value="mac" selected>Profil: MAC</option>
@@ -24,6 +30,7 @@ panel.innerHTML=`
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Speed</span><input type="range" id="asSpeed" min="0.5" max="5" step="0.1" value="2" style="flex:1;"><span id="asSpeedV" style="color:#aac;font-size:11px;width:30px;text-align:right;">2.0</span></div>
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Count</span><input type="range" id="asCount" min="500" max="8000" step="200" value="3000" style="flex:1;"><span id="asCountV" style="color:#aac;font-size:11px;width:30px;text-align:right;">3000</span></div>
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">AoA</span><input type="range" id="asAoA" min="-10" max="15" step="0.5" value="2" style="flex:1;"><span id="asAoAV" style="color:#aac;font-size:11px;width:30px;text-align:right;">2°</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Engine</span><input type="range" id="asMfr" min="0" max="2" step="0.05" value="1" style="flex:1;"><span id="asMfrV" style="color:#aac;font-size:11px;width:30px;text-align:right;">1.00</span></div>
   <div id="asInfo" style="color:#aac;font-size:11px;line-height:1.5;margin-top:4px;"></div>
 </div>
 <div style="padding:8px 10px;border-bottom:1px solid #2a2a4a;">
@@ -137,7 +144,7 @@ void main(){
 }`;
 
 /* ---------------- wind-tunnel scene with own wing model ---------------- */
-let flowMode=false,rt=null,licMat=null,sheetMat=null,licScene=null,ocam=null,hud=null,camSave=null,anim=0;
+let viewMode='side',flowMode=false,rt=null,licMat=null,sheetMat=null,licScene=null,ocam=null,hud=null,camSave=null,anim=0;
 let wtScene=null,wtCam=null,wingPivot=null,wingMesh=null,wingSrc='';
 const SHEET_W=12.0,SHEET_H=7.5,SPAN=2.2,RT_W=1280,RT_H=800;
 const wingCache={};
@@ -191,13 +198,21 @@ function renderFlow(){
   renderer.setRenderTarget(prev);_origRender(wtScene,wtCam);
 }
 function updateInfo(){
-  const ae=aero();
-  const txt=`<b>${PRESETS[profKey].name}</b> (Joukowsky-Näherung)<br>t/c = ${(prof.tc*100).toFixed(1)} % · f/c = ${(prof.fc*100).toFixed(1)} %<br>α = ${aoaDeg.toFixed(1)}° · α<sub>L0</sub> = ${ae.aL0.toFixed(2)}°<br>C<sub>L</sub> = 2Γ/c = <b>${ae.CL.toFixed(3)}</b>`;
+  let txt,foot;
+  if(viewMode==='side'){
+    txt=`<b>A320 Seitenriss</b> – Rumpf + Triebwerk<br>α = ${aoaDeg.toFixed(1)}° · Massenstromverh. MFR = ${mfr.toFixed(2)}`+(sideStats.n?`<br>${sideStats.n} Panels · gerechnet in ${sideStats.ms} ms`:'');
+    foot='2D-Panelverfahren (Hess-Smith, Quellpanels) · Einlauf = Senke, Düse = Quelle<br>inkompressibel · reibungsfrei · Triebwerk in Seitenprojektion';
+  }else{
+    const ae=aero();
+    txt=`<b>${PRESETS[profKey].name}</b> (Joukowsky-Näherung)<br>t/c = ${(prof.tc*100).toFixed(1)} % · f/c = ${(prof.fc*100).toFixed(1)} %<br>α = ${aoaDeg.toFixed(1)}° · α<sub>L0</sub> = ${ae.aL0.toFixed(2)}°<br>C<sub>L</sub> = 2Γ/c = <b>${ae.CL.toFixed(3)}</b>`;
+    foot=`Modell: ${wingSrc||'…'}<br>2D-Potentialströmung · inkompressibel · reibungsfrei · Kutta-Bedingung`;
+  }
   document.getElementById('asInfo').innerHTML=flowMode?txt:'';
-  if(hud){hud.querySelector('#asHudTxt').innerHTML=txt+`<br><span style="color:#888">Modell: ${wingSrc||'…'}<br>2D-Potentialströmung · inkompressibel · reibungsfrei · Kutta-Bedingung</span>`;}
+  if(hud){hud.querySelector('#asHudTxt').innerHTML=txt+`<br><span style="color:#888">${foot}</span>`;}
 }
 function enterFlow(){
-  if(!licMat)initFlow();
+  if(!ocam)ocam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+  if(viewMode==='side'){if(!sideGeo)initSide();}else if(!licMat)initFlow();
   flowMode=true;
   if(typeof controls!=='undefined'&&controls){camSave={en:controls.enabled};controls.enabled=false;}
   const host=renderer.domElement.parentElement;
@@ -226,10 +241,171 @@ function exitFlow(){
 }
 function toggleFlow(){flowMode?exitFlow():enterFlow();}
 
+
+/* ================= SIDE VIEW: A320 fuselage + engine, 2D panel method ================= */
+/*PANEL_BEGIN*/
+function a320SidePolys(){
+  const R=2.07,f=[],nac=[];
+  const push=(a,x,y)=>a.push([x,y]);
+  for(let i=0;i<=24;i++){const th=Math.PI-(Math.PI/2)*i/24;push(f,6.5+6.5*Math.cos(th),-0.35+(R+0.35)*Math.sin(th));}
+  for(let x=7.5;x<26;x+=1.0)push(f,x,R);
+  push(f,26,R);push(f,27.5,R+0.3);push(f,29.0,R+0.75);
+  for(let i=1;i<=8;i++){const s=i/8;push(f,29.0+3.6*s,R+0.75+(7.9-R-0.75)*s);}
+  push(f,33.8,8.0);push(f,35.0,7.9);
+  for(let i=1;i<=8;i++){const s=i/8;push(f,35.0+1.9*s,7.9-(7.9-1.35)*s);}
+  push(f,37.57,0.95);push(f,37.57,0.65);
+  for(let i=1;i<=20;i++){const x=37.57-15.57*i/20,s=(x-22)/15.57;push(f,x,-R+(R+0.65)*Math.pow(s,1.7));}
+  for(let x=21;x>4.5;x-=1.0)push(f,x,-R);
+  for(let i=0;i<24;i++){const th=-Math.PI/2-(Math.PI/2)*i/24;push(f,4.5+4.5*Math.cos(th),-0.35+(R-0.35)*Math.sin(th));}
+  const c=-3.6,x0=10.8,Ln=4.4;
+  const r=x=>{const t=(x-x0)/Ln;if(t<0.2)return 1.05+0.13*Math.sin(t/0.2*Math.PI/2);if(t<0.55)return 1.18;return 1.18-0.43*Math.pow((t-0.55)/0.45,1.3);};
+  for(let i=0;i<=20;i++){const x=x0+Ln*i/20;push(nac,x,c+r(x));}
+  for(let i=1;i<4;i++)push(nac,x0+Ln,c+0.75-1.5*i/4);
+  for(let i=20;i>=0;i--){const x=x0+Ln*i/20;push(nac,x,c-r(x));}
+  for(let i=1;i<4;i++)push(nac,x0,c-1.05+2.1*i/4);
+  return {fus:f,nac,inlet:[x0-0.3,c],nozzle:[x0+Ln+0.3,c],dFan:1.73};
+}
+function resamplePoly(poly,ds){
+  const n=poly.length,segs=[];let tot=0;
+  for(let i=0;i<n;i++){const a=poly[i],b=poly[(i+1)%n],l=Math.hypot(b[0]-a[0],b[1]-a[1]);if(l>1e-9){segs.push([a,b,l]);tot+=l;}}
+  const N=Math.max(8,Math.round(tot/ds)),out=[];let si=0,acc=0;
+  for(let k=0;k<N;k++){const s=k*tot/N;while(si<segs.length-1&&acc+segs[si][2]<s){acc+=segs[si][2];si++;}const [a,b,l]=segs[si],f=(s-acc)/l;out.push([a[0]+f*(b[0]-a[0]),a[1]+f*(b[1]-a[1])]);}
+  return out;
+}
+function buildPanels(polys){
+  const P=[];
+  for(const poly of polys){const n=poly.length;for(let i=0;i<n;i++){const a=poly[i],b=poly[(i+1)%n],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy),tx=dx/L,ty=dy/L;P.push({x1:a[0],y1:a[1],L,tx,ty,mx:-ty,my:tx,cx:(a[0]+b[0])/2,cy:(a[1]+b[1])/2});}}
+  return P;
+}
+function panelVel(p,px,py,out){
+  const dx=px-p.x1,dy=py-p.y1,xi=dx*p.tx+dy*p.ty,eta=dx*p.mx+dy*p.my;
+  let uxi,ueta;
+  const rcx=px-p.cx,rcy=py-p.cy,rc2=rcx*rcx+rcy*rcy;
+  if(rc2>16*p.L*p.L){const k=p.L/(2*Math.PI*rc2);out[0]=k*rcx;out[1]=k*rcy;return;}
+  const r1=xi*xi+eta*eta,r2=(xi-p.L)*(xi-p.L)+eta*eta;
+  uxi=Math.log(r1/r2)/(4*Math.PI);
+  ueta=(Math.atan2(eta,xi-p.L)-Math.atan2(eta,xi))/(2*Math.PI);
+  out[0]=uxi*p.tx+ueta*p.mx;out[1]=uxi*p.ty+ueta*p.my;
+}
+function extVel(g,Q,px,py,out){
+  let dx=px-g.inlet[0],dy=py-g.inlet[1],r2=dx*dx+dy*dy+1e-6;
+  out[0]=-Q/(2*Math.PI)*dx/r2;out[1]=-Q/(2*Math.PI)*dy/r2;
+  dx=px-g.nozzle[0];dy=py-g.nozzle[1];r2=dx*dx+dy*dy+1e-6;
+  out[0]+=Q/(2*Math.PI)*dx/r2;out[1]+=Q/(2*Math.PI)*dy/r2;
+}
+function solvePanels(P,g,alpha,Q){
+  const n=P.length,A=new Float64Array(n*n),b=new Float64Array(n),t=[0,0],e=[0,0],ca=Math.cos(alpha),sa=Math.sin(alpha);
+  for(let i=0;i<n;i++){const pi=P[i];for(let j=0;j<n;j++){if(i===j){A[i*n+j]=0.5;continue;}panelVel(P[j],pi.cx,pi.cy,t);A[i*n+j]=t[0]*pi.mx+t[1]*pi.my;}
+    extVel(g,Q,pi.cx,pi.cy,e);b[i]=-((ca+e[0])*pi.mx+(sa+e[1])*pi.my);}
+  for(let k=0;k<n;k++){let m=k;for(let i=k+1;i<n;i++)if(Math.abs(A[i*n+k])>Math.abs(A[m*n+k]))m=i;
+    if(m!==k){for(let j=0;j<n;j++){const tmp=A[k*n+j];A[k*n+j]=A[m*n+j];A[m*n+j]=tmp;}const tb=b[k];b[k]=b[m];b[m]=tb;}
+    const d=A[k*n+k];for(let i=k+1;i<n;i++){const f=A[i*n+k]/d;if(f===0)continue;for(let j=k;j<n;j++)A[i*n+j]-=f*A[k*n+j];b[i]-=f*b[k];}}
+  const s=new Float64Array(n);for(let i=n-1;i>=0;i--){let acc=b[i];for(let j=i+1;j<n;j++)acc-=A[i*n+j]*s[j];s[i]=acc/A[i*n+i];}
+  return s;
+}
+function inPoly(poly,x,y){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if(((a[1]>y)!==(b[1]>y))&&(x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]))c=!c;}return c;}
+function velAt(P,sig,g,alpha,Q,x,y,out){
+  const t=[0,0];let u=Math.cos(alpha),v=Math.sin(alpha);
+  for(let j=0;j<P.length;j++){panelVel(P[j],x,y,t);u+=sig[j]*t[0];v+=sig[j]*t[1];}
+  extVel(g,Q,x,y,t);out[0]=u+t[0];out[1]=v+t[1];
+}
+/*PANEL_END*/
+
+const DOM_MIN=[-14,-22],DOM_SIZE=[68,46],NX=340,NY=230;
+let sideGeo=null,sidePanels=null,sideFusP=null,sideNacP=null,sideSig=null,fieldTex=null,fieldData=null,sideStats={};
+let sideScene=null,sideCam=null,sideQuad=null,sideLicMat=null,sideLicScene=null,rtSide=null,sideBlitMat=null,sideTimer=null,mfr=1.0;
+function computeSideField(){
+  const t0=performance.now();
+  const al=aoaDeg*Math.PI/180,Q=mfr*sideGeo.dFan;
+  sideSig=solvePanels(sidePanels,sideGeo,al,Q);
+  const o=[0,0];let vmax=0;
+  for(let j=0;j<NY;j++){const y=DOM_MIN[1]+(j+0.5)/NY*DOM_SIZE[1];
+    for(let i=0;i<NX;i++){const x=DOM_MIN[0]+(i+0.5)/NX*DOM_SIZE[0],k=(j*NX+i)*4;
+      const inside=(x>-0.5&&x<38&&y>-2.5&&y<8.5&&inPoly(sideFusP,x,y))||(x>10.5&&x<15.5&&y>-5&&y<-2.2&&inPoly(sideNacP,x,y));
+      if(inside){fieldData[k]=0;fieldData[k+1]=0;fieldData[k+2]=1;continue;}
+      velAt(sidePanels,sideSig,sideGeo,al,Q,x,y,o);let s=Math.hypot(o[0],o[1]);if(s>4){o[0]*=4/s;o[1]*=4/s;s=4;}
+      fieldData[k]=o[0];fieldData[k+1]=o[1];fieldData[k+2]=0;if(s>vmax)vmax=s;}}
+  fieldTex.needsUpdate=true;
+  sideStats={n:sidePanels.length,ms:Math.round(performance.now()-t0),vmax};
+  updateInfo();
+}
+function scheduleSide(){if(!sideGeo)return;clearTimeout(sideTimer);sideTimer=setTimeout(computeSideField,120);}
+const MAGMA=`vec3 magma(float t){t=clamp(t,0.0,1.0);
+  if(t<0.25)return mix(vec3(0.0,0.0,0.02),vec3(0.27,0.005,0.33),t*4.0);
+  if(t<0.5)return mix(vec3(0.27,0.005,0.33),vec3(0.72,0.13,0.30),(t-0.25)*4.0);
+  if(t<0.75)return mix(vec3(0.72,0.13,0.30),vec3(0.99,0.45,0.12),(t-0.5)*4.0);
+  return mix(vec3(0.99,0.45,0.12),vec3(1.0,0.98,0.75),(t-0.75)*4.0);}`;
+const SIDE_LIC=`
+precision highp float;varying vec2 vUv;
+uniform sampler2D uField;uniform sampler2D uNoise;
+uniform vec2 uDomMin;uniform vec2 uDomSize;uniform vec2 uGrid;uniform vec2 uVisMin;uniform vec2 uVisSize;
+uniform float uAl;uniform float uDs;uniform float uAnim;uniform float uNs;
+vec3 fld(vec2 p){
+  vec2 g=(p-uDomMin)/uDomSize*uGrid-0.5;
+  if(g.x<0.0||g.y<0.0||g.x>uGrid.x-1.0||g.y>uGrid.y-1.0)return vec3(cos(uAl),sin(uAl),0.0);
+  vec2 i0=floor(g),f=g-i0;
+  vec3 a=texture2D(uField,(i0+vec2(0.5,0.5))/uGrid).xyz;vec3 b=texture2D(uField,(i0+vec2(1.5,0.5))/uGrid).xyz;
+  vec3 c=texture2D(uField,(i0+vec2(0.5,1.5))/uGrid).xyz;vec3 d=texture2D(uField,(i0+vec2(1.5,1.5))/uGrid).xyz;
+  return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);
+}
+float nz(vec2 p){return texture2D(uNoise,p*uNs).r;}
+float kern(float s,float L){return exp(-abs(s)/L*1.6)*(0.6+0.4*sin(6.2831853*s/(0.45*L)-uAnim));}
+void main(){
+  vec2 z=uVisMin+vUv*uVisSize;vec3 v0=fld(z);
+  if(v0.z>0.5){gl_FragColor=vec4(0.5,0.0,1.0,1.0);return;}
+  float L=uDs*28.0;float k=kern(0.0,L);float acc=nz(z)*k,ws=k;vec2 p=z;
+  for(int i=0;i<28;i++){vec3 v=fld(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p+=v.xy/sp*uDs;k=kern(float(i+1)*uDs,L);acc+=nz(p)*k;ws+=k;}
+  p=z;
+  for(int i=0;i<28;i++){vec3 v=fld(p);if(v.z>0.5)break;float sp=length(v.xy);if(sp<1e-5)break;p-=v.xy/sp*uDs;k=kern(-float(i+1)*uDs,L);acc+=nz(p)*k;ws+=k;}
+  float sp=length(v0.xy);float cp=1.0-sp*sp;
+  gl_FragColor=vec4(acc/ws,clamp((1.0-cp)/2.6,0.0,1.0),0.0,1.0);
+}`;
+const SIDE_BLIT=`precision highp float;varying vec2 vUv;uniform sampler2D uTex;${MAGMA}
+void main(){vec4 d=texture2D(uTex,vUv);float lic=clamp((d.r-0.5)*3.2+0.5,0.0,1.0);gl_FragColor=vec4(magma(0.12+0.85*d.g)*(0.2+1.05*lic),1.0);}`;
+function initSide(){
+  sideGeo=a320SidePolys();
+  sideFusP=resamplePoly(sideGeo.fus,0.42);sideNacP=resamplePoly(sideGeo.nac,0.28);
+  sidePanels=buildPanels([sideFusP,sideNacP]);
+  fieldData=new Float32Array(NX*NY*4);
+  fieldTex=new THREE.DataTexture(fieldData,NX,NY,THREE.RGBAFormat,THREE.FloatType);
+  fieldTex.minFilter=fieldTex.magFilter=THREE.NearestFilter;
+  sideLicMat=new THREE.ShaderMaterial({vertexShader:VERT_Q,fragmentShader:SIDE_LIC,depthTest:false,depthWrite:false,uniforms:{
+    uField:{value:fieldTex},uNoise:{value:makeNoiseTex(256)},uDomMin:{value:new THREE.Vector2(DOM_MIN[0],DOM_MIN[1])},uDomSize:{value:new THREE.Vector2(DOM_SIZE[0],DOM_SIZE[1])},
+    uGrid:{value:new THREE.Vector2(NX,NY)},uVisMin:{value:new THREE.Vector2()},uVisSize:{value:new THREE.Vector2()},uAl:{value:0},uDs:{value:0.05},uAnim:{value:0},uNs:{value:1}}});
+  sideLicScene=new THREE.Scene();sideLicScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),sideLicMat));
+  rtSide=new THREE.WebGLRenderTarget(2,2,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat,depthBuffer:false});
+  sideBlitMat=new THREE.ShaderMaterial({vertexShader:VERT_3D,fragmentShader:SIDE_BLIT,uniforms:{uTex:{value:rtSide.texture}},depthTest:false,depthWrite:false});
+  sideScene=new THREE.Scene();
+  sideQuad=new THREE.Mesh(new THREE.PlaneGeometry(1,1),sideBlitMat);sideQuad.renderOrder=0;sideScene.add(sideQuad);
+  const addBody=(poly,fill)=>{
+    const sh=new THREE.Shape(poly.map(p=>new THREE.Vector2(p[0],p[1])));
+    const m=new THREE.Mesh(new THREE.ShapeGeometry(sh),new THREE.MeshBasicMaterial({color:fill,depthTest:false}));m.renderOrder=1;sideScene.add(m);
+    const l=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(poly.map(p=>new THREE.Vector3(p[0],p[1],0))),new THREE.LineBasicMaterial({color:0xd0d4de,depthTest:false}));l.renderOrder=2;sideScene.add(l);
+  };
+  addBody(sideGeo.fus,0x2b303c);addBody(sideGeo.nac,0x3a4150);
+  const win=[];for(let x=8.5;x<27;x+=0.55)win.push(new THREE.Vector3(x,0.55,0),new THREE.Vector3(x+0.25,0.55,0));
+  const wl=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(win),new THREE.LineBasicMaterial({color:0x6f7890,depthTest:false}));wl.renderOrder=2;sideScene.add(wl);
+  sideCam=new THREE.OrthographicCamera(-1,1,1,-1,-10,10);
+  computeSideField();
+}
+function renderSide(){
+  const sz=renderer.getDrawingBufferSize(new THREE.Vector2()),asp=sz.x/sz.y;
+  let w=50,h=w/asp;if(h<24){h=24;w=h*asp;}
+  const cx=19.5,cy=1.2,vx0=cx-w/2,vy0=cy-h/2;
+  sideCam.left=vx0;sideCam.right=vx0+w;sideCam.bottom=vy0;sideCam.top=vy0+h;sideCam.updateProjectionMatrix();
+  sideQuad.position.set(cx,cy,0);sideQuad.scale.set(w,h,1);
+  const rw=Math.max(2,Math.floor(sz.x*0.5)),rh=Math.max(2,Math.floor(sz.y*0.5));
+  if(rtSide.width!==rw||rtSide.height!==rh)rtSide.setSize(rw,rh);
+  const u=sideLicMat.uniforms;u.uVisMin.value.set(vx0,vy0);u.uVisSize.value.set(w,h);u.uAl.value=aoaDeg*Math.PI/180;
+  u.uDs.value=1.3*w/rw;u.uNs.value=rw/(w*256.0);anim+=0.016*speed*2.5;u.uAnim.value=anim;
+  const prev=renderer.getRenderTarget();
+  renderer.setRenderTarget(rtSide);_origRender(sideLicScene,ocam);
+  renderer.setRenderTarget(prev);_origRender(sideScene,sideCam);
+}
 /* ---------------- render hook ---------------- */
 const _origRender=renderer.render.bind(renderer);
 renderer.render=function(s,c){
-  if(flowMode&&s===scene){renderFlow();return;}
+  if(flowMode&&s===scene){if(viewMode==='side')renderSide();else renderFlow();return;}
   if(active&&pts)animateStream();
   _origRender(s,c);
 };
@@ -241,7 +417,9 @@ document.getElementById('asProfile').addEventListener('change',function(){profKe
 document.getElementById('asColor').addEventListener('click',()=>{colorBySpeed=!colorBySpeed;const btn=document.getElementById('asColor');btn.textContent=colorBySpeed?'Color: speed':'Color: fixed';btn.style.background=colorBySpeed?'#0f3460':'#2a2a4a';});
 document.getElementById('asSpeed').addEventListener('input',function(){speed=parseFloat(this.value);document.getElementById('asSpeedV').textContent=speed.toFixed(1);});
 document.getElementById('asCount').addEventListener('input',function(){const n=parseInt(this.value);document.getElementById('asCountV').textContent=n;if(n!==count&&active)createParticles(n);});
-document.getElementById('asAoA').addEventListener('input',function(){aoaDeg=parseFloat(this.value);document.getElementById('asAoAV').textContent=aoaDeg.toFixed(1)+'\u00B0';updateInfo();});
+document.getElementById('asAoA').addEventListener('input',function(){aoaDeg=parseFloat(this.value);document.getElementById('asAoAV').textContent=aoaDeg.toFixed(1)+'\u00B0';updateInfo();scheduleSide();});
+document.getElementById('asMfr').addEventListener('input',function(){mfr=parseFloat(this.value);document.getElementById('asMfrV').textContent=mfr.toFixed(2);updateInfo();scheduleSide();});
+document.getElementById('asView').addEventListener('change',function(){viewMode=this.value;if(flowMode){if(viewMode==='side'&&!sideGeo)initSide();if(viewMode==='wing'&&!licMat)initFlow();}updateInfo();});
 
 document.getElementById('asLock').addEventListener('click',()=>{locked=!locked;const btn=document.getElementById('asLock');const sd=document.getElementById('asSteer');if(locked){btn.innerHTML='🔒 Nodes LOCKED';btn.style.background='#4caf50';sd.style.display='block';steerGrp=new THREE.Group();scene.add(steerGrp);if(typeof aircraftGroup!=='undefined'&&aircraftGroup){scene.remove(aircraftGroup);steerGrp.add(aircraftGroup);}if(typeof pipeGroup!=='undefined'&&pipeGroup){scene.remove(pipeGroup);steerGrp.add(pipeGroup);}}else{btn.innerHTML='🔓 Lock Nodes to Aircraft';btn.style.background='#2a2a4a';sd.style.display='none';if(steerGrp){if(typeof aircraftGroup!=='undefined'&&aircraftGroup){steerGrp.remove(aircraftGroup);scene.add(aircraftGroup);}if(typeof pipeGroup!=='undefined'&&pipeGroup){steerGrp.remove(pipeGroup);scene.add(pipeGroup);}scene.remove(steerGrp);steerGrp=null;}doResetSteer();}});
 function applySteer(){if(!steerGrp)return;const p=parseFloat(document.getElementById('asPitch').value)*Math.PI/180;const y=parseFloat(document.getElementById('asYaw').value)*Math.PI/180;const r=parseFloat(document.getElementById('asRoll').value)*Math.PI/180;steerGrp.rotation.set(p,y,r);document.getElementById('asPitchV').textContent=(p*180/Math.PI).toFixed(0)+'\u00B0';document.getElementById('asYawV').textContent=(y*180/Math.PI).toFixed(0)+'\u00B0';document.getElementById('asRollV').textContent=(r*180/Math.PI).toFixed(0)+'\u00B0';}
@@ -251,6 +429,6 @@ document.getElementById('asYaw').addEventListener('input',applySteer);
 document.getElementById('asRoll').addEventListener('input',applySteer);
 document.getElementById('asResetSteer').addEventListener('click',doResetSteer);
 
-console.log('boheme_airstream.js v8 loaded – profile',prof);
+console.log('boheme_airstream.js v9 loaded – profile',prof);
 });
 })();

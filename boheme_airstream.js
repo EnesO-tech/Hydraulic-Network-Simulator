@@ -151,7 +151,7 @@ void main(){
 /* ---------------- wind-tunnel scene with own wing model ---------------- */
 let viewMode='side',flowMode=false,rt=null,licMat=null,sheetMat=null,licScene=null,ocam=null,hud=null,camSave=null,anim=0;
 let wtScene=null,wtCam=null,wingPivot=null,wingMesh=null,wingSrc='';
-const SHEET_W=12.0,SHEET_H=7.5,SPAN=2.2,RT_W=1280,RT_H=800;
+const SHEET_W=18.0,SHEET_H=11.0,SPAN=2.2,RT_W=1280,RT_H=800;
 const wingCache={};
 function makeNoiseTex(sz){const d=new Uint8Array(sz*sz*4);for(let i=0;i<sz*sz;i++){const v=Math.floor(Math.random()*256);d[i*4]=v;d[i*4+1]=v;d[i*4+2]=v;d[i*4+3]=255;}const t=new THREE.DataTexture(d,sz,sz,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.minFilter=t.magFilter=THREE.LinearFilter;t.needsUpdate=true;return t;}
 function commonUniforms(){return{uZ0:{value:new THREE.Vector2()},uA:{value:1},uAl:{value:0},uG:{value:0},uW:{value:SHEET_W},uAsp:{value:SHEET_H/SHEET_W}};}
@@ -214,7 +214,9 @@ function updateInfo(){
     foot=`Modell: ${wingSrc||'…'}<br>2D-Potentialströmung · inkompressibel · reibungsfrei · Kutta-Bedingung`;
   }
   document.getElementById('asInfo').innerHTML=flowMode?txt:'';
-  if(hud){hud.querySelector('#asHudTxt').innerHTML=txt+`<br><span style="color:#888">${foot}</span>`;}
+  if(hud){hud.querySelector('#asHudTxt').innerHTML=txt+`<br><span style="color:#888">${foot}</span>`;
+    hud.querySelector('#asLegL').innerHTML=viewMode==='side'?'V/U = 0 (Staupunkt, Wand)':'C<sub>p</sub> = 1 (Staupunkt)';
+    hud.querySelector('#asLegR').innerHTML=viewMode==='side'?'V/U ≥ 2 (Strahl)':'C<sub>p</sub> &lt; 0 (Sog)';}
 }
 function enterFlow(){
   if(!ocam)ocam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
@@ -230,7 +232,7 @@ function enterFlow(){
     <button id="asHudExit" style="position:absolute;top:12px;right:12px;${B}font-size:12px;">✕ Exit Streamlines</button>
     <div style="position:absolute;bottom:40px;left:12px;background:rgba(10,10,26,0.8);border:1px solid #2a4a7a;border-radius:4px;padding:6px 10px;color:#ddd;font-size:11px;">
       <div style="width:220px;height:10px;background:linear-gradient(90deg,#000005,#450154,#b8214d,#fc731f,#fffabf);margin-bottom:3px;"></div>
-      <div style="display:flex;justify-content:space-between;width:220px;"><span>${viewMode==='side'?'V/U = 0 (Staupunkt, Wand)':'C<sub>p</sub> = 1 (Staupunkt)'}</span><span>${viewMode==='side'?'V/U ≥ 2 (Strahl)':'C<sub>p</sub> &lt; 0 (Sog)'}</span></div>
+      <div style="display:flex;justify-content:space-between;width:220px;"><span id="asLegL"></span><span id="asLegR"></span></div>
     </div>`;
   ['wheel','pointerdown','mousedown','touchstart','contextmenu'].forEach(ev=>hud.addEventListener(ev,e=>{if(e.target.id!=='asHudExit')e.preventDefault();e.stopPropagation();},{passive:false}));
   host.appendChild(hud);
@@ -415,6 +417,9 @@ uniform float uAl;uniform float uDs;uniform float uAnim;uniform float uNs;
 vec4 fld(vec2 p){
   vec2 g=(p-uDomMin)/uDomSize*uGrid-0.5;
   if(g.x<0.0||g.y<0.0||g.x>uGrid.x-1.0||g.y>uGrid.y-1.0)return vec4(cos(uAl),sin(uAl),0.0,1.0);
+#ifdef HW_LINEAR
+  return texture2D(uField,(g+0.5)/uGrid);
+#endif
   vec2 i0=floor(g),f=g-i0;
   vec4 a=texture2D(uField,(i0+vec2(0.5,0.5))/uGrid);vec4 b=texture2D(uField,(i0+vec2(1.5,0.5))/uGrid);
   vec4 c=texture2D(uField,(i0+vec2(0.5,1.5))/uGrid);vec4 d=texture2D(uField,(i0+vec2(1.5,1.5))/uGrid);
@@ -439,8 +444,9 @@ function initSide(){
   sidePanels=buildPanels([sideFusP,sideNacP]);
   fieldData=new Float32Array(NX*NY*4);
   fieldTex=new THREE.DataTexture(fieldData,NX,NY,THREE.RGBAFormat,THREE.FloatType);
-  fieldTex.minFilter=fieldTex.magFilter=THREE.NearestFilter;
-  sideLicMat=new THREE.ShaderMaterial({vertexShader:VERT_Q,fragmentShader:SIDE_LIC,depthTest:false,depthWrite:false,uniforms:{
+  const hwLin=!!renderer.extensions.get('OES_texture_float_linear');
+  fieldTex.minFilter=fieldTex.magFilter=hwLin?THREE.LinearFilter:THREE.NearestFilter;
+  sideLicMat=new THREE.ShaderMaterial({vertexShader:VERT_Q,fragmentShader:SIDE_LIC,defines:hwLin?{HW_LINEAR:1}:{},depthTest:false,depthWrite:false,uniforms:{
     uField:{value:fieldTex},uNoise:{value:makeNoiseTex(256)},uDomMin:{value:new THREE.Vector2(DOM_MIN[0],DOM_MIN[1])},uDomSize:{value:new THREE.Vector2(DOM_SIZE[0],DOM_SIZE[1])},
     uGrid:{value:new THREE.Vector2(NX,NY)},uVisMin:{value:new THREE.Vector2()},uVisSize:{value:new THREE.Vector2()},uAl:{value:0},uDs:{value:0.05},uAnim:{value:0},uShift:{value:new THREE.Vector2()},uNs:{value:1}}});
   sideLicScene=new THREE.Scene();sideLicScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),sideLicMat));
@@ -459,16 +465,20 @@ function initSide(){
   sideCam=new THREE.OrthographicCamera(-1,1,1,-1,-10,10);
   computeSideField();
 }
+let sideScale=0.5,sideEma=0.016;
 function renderSide(){
   const sz=renderer.getDrawingBufferSize(new THREE.Vector2()),asp=sz.x/sz.y;
   let w=50,h=w/asp;if(h<24){h=24;w=h*asp;}
   const cx=19.5,cy=1.2,vx0=cx-w/2,vy0=cy-h/2;
   sideCam.left=vx0;sideCam.right=vx0+w;sideCam.bottom=vy0;sideCam.top=vy0+h;sideCam.updateProjectionMatrix();
   sideQuad.position.set(cx,cy,0);sideQuad.scale.set(w,h,1);
-  const rw=Math.max(2,Math.floor(sz.x*0.5)),rh=Math.max(2,Math.floor(sz.y*0.5));
+  const dtF=frameDt();sideEma=0.9*sideEma+0.1*dtF;
+  if(sideEma>0.030&&sideScale>0.26){sideScale=Math.max(0.25,sideScale*0.85);sideEma=0.016;}
+  else if(sideEma<0.017&&sideScale<0.5){sideScale=Math.min(0.5,sideScale/0.9);sideEma=0.020;}
+  const rw=Math.max(2,Math.floor(sz.x*sideScale)),rh=Math.max(2,Math.floor(sz.y*sideScale));
   if(rtSide.width!==rw||rtSide.height!==rh)rtSide.setSize(rw,rh);
   const u=sideLicMat.uniforms;u.uVisMin.value.set(vx0,vy0);u.uVisSize.value.set(w,h);u.uAl.value=aoaDeg*Math.PI/180;
-  u.uDs.value=1.3*w/rw;u.uNs.value=rw/(w*256.0);advance(shiftS,frameDt()*speed*2.5,aoaDeg*Math.PI/180,w*256.0/rw);u.uShift.value.set(shiftS[0],shiftS[1]);
+  u.uDs.value=1.3*w/rw;u.uNs.value=rw/(w*256.0);advance(shiftS,dtF*speed*2.5,aoaDeg*Math.PI/180,w*256.0/rw);u.uShift.value.set(shiftS[0],shiftS[1]);
   const prev=renderer.getRenderTarget();
   renderer.setRenderTarget(rtSide);_origRender(sideLicScene,ocam);
   renderer.setRenderTarget(prev);_origRender(sideScene,sideCam);
@@ -505,6 +515,6 @@ document.getElementById('asYaw').addEventListener('input',applySteer);
 document.getElementById('asRoll').addEventListener('input',applySteer);
 document.getElementById('asResetSteer').addEventListener('click',doResetSteer);
 
-console.log('boheme_airstream.js v15 loaded – profile',prof);
+console.log('boheme_airstream.js v18 loaded – profile',prof);
 });
 })();

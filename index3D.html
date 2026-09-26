@@ -992,7 +992,8 @@ function exportNodePositions(){
         y:nodePositions[id].y,
         z:nodePositions[id].z,
         desc:nodePositions[id].desc||'',
-        loc:nodePositions[id].loc||''
+        loc:nodePositions[id].loc||'',
+        ...(nodePositions[id].kind?{kind:nodePositions[id].kind}:{})
     }));
     const out={
         info:'A320 Hydraulik-Knotenpositionen – editiert im Browser',
@@ -1026,7 +1027,8 @@ x: Number(n.x) || 0,
 y: Number(n.y) || 0,
 z: Number(n.z) || 0,
 desc: n.desc || '',
-loc: n.loc || ''
+loc: n.loc || '',
+kind: n.kind || ''
 };
 });
 }
@@ -1216,30 +1218,42 @@ else if (obj.material.dispose) obj.material.dispose();
 }
 }
 
-function makeTextSprite(text) {
+function makeTextSprite(text, color) {
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
-canvas.width = 128;
+ctx.font = 'bold 28px Consolas, monospace';
+const w = Math.max(128, Math.ceil(ctx.measureText(text).width) + 16);
+canvas.width = w;
 canvas.height = 48;
-ctx.fillStyle = 'rgba(0,0,0,0)';
-ctx.fillRect(0, 0, 128, 48);
 ctx.font = 'bold 28px Consolas, monospace';
 ctx.textAlign = 'center';
 ctx.textBaseline = 'middle';
-ctx.fillStyle = '#ffffff';
+ctx.fillStyle = color || '#ffffff';
 ctx.strokeStyle = '#000000';
 ctx.lineWidth = 3;
-ctx.strokeText(text, 64, 24);
-ctx.fillText(text, 64, 24);
+ctx.strokeText(text, w / 2, 24);
+ctx.fillText(text, w / 2, 24);
 const tex = new THREE.CanvasTexture(canvas);
 tex.minFilter = THREE.LinearFilter;
 const mat = new THREE.SpriteMaterial({map: tex, transparent: true, depthTest: false});
 const sprite = new THREE.Sprite(mat);
-sprite.scale.set(0.24, 0.09, 1);
+sprite.scale.set(0.24 * w / 128, 0.09, 1);
 return sprite;
 }
 
 
+function reservoirKeys(){return Object.keys(nodePositions).filter(k=>nodePositions[k].kind==='reservoir'||k==='S');}
+function resolveNodeKey(name,other,compName){
+if(name!=='S')return name;
+const keys=reservoirKeys();if(!keys.length)return 'S';
+const cn=String(compName||'').toUpperCase();
+const e=(networkJsonComponents||[]).find(c=>String(c.name||'').toUpperCase()===cn&&(c.from===other||c.to===other));
+if(e){const r=[e.from,e.to].find(x=>x!==other&&keys.includes(x));if(r)return r;}
+const o=nodePositions[other];if(!o)return keys[0];
+let best=keys[0],bd=Infinity;
+keys.forEach(k=>{const p=nodePositions[k];const d=(p.x-o.x)**2+(p.y-o.y)**2+(p.z-o.z)**2;if(d<bd){bd=d;best=k;}});
+return best;
+}
 function routeViaFor(n1,n2){
 const e=(networkJsonComponents||[]).find(c=>(c.from===n1&&c.to===n2)||(c.from===n2&&c.to===n1));
 if(!e||!Array.isArray(e.via)||!e.via.length)return[];
@@ -1316,9 +1330,14 @@ window.pipeSegments = [];
 let renderedComponents = 0;
 let skippedComponents = [];
 
+const usedReservoirs = new Set();
 data.components.forEach(c => {
-const a = nodePositions[c.n1];
-const b = nodePositions[c.n2];
+const k1 = resolveNodeKey(c.n1, c.n2, c.name);
+const k2 = resolveNodeKey(c.n2, c.n1, c.name);
+if (c.n1 === 'S') usedReservoirs.add(k1);
+if (c.n2 === 'S') usedReservoirs.add(k2);
+const a = nodePositions[k1];
+const b = nodePositions[k2];
 
 if (!a || !b) {
 skippedComponents.push(c.name + ' (' + c.n1 + ' -> ' + c.n2 + ')');
@@ -1330,15 +1349,28 @@ const dmm = Number(c.d) * 1000;
 const isReturn = kind === 'R' && dmm > 30;
 const color = (kind === 'P' || kind === 'UPM') ? 0xe94560 : (kind === 'UPT' ? 0xc070ff : (kind.startsWith('U') ? 0xff8844 : (isReturn ? 0x3a78d8 : 0x4fc3f7)));
 const radius = kind.startsWith('U') || kind === 'P' ? 0.011 : 0.007;
-const line = new THREE.Mesh(pipeTubeGeometry(pipePoints3D(c.n1, c.n2), radius), new THREE.MeshBasicMaterial({color}));
+const line = new THREE.Mesh(pipeTubeGeometry(pipePoints3D(k1, k2), radius), new THREE.MeshBasicMaterial({color}));
 line.renderOrder = 2;
-line.userData = {kind: 'component', name: c.name, n1: c.n1, n2: c.n2, radius};
+line.userData = {kind: 'component', name: c.name, n1: k1, n2: k2, radius};
 pipeGroup.add(line);
-window.pipeSegments.push({line:line, n1:c.n1, n2:c.n2, radius});
+window.pipeSegments.push({line:line, n1:k1, n2:k2, radius});
 renderedComponents++;
 });
 
-const nodeText = renderedNodes + ' / ' + usedNodeNames.size + ' nodes in 3D';
+usedReservoirs.forEach(key => {
+const p = nodePositions[key]; if (!p) return;
+const isYellow = /Y/i.test(key.replace(/^S/,''));
+const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.10, 20), new THREE.MeshPhongMaterial({color: isYellow ? 0xffd740 : 0x4caf50, emissive: isYellow ? 0x332a00 : 0x0f2a10}));
+const pp = nodePoint3D(p);
+tank.position.copy(pp);
+tank.renderOrder = 3;
+tank.userData = {kind:'node', name:key, desc:p.desc||'', loc:p.loc||''};
+pipeGroup.add(tank); nodeMeshes.push(tank);
+const lbl = makeTextSprite(isYellow ? 'S Yellow' : 'S Green', isYellow ? '#ffd740' : '#7ee07e');
+lbl.position.copy(pp); lbl.position.y += 0.14; lbl.position.x += 0.08; pipeGroup.add(lbl); tank.userData.label = lbl;
+renderedNodes++;
+});
+const nodeText = renderedNodes + ' / ' + (usedNodeNames.size + usedReservoirs.size) + ' nodes in 3D';
 const compText = renderedComponents + ' / ' + data.components.length + ' components in 3D';
 document.getElementById('node3dResults').textContent = nodeText;
 document.getElementById('pipe3dResults').textContent = compText;

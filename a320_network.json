@@ -336,6 +336,24 @@
    "z": -0.448,
    "desc": "PTU System B after actuator",
    "loc": "Fuselage bottom center (PTU)"
+  },
+  {
+   "id": "S",
+   "x": 0.233,
+   "y": -0.537,
+   "z": 1.04,
+   "desc": "Green reservoir (bootstrap/bleed-air pressurised, ~3.5 bar = 50 psi; hydraulically the ground node S)",
+   "loc": "Main landing gear bay area, next to pump suction N01",
+   "kind": "reservoir"
+  },
+  {
+   "id": "S_Y",
+   "x": 0.149,
+   "y": -0.717,
+   "z": -0.128,
+   "desc": "Yellow reservoir (PTU circuit B; 3D display only \u2013 same ground node S in the solver)",
+   "loc": "Next to PTU circuit B",
+   "kind": "reservoir"
   }
  ],
  "components": [
@@ -1273,6 +1291,42 @@
    "from": "N40",
    "to": "N41",
    "type": "Upt"
+  },
+  {
+   "name": "R01",
+   "from": "S",
+   "to": "N01",
+   "type": "R"
+  },
+  {
+   "name": "Ucv1",
+   "from": "N03",
+   "to": "S",
+   "type": "Ucv"
+  },
+  {
+   "name": "R29",
+   "from": "N38",
+   "to": "S",
+   "type": "R"
+  },
+  {
+   "name": "R39",
+   "from": "N39",
+   "to": "S_Y",
+   "type": "R"
+  },
+  {
+   "name": "R40",
+   "from": "S_Y",
+   "to": "N40",
+   "type": "R"
+  },
+  {
+   "name": "R41",
+   "from": "N42",
+   "to": "S_Y",
+   "type": "R"
   }
  ],
  "routing_note": "via = invisible 3D-only waypoints (routed through hull interior); not part of the hydraulic model"

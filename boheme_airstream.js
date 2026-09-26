@@ -10,11 +10,9 @@ panel.innerHTML=`
 <div style="padding:8px 10px;border-bottom:1px solid #2a2a4a;">
   <h4 style="color:#e94560;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px 0;">Airstream</h4>
   <div style="display:flex;gap:4px;margin-bottom:6px;">
-    <button id="asToggle" style="flex:1;${B}">Particles OFF</button>
     <button id="asFlow" style="flex:1;${B}">Streamlines OFF</button>
   </div>
   <div style="display:flex;gap:4px;margin-bottom:6px;">
-    <button id="asColor" style="flex:1;${B}">Color: fixed</button>
     <select id="asView" style="flex:1;${B}">
       <option value="side" selected>Ansicht: Seite</option>
       <option value="wing">Ansicht: Flügelprofil</option>
@@ -32,10 +30,10 @@ panel.innerHTML=`
       <option value="tip">Profil: Spitze</option>
     </select>
   </div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Speed</span><input type="range" id="asSpeed" min="0.5" max="5" step="0.1" value="2" style="flex:1;"><span id="asSpeedV" style="color:#aac;font-size:11px;width:30px;text-align:right;">2.0</span></div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Count</span><input type="range" id="asCount" min="500" max="8000" step="200" value="3000" style="flex:1;"><span id="asCountV" style="color:#aac;font-size:11px;width:30px;text-align:right;">3000</span></div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">AoA</span><input type="range" id="asAoA" min="-10" max="15" step="0.5" value="2" style="flex:1;"><span id="asAoAV" style="color:#aac;font-size:11px;width:30px;text-align:right;">2°</span></div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#888;font-size:11px;width:50px;">Engine</span><input type="range" id="asMfr" min="0" max="2.5" step="0.05" value="0.7" style="flex:1;"><span id="asMfrV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0.70</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Fluglage: Winkel zwischen Anströmung und Flugzeuglängsachse"><span style="color:#888;font-size:11px;width:78px;">Anstellwinkel</span><input type="range" id="asAoA" min="-10" max="15" step="0.5" value="2" style="flex:1;"><span id="asAoAV" style="color:#aac;font-size:11px;width:34px;text-align:right;">2°</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Triebwerk: Massenstromverhältnis MFR = angesaugte Luft / Einlauffläche·U. Wird beim Wechsel des Flugzustands automatisch gesetzt."><span style="color:#888;font-size:11px;width:78px;">Triebwerk MFR</span><input type="range" id="asMfr" min="0" max="2.5" step="0.05" value="0.7" style="flex:1;"><span id="asMfrV" style="color:#aac;font-size:11px;width:34px;text-align:right;">0.70</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Nur die Geschwindigkeit der Animation – ändert keine Physik"><span style="color:#888;font-size:11px;width:78px;">Animation</span><input type="range" id="asSpeed" min="0.5" max="5" step="0.1" value="2" style="flex:1;"><span id="asSpeedV" style="color:#aac;font-size:11px;width:34px;text-align:right;">2.0</span></div>
+  <div style="font-size:10px;color:#667;line-height:1.4;margin:2px 0 4px;">Fluggeschwindigkeit U kommt aus dem <b>Flugzustand</b> (Reiseflug 230 m/s, Anflug 70 m/s, Start 75 m/s). <b>Animation</b> ist nur Darstellung. <b>Triebwerk MFR</b> steuert, wie viel Luft der Einlauf ansaugt.</div>
   <div id="asInfo" style="color:#aac;font-size:11px;line-height:1.5;margin-top:4px;"></div>
 </div>
 <div style="padding:8px 10px;border-bottom:1px solid #2a2a4a;">
@@ -49,15 +47,8 @@ panel.innerHTML=`
   </div>
 </div>`;
 
-/* ---------------- 3D particles (unchanged) ---------------- */
-let active=false,colorBySpeed=false,pts=null,geo=null,pos=null,col=null;
-let count=3000,speed=2.0,aoaDeg=2;
-const R_FUSE=1.5,L_FUSE=8.0;
+let speed=2.0,aoaDeg=2;
 let steerGrp=null,locked=false;
-const SPX=18,SPY=14,ZF=20,ZB=-20;
-function resetP(i,rz){pos[i*3]=(Math.random()-0.5)*SPX*2;pos[i*3+1]=(Math.random()-0.5)*SPY*2;pos[i*3+2]=rz?(Math.random()*(ZF-ZB)+ZB):(ZF+Math.random()*3);col[i*3]=0.35;col[i*3+1]=0.65;col[i*3+2]=1.0;}
-function createParticles(n){if(pts)scene.remove(pts);count=n;pos=new Float32Array(n*3);col=new Float32Array(n*3);for(let i=0;i<n;i++)resetP(i,true);geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));pts=new THREE.Points(geo,new THREE.PointsMaterial({size:0.06,vertexColors:true,transparent:true,opacity:0.75,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true}));scene.add(pts);}
-function animateStream(){if(!pos||!geo)return;const dt=0.016,aoa=aoaDeg*Math.PI/180;for(let i=0;i<count;i++){let x=pos[i*3],y=pos[i*3+1],z=pos[i*3+2],lx=x,ly=y,lz=z;if(steerGrp){const inv=new THREE.Matrix4().copy(steerGrp.matrixWorld).invert();const v=new THREE.Vector3(x,y,z).applyMatrix4(inv);lx=v.x;ly=v.y;lz=v.z;}let vx=0,vy=Math.sin(aoa)*speed*0.4,vz=-Math.cos(aoa)*speed;const r2d=Math.sqrt(lx*lx+ly*ly);if(r2d>0.01&&Math.abs(lz)<L_FUSE*0.55){if(r2d<R_FUSE*3.0){const f=(R_FUSE*R_FUSE)/(r2d*r2d);vx+=(lx/r2d)*speed*f*0.6;vy+=(ly/r2d)*speed*f*0.6;vz-=speed*f*0.2;}if(r2d<R_FUSE*1.08&&Math.abs(lz)<L_FUSE*0.5){const push=R_FUSE*1.2-r2d;vx+=(lx/r2d)*push*12;vy+=(ly/r2d)*push*12;}}if(steerGrp){const vel=new THREE.Vector3(vx,vy,vz).applyQuaternion(steerGrp.quaternion);x+=vel.x*dt;y+=vel.y*dt;z+=vel.z*dt;}else{x+=vx*dt;y+=vy*dt;z+=vz*dt;}pos[i*3]=x;pos[i*3+1]=y;pos[i*3+2]=z;if(colorBySpeed){const spd=Math.sqrt(vx*vx+vy*vy+vz*vz);const t=Math.min(Math.max((spd/speed-0.8)*3,0),1);col[i*3]=0.2+t*0.8;col[i*3+1]=0.5*(1-t)+0.2*t;col[i*3+2]=1.0-t*0.7;}else{col[i*3]=0.35;col[i*3+1]=0.65;col[i*3+2]=1.0;}if(z<ZB-2||z>ZF+2||Math.abs(x)>SPX+2||Math.abs(y)>SPY+2)resetP(i,false);}geo.attributes.position.needsUpdate=true;geo.attributes.color.needsUpdate=true;}
 
 /* ---------------- Joukowsky airfoil geometry ----------------
    Circle in zeta-plane: centre zeta0 = (-eps, delta), radius a = |1 - zeta0|
@@ -491,17 +482,13 @@ function advance(sh,dist,al,per){const m=(v)=>((v%per)+per)%per;sh[0]=m(sh[0]+di
 const _origRender=renderer.render.bind(renderer);
 renderer.render=function(s,c){
   if(flowMode&&s===scene){if(viewMode==='side')renderSide();else renderFlow();return;}
-  if(active&&pts)animateStream();
   _origRender(s,c);
 };
 
 /* ---------------- UI ---------------- */
-document.getElementById('asToggle').addEventListener('click',()=>{active=!active;const btn=document.getElementById('asToggle');if(active){btn.textContent='Particles ON';btn.style.background='#4caf50';if(!pts)createParticles(count);else pts.visible=true;}else{btn.textContent='Particles OFF';btn.style.background='#2a2a4a';if(pts)pts.visible=false;}});
 document.getElementById('asFlow').addEventListener('click',toggleFlow);
 document.getElementById('asProfile').addEventListener('change',function(){profKey=this.value;prof=fitProfile(PRESETS[profKey].tc,PRESETS[profKey].fc);if(wingPivot)loadWing(profKey);updateInfo();});
-document.getElementById('asColor').addEventListener('click',()=>{colorBySpeed=!colorBySpeed;const btn=document.getElementById('asColor');btn.textContent=colorBySpeed?'Color: speed':'Color: fixed';btn.style.background=colorBySpeed?'#0f3460':'#2a2a4a';});
 document.getElementById('asSpeed').addEventListener('input',function(){speed=parseFloat(this.value);document.getElementById('asSpeedV').textContent=speed.toFixed(1);});
-document.getElementById('asCount').addEventListener('input',function(){const n=parseInt(this.value);document.getElementById('asCountV').textContent=n;if(n!==count&&active)createParticles(n);});
 document.getElementById('asAoA').addEventListener('input',function(){aoaDeg=parseFloat(this.value);document.getElementById('asAoAV').textContent=aoaDeg.toFixed(1)+'\u00B0';updateInfo();scheduleSide();});
 document.getElementById('asMfr').addEventListener('input',function(){mfr=parseFloat(this.value);document.getElementById('asMfrV').textContent=mfr.toFixed(2);updateInfo();scheduleSide();});
 document.getElementById('asCond').addEventListener('change',function(){condKey=this.value;mfr=CONDS[condKey].mfr;document.getElementById('asMfr').value=mfr;document.getElementById('asMfrV').textContent=mfr.toFixed(2);updateInfo();scheduleSide();});
@@ -515,6 +502,6 @@ document.getElementById('asYaw').addEventListener('input',applySteer);
 document.getElementById('asRoll').addEventListener('input',applySteer);
 document.getElementById('asResetSteer').addEventListener('click',doResetSteer);
 
-console.log('boheme_airstream.js v18 loaded – profile',prof);
+console.log('boheme_airstream.js v19 loaded – profile',prof);
 });
 })();

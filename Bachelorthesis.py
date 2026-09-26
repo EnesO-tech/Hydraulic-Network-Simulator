@@ -331,15 +331,37 @@ class Network:
         c.Rd = -c.DPoc / c.Qsc
         
     def ParseUpt(self, c, t):
+        # PTU with losses (motor side 'a', pump side 'b'):
+        #   Upt<n>a  eta_v  eta_hm  R0[bar/(m3/h)]  D[mm]  orient
+        #   Upt<n>b  eta_v  eta_hm  Vb/Va           D[mm]  orient
+        # Legacy formats are still accepted:
+        #   Upt<n>a  eta  R0  D  orient      (eta = overall efficiency)
+        #   Upt<n>b  D  orient               (loss-free pump side)
+        nums = []
+        for tok in t[1:]:
+            try:
+                nums.append(float(tok))
+            except ValueError:
+                break
         if self.IsPtuPump(c):
-            c.Diam = float(t[1]) / MM_PER_M
-            self.ReadOrient(c, t, 2)
+            if len(nums) >= 4:
+                c.EtaV, c.EtaHm, c.DispRatio = nums[0], nums[1], nums[2]
+                c.Diam = nums[3] / MM_PER_M
+            else:
+                c.EtaV, c.EtaHm, c.DispRatio = 1.0, 1.0, 1.0
+                c.Diam = nums[0] / MM_PER_M
         else:
-            c.Eta = float(t[1])
-            c.Rd = float(t[2]) * PA_PER_BAR * S_PER_H
+            if len(nums) >= 4:
+                c.EtaV, c.EtaHm = nums[0], nums[1]
+                c.Rd = nums[2] * PA_PER_BAR * S_PER_H
+                c.Diam = nums[3] / MM_PER_M
+            else:
+                c.EtaV, c.EtaHm = 1.0, nums[0]
+                c.Rd = nums[1] * PA_PER_BAR * S_PER_H
+                c.Diam = nums[2] / MM_PER_M
             c.Rd0 = c.Rd
-            c.Diam = float(t[3]) / MM_PER_M
-            self.ReadOrient(c, t, 4)
+            c.Eta = c.EtaV * c.EtaHm
+        self.ReadOrient(c, t, 1 + len(nums))
     
     def IsPtuPump(self, c):
         return c.kind == KIND_UPT and c.Name[-1].lower() == 'b'
@@ -547,20 +569,20 @@ class Network:
             return 4
 
     def RowStep(self, scanDir):
-        
+        # identical to VBA i_s(): 1 = South (+1 row), 3 = North (-1 row)
         if scanDir == 1:
-            return -1
-        elif scanDir == 3:
             return 1
+        elif scanDir == 3:
+            return -1
         else:
             return 0
         
     def ColStep(self, scanDir):
-        
+        # identical to VBA j_s(): 2 = East (+1 col), 4 = West (-1 col)
         if scanDir == 2:
-            return -1
-        elif scanDir == 4:
             return 1
+        elif scanDir == 4:
+            return -1
         else:
             return 0
 
@@ -639,12 +661,16 @@ class Network:
                 if m is None:
                     continue
                 Qa = abs(m.q)
-                c.Qsc = Qa
+                # kinematic coupling incl. leakage of both units:
+                # Qb = Qa * (Vb/Va) * eta_v,a * eta_v,b
+                c.Qsc = Qa * c.DispRatio * m.EtaV * c.EtaV
                 if self.Iiter <= 1 or Qa < 1e-12:
                     continue
                 Qb = abs(c.q)
                 DPb = abs(c.Ptot1 - c.Ptot2)
-                Rneu = m.Rd0 + DPb * Qb / (m.Eta * Qa * Qa)
+                # power balance: dp_b*Q_b = eta_total*(dp_a - R0*Q_a)*Q_a
+                etaTot = m.EtaV * m.EtaHm * c.EtaV * c.EtaHm
+                Rneu = m.Rd0 + DPb * Qb / (etaTot * Qa * Qa)
                 if abs(Rneu - m.Rd) < 0.0005 * m.Rd:
                     continue
                 m.Rd = 0.1 * Rneu + 0.9 * m.Rd

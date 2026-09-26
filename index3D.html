@@ -51,6 +51,10 @@ main{display:flex;flex:1;overflow:hidden}
 .comp-bottom{height:350px;min-height:250px;background:#0f0f1f;border-top:1px solid #2a2a4a;padding:6px 10px;overflow:auto;flex-shrink:0}
 .comp-bottom h4{color:#e94560;font-size:13px;text-transform:uppercase;margin:4px 0 4px 0;letter-spacing:1px}
 #resultTable{width:100%;border-collapse:collapse;font-size:10px;font-family:Consolas,monospace}
+#nodeTable{border-collapse:collapse;font-size:10px;font-family:Consolas,monospace;min-width:230px}
+#nodeTable th{background:#0f3460;color:#fff;padding:3px 4px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2;font-size:9px;white-space:nowrap}
+#nodeTable td{padding:2px 4px;border:1px solid #1a2a4a;text-align:center;font-size:10px}
+#nodeTable td.val{color:#aac}
 #resultTable th{background:#0f3460;color:#fff;padding:3px 4px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2;font-size:9px;white-space:nowrap}
 #resultTable td{padding:2px 4px;border:1px solid #1a2a4a;text-align:center;font-size:10px}
 #resultTable td.ok{color:#4caf50}
@@ -154,8 +158,9 @@ td.c.custom-color{color:#fff}
 <div class="comp-top">
 <div class="comp-left" id="compLeft">
 <h4>Toggle Buttons</h4>
+<div style="font-size:10px;color:#667;margin:-2px 0 4px;">Wie Excel-Blatt „Comp“ · Rl_on/Rl_off = Wert für Rl_F · Werte gehen direkt in den Solver</div>
 <div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="999" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="9999" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">Rk_off</span><input class="val off" id="tglRkOff" value="0.001" onchange="applyToggle(this)"></div>
@@ -166,12 +171,13 @@ td.c.custom-color{color:#fff}
 <div class="toggle-item"><span class="key">kReD</span><input class="val" id="itKReD" value="0.2" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">boolProtect</span><input class="val off" id="itProtect" value="FALSCH" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSCH" onchange="applyToggle(this)"></div>
-<h4>Nodes</h4>
-<div class="toggle-item"><span class="key">Node: S</span><input class="val" id="nodeS" value="3.438E-01" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Node: H</span><input class="val" id="nodeH" value="1.01325" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Pamb</span><input class="val" id="pamb" value="1.01325" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">g</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">krough</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
+<h4>Fluid (wie Excel, Skydrol)</h4>
+<div class="toggle-item"><span class="key" title="Fluidtemperatur – Excel-Standard −40 °C">T [°C]</span><input class="val" id="fluidT" value="-40" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" title="ρ = 1025·exp(−0.00083·T)">rho [kg/m³]</span><input class="val" id="fluidRho" value="" readonly style="color:#667;"></div>
+<div class="toggle-item"><span class="key" title="μ = 5.17e-5·exp(1084/(T+273.15−110))">mue [Ns/m²]</span><input class="val" id="fluidMue" value="" readonly style="color:#667;"></div>
+<div class="toggle-item"><span class="key">Pamb [bar]</span><input class="val" id="pamb" value="1.01325" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">g [m/s²]</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">krough [mm]</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320" onchange="applyToggle(this)"></div>
 <h4>Rl_F Toggle</h4>
 <div class="toggle-item"><span class="key">Rl_F Status</span><button class="toggle-btn on" id="rlFToggle" onclick="toggleRlF()">ON</button></div>
@@ -181,8 +187,8 @@ td.c.custom-color{color:#fff}
 <button class="panel-toggle pt-right" id="ptRight" onclick="togglePanel('right')" title="Components ein-/ausblenden">▶</button>
 <button class="panel-toggle pt-bottom" id="ptBottom" onclick="togglePanel('bottom')" title="Results ein-/ausblenden">▼</button>
 <div class="toolbar">
-<label>Mue:</label><input type="text" id="pMue" value="1e-3">
-<label>Rho:</label><input type="text" id="pRho" value="1000">
+<label title="dynamische Viskosität [Pa·s] – wird aus T berechnet (Excel-Formel)">Mue:</label><input type="text" id="pMue" value="0.343771">
+<label title="Dichte [kg/m³] – wird aus T berechnet (Excel-Formel)">Rho:</label><input type="text" id="pRho" value="1059.6012">
 <label>G:</label><input type="text" id="pG" value="9.81">
 <div class="sep"></div>
 <label>Krough:</label><input type="text" id="pKrough" value="0.05">
@@ -212,7 +218,12 @@ td.c.custom-color{color:#fff}
 </div>
 <div class="comp-right" id="compRight">
 <h4>Components</h4>
-<div class="comp-item"><span class="type">P1</span><input class="desc" value="8.4 m³/h, 19.6mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Upm1</span><input class="desc" value="EDP 206 bar (3000 psi), Qmax 8.4 m³/h, 19.6mm" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Ucv1</span><input class="desc" value="Überdruckventil 241 bar (Annahme)" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">P1</span><input class="desc" value="Excel-Referenz: 8.4 m³/h (140 l/min)" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Upt1a</span><input class="desc" value="PTU Motor: ηv 0.96, ηhm 0.92, R0 5" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Upt1b</span><input class="desc" value="PTU Pumpe: ηv 0.95, ηhm 0.92, Vb/Va 0.95" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">RZ40</span><input class="desc" value="Ersatzlast Yellow, ζ 50000" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">R01</span><input class="desc" value="0.5m, 34.4mm" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">R03</span><input class="desc" value="10m, 19.6mm" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">R04</span><input class="desc" value="8m, 28.2mm" onchange="applyCompDesc(this)"></div>
@@ -239,9 +250,9 @@ td.c.custom-color{color:#fff}
 <div style="overflow:auto;max-height:100%;">
 <table id="resultTable">
 <thead><tr>
-<th>Rnam</th><th>Node1</th><th>Node2</th><th>Rval</th><th>rd</th><th>DPoc</th><th>Qsc</th><th>L</th><th>D</th>
-<th>Q</th><th>ABS(Q)</th><th>U</th><th>Re_D</th><th>q</th><th>DPtot</th><th>Pow</th>
-<th>Nnam</th><th>Ptot</th><th>z</th><th>Ptot-rho*g*H</th><th>RHS</th>
+<th>Rnam</th><th>Node1</th><th>Node2</th><th>Rval<br><small>bar/(m³/h)</small></th><th>rd<br><small>bar/(m³/h)</small></th><th>DPoc<br><small>bar</small></th><th>Qsc<br><small>m³/h</small></th><th>L<br><small>m</small></th><th>D<br><small>m</small></th>
+<th>Q<br><small>m³/h</small></th><th>ABS(Q)<br><small>m³/h</small></th><th>ABS(U)<br><small>m/s</small></th><th>Re_D<br><small>-</small></th><th>q<br><small>bar</small></th><th>DPtot<br><small>bar</small></th><th>Pow<br><small>kW</small></th>
+<th style="background:#1a3a5a;">Nnam</th><th style="background:#1a3a5a;">Ptot<br><small>bar</small></th><th style="background:#1a3a5a;">z<br><small>m</small></th><th style="background:#1a3a5a;">Ptot-ρ·g·H<br><small>bar</small></th><th style="background:#1a3a5a;">RHS<br><small>m³/h</small></th>
 </tr></thead>
 <tbody id="resultBody">
 <tr><td colspan="21" style="color:#666;text-align:center;padding:12px;font-size:13px;">No results – press "Solve"</td></tr>
@@ -356,11 +367,6 @@ td.c.custom-color{color:#fff}
 <tbody id="isoMassBody"></tbody></table></div>
 </div>
 
-<div style="margin-top:16px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
-<h3 style="color:#6fc3f7;font-size:14px;">3 000 psi → 5 000 psi comparison (HP lines, simple estimate)</h3>
-<div style="color:#888;font-size:12px;margin-top:6px;">Constant hydraulic power Δp·Q = const → Q₅₀₀₀/Q₃₀₀₀ = 3/5. Constant velocity → d₅₀₀₀/d₃₀₀₀ = √(3/5) = 0.775. Wall from Barlow with σ<sub>allow</sub> derived from the recommended 3 000 psi tube (σ = p·d<sub>m</sub>/(2t)), then t₅₀₀₀ = p₅₀₀₀·d<sub>m,5000</sub>/(2σ).</div>
-<div id="iso5000" style="margin-top:8px;font-family:Consolas,monospace;font-size:12px;color:#aac;"></div>
-</div>
 
 <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;">
 <div style="flex:1;min-width:380px;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
@@ -406,6 +412,7 @@ td.c.custom-color{color:#fff}
 <button onclick="spPark()" style="padding:7px 16px;background:#0f3460;color:#fff;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;font-size:12px;">Park current grid</button>
 <button onclick="document.getElementById('spFile').click()" style="padding:7px 14px;background:#1a1a2e;color:#aac;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;font-size:12px;">Import file</button>
 <input type="file" id="spFile" accept=".json" style="display:none" onchange="spImport(event)">
+<button onclick="spLoadExcelReference()" title="Exaktes Schaltbild aus hydraulic_networks_v1_4.xlsm (Regressionstest)" style="padding:7px 14px;background:#1f3a1f;color:#9fe79f;border:1px solid #2f6a2f;border-radius:4px;cursor:pointer;font-size:12px;">Excel-Referenz v1.4 laden</button>
 </div>
 
 <div id="spMsg" style="margin-top:10px;font-size:12px;"></div>
@@ -469,8 +476,8 @@ const qrPresets = {
     Ucv: {label:'Ucv (Check V.)',  suffix:'05',   DPoc:0.1,  rd:0.01, D:19.6, dir:'^', lock:['Qsc']},
     P:   {label:'P (Pos.Displ.)',  suffix:'_6',   DPoc:-100, rd:100,  D:19.6, dir:'v', lock:['rd']},
     RL:  {label:'RL (Lin.Resist)', suffix:'7lin', DPoc:0.02, rd:2,    D:19.6, dir:'>', lock:['rd']},
-    Upt: {label:'Upt (PTU)',       eta:0.85, Rd:200, D:28.2, dir:'^', special:'ptu'},
-    Upm: {label:'Upm (Reg.Pump)',  Pset:200, Qmax:8.4, D:19.6, dir:'v', special:'upm'}
+    Upt: {label:'Upt (PTU)',       etaVa:0.96, etaHa:0.92, R0:5, Da:28.2, etaVb:0.95, etaHb:0.92, ratio:0.95, Db:28.2, dir:'v', dirB:'>', special:'ptu'},
+    Upm: {label:'Upm (Reg.Pump)',  Pset:206, Qmax:8.4, D:19.6, dir:'^', special:'upm'}
 };
 function qrBuildRadios(){
     const c=document.getElementById('qr-radios');if(!c)return;
@@ -491,7 +498,9 @@ function qrSelect(){
     const dirSel=`<select id="qr_dir" onchange="qrLive()" style="background:#1a1a2e;color:#ffdd44;border:1px solid #2a2a4a;border-radius:3px;padding:2px 6px;font-size:12px;width:50px;"><option value="^">^</option><option value=">">&gt;</option><option value="v">v</option><option value="<">&lt;</option></select>`;
     let rows;
     if(pr.special==='ptu'){
-        rows=[['η',qrInput('eta',pr.eta,'-',false),'-'],['Rd',qrInput('Rd',pr.Rd,'',false),'bar/(m³/h)'],['Diameter',qrInput('D',pr.D,'',false),'mm'],['Direction',dirSel,'-']];
+        const dirSelB=dirSel.replace('id="qr_dir"','id="qr_dirB"');
+        rows=[['<b style="color:#ff8844">Motor (a)</b>','',''],['η<sub>v,a</sub> volumetrisch',qrInput('etaVa',pr.etaVa,'',false),'-'],['η<sub>hm,a</sub> hydr.-mech.',qrInput('etaHa',pr.etaHa,'',false),'-'],['R<sub>0</sub> Losbrech/Leerlauf',qrInput('R0',pr.R0,'',false),'bar/(m³/h)'],['Diameter',qrInput('Da',pr.Da,'',false),'mm'],['Direction',dirSel,'-'],
+              ['<b style="color:#ff8844">Pumpe (b)</b>','',''],['η<sub>v,b</sub> volumetrisch',qrInput('etaVb',pr.etaVb,'',false),'-'],['η<sub>hm,b</sub> hydr.-mech.',qrInput('etaHb',pr.etaHb,'',false),'-'],['V<sub>b</sub>/V<sub>a</sub> Verdrängerverh.',qrInput('ratio',pr.ratio,'',false),'-'],['Diameter',qrInput('Db',pr.Db,'',false),'mm'],['Direction',dirSelB,'-']];
     } else if(pr.special==='upm'){
         rows=[['Pset',qrInput('Pset',pr.Pset,'',false),'bar'],['Qmax',qrInput('Qmax',pr.Qmax,'',false),'m³/h'],['Diameter',qrInput('D',pr.D,'',false),'mm'],['Direction',dirSel,'-']];
     } else {
@@ -507,22 +516,26 @@ function qrSelect(){
     }
     tbody.innerHTML=rows.map(r=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${r[0]}</td><td style="text-align:right;padding:4px;">${r[1]}</td><td style="padding:4px;color:#888;">${r[2]}</td></tr>`).join('');
     const ds=document.getElementById('qr_dir');if(ds)ds.value=pr.dir;
+    const dsb=document.getElementById('qr_dirB');if(dsb)dsb.value=pr.dirB||'<';
     qrLive();
 }
-function qrNum(id,def){const el=document.getElementById('qr_'+id);return el?(parseFloat(el.value)||def):def}
+function qrNum(id,def){const el=document.getElementById("qr_"+id);if(!el)return def;const v=parseFloat(String(el.value).replace(",","."));return Number.isFinite(v)?v:def}
 function qrStr(id,def){const el=document.getElementById('qr_'+id);return el?el.value:def}
 function qrLive(){
     const t=qrGetType(), pr=qrPresets[t];
     const dir=qrStr('dir',pr.dir), D=qrNum('D',pr.D);
     if(pr.special==='ptu'){
-        const eta=qrNum('eta',pr.eta), Rd=qrNum('Rd',pr.Rd);
-        document.getElementById('qr-syntax').textContent=`Upt1a ${eta} ${Rd} ${D} ${dir}   |   Upt1b ${D}`;
-        document.getElementById('qr-points').innerHTML=`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;" colspan="2">Motor ΔP_a = Rd·Q_a + ΔP_b/η</td><td style="text-align:right;padding:4px;color:#ffdd44;">Q_a</td><td style="text-align:right;padding:4px;color:#ffdd44;">ΔP_a</td></tr><tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;" colspan="2">Pump Q_b = Q_a (kinematic)</td><td style="text-align:right;padding:4px;color:#ffdd44;">Q_b</td><td style="text-align:right;padding:4px;color:#ffdd44;">ΔP_b</td></tr>`;
-        qrDrawPtuChart(eta,Rd);qrDrawCircuit(t,{eta,Rd});return;
+        const eVa=qrNum('etaVa',pr.etaVa),eHa=qrNum('etaHa',pr.etaHa),R0=qrNum('R0',pr.R0),Da=qrNum('Da',pr.Da);
+        const eVb=qrNum('etaVb',pr.etaVb),eHb=qrNum('etaHb',pr.etaHb),ratio=qrNum('ratio',pr.ratio),Db=qrNum('Db',pr.Db),dirB=qrStr('dirB',pr.dirB||'<');
+        const etaTot=eVa*eHa*eVb*eHb, qRatio=ratio*eVa*eVb, pGain=eHa*eHb/ratio;
+        qrSetSyntax([`Upt1a ${eVa} ${eHa} ${R0} ${Da} ${dir}`,`Upt1b ${eVb} ${eHb} ${ratio} ${Db} ${dirB}`]);
+        const row=(a,b,c)=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;" colspan="2">${a}</td><td style="text-align:right;padding:4px;color:#ffdd44;" colspan="2">${b} ${c||''}</td></tr>`;
+        document.getElementById('qr-points').innerHTML=row('Gesamtwirkungsgrad η = η<sub>v,a</sub>η<sub>hm,a</sub>η<sub>v,b</sub>η<sub>hm,b</sub>',etaTot.toFixed(3))+row('Volumenstrom Q<sub>b</sub>/Q<sub>a</sub> = (V<sub>b</sub>/V<sub>a</sub>)·η<sub>v,a</sub>·η<sub>v,b</sub>',qRatio.toFixed(3))+row('Druckübersetzung ΔP<sub>b</sub>/ΔP<sub>a,eff</sub> = η<sub>hm,a</sub>η<sub>hm,b</sub>/(V<sub>b</sub>/V<sub>a</sub>)',pGain.toFixed(3))+row('Beispiel: ΔP<sub>a</sub>=200 bar, Q<sub>a</sub>=2 m³/h → ΔP<sub>b</sub>',(pGain*(200-R0*2)).toFixed(1),'bar');
+        qrDrawPtuChart(etaTot,R0,pGain,qRatio);qrDrawCircuit(t,{eta:etaTot,Rd:R0});return;
     }
     if(pr.special==='upm'){
         const Pset=qrNum('Pset',pr.Pset), Qmax=qrNum('Qmax',pr.Qmax);
-        document.getElementById('qr-syntax').textContent=`Upm1 ${Pset} ${Qmax} ${D} ${dir}`;
+        qrSetSyntax([`Upm1 ${Pset} ${Qmax} ${D} ${dir}`]);
         document.getElementById('qr-points').innerHTML=[['1','Pset (regulated)',Qmax,Pset],['2','max load',0,Pset],['3','no load',Qmax,0]].map(r=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${r[0]}</td><td style="padding:4px;">${r[1]}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${r[2]}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${r[3]}</td></tr>`).join('');
         qrDrawUpmChart(Pset,Qmax);qrDrawCircuit(t,{Pset,Qmax});return;
     }
@@ -532,7 +545,7 @@ function qrLive(){
     if(pr.lock.includes('rd')){ Qsc=qrNum('Qsc',-pr.DPoc/pr.rd); rd=Qsc!==0?-DPoc/Qsc:0.001; const e=document.getElementById('qr_rd'); if(e)e.value=rd.toFixed(4).replace(/\.?0+$/,''); }
     else { rd=qrNum('rd',pr.rd)||0.001; Qsc=-DPoc/rd; const e=document.getElementById('qr_Qsc'); if(e)e.value=Qsc.toFixed(4).replace(/\.?0+$/,''); }
     const name=(t==='P'?'U':t)+suffix;
-    document.getElementById('qr-syntax').textContent=`${name} ${DPoc} ${Qsc.toFixed(2).replace(/\.?0+$/,'')} ${D} ${dir}`;
+    qrSetSyntax([`${name} ${DPoc} ${Qsc.toFixed(2).replace(/\.?0+$/,'')} ${D} ${dir}`]);
     const isUcv=t==='Ucv';
     const Qr=1.49;
     const f=q=>DPoc+rd*q;
@@ -586,17 +599,31 @@ function qrDrawUpmChart(Pset,Qmax){
     ctx.fillStyle='#1e3a8a';ctx.beginPath();ctx.arc(tx(Qmax),ty(Pset),4,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#aac';ctx.font='10px Consolas';ctx.textAlign='left';ctx.fillText('Pset',tx(0.2),ty(Pset)-6);ctx.fillText('Qmax',tx(Qmax)+6,ty(Pset/2));
 }
-function qrDrawPtuChart(eta,Rd){
+function qrSetSyntax(lines){
+    const box=document.getElementById('qr-syntax');if(!box)return;
+    box.innerHTML=lines.map((s,i)=>`<div style="display:flex;align-items:center;gap:8px;margin:2px 0;"><code style="flex:1;">${s}</code><button onclick="qrApply(${i})" title="In die markierte Zelle im Comp-Reiter schreiben" style="background:#0f3460;color:#fff;border:1px solid #2a4a7a;border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;">→ Zelle</button></div>`).join('')+`<div id="qr-msg" style="font-size:11px;color:#888;margin-top:4px;">Zuerst im Comp-Reiter eine Zelle markieren, dann „→ Zelle“.</div>`;
+    box.dataset.lines=JSON.stringify(lines);
+}
+function qrApply(i){
+    const box=document.getElementById('qr-syntax');const lines=JSON.parse(box.dataset.lines||'[]');const text=lines[i];if(!text)return;
+    D[k(sr,sc)]=text;rc(sr,sc);updateUI();saveToLocalStorage();
+    const m=document.getElementById('qr-msg');if(m){m.textContent=`„${text}“ → Zelle ${cn(sr,sc)} übernommen`;m.style.color='#4caf50';}
+}
+function qrDrawPtuChart(etaTot,R0,pGain,qRatio){
     const c=document.getElementById('qr-canvas');if(!c)return;
     const ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
-    const pad=50,qMin=0,qMax=2,dpMin=0,dpMax=Rd*2*1.1;
+    const pad=50,qMin=0,qMax=4,dpMin=0,dpMax=220;
     const tx=q=>pad+(q-qMin)/(qMax-qMin)*(W-2*pad), ty=dp=>H-pad-(dp-dpMin)/(dpMax-dpMin)*(H-2*pad);
     qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty);
-    ctx.strokeStyle='#e94560';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(tx(0),ty(0));ctx.lineTo(tx(2),ty(Rd*2));ctx.stroke();
-    ctx.strokeStyle='#6fc3f7';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(tx(0),ty(0));ctx.lineTo(tx(2),ty(eta*Rd*2));ctx.stroke();
+    const dpa=200;
+    ctx.strokeStyle='#e94560';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(tx(0),ty(dpa));ctx.lineTo(tx(qMax),ty(dpa));ctx.stroke();
+    ctx.strokeStyle='#6fc3f7';ctx.lineWidth=2.5;ctx.beginPath();
+    for(let i=0;i<=40;i++){const qa=qMax*i/40;const dpb=Math.max(0,pGain*(dpa-R0*qa));const qb=qa*qRatio;if(i===0)ctx.moveTo(tx(qb),ty(dpb));else ctx.lineTo(tx(qb),ty(dpb));}
+    ctx.stroke();
     ctx.font='10px Consolas';ctx.textAlign='left';
-    ctx.fillStyle='#e94560';ctx.fillText('Motor: ΔP_a = Rd·Q',tx(1.05),ty(Rd*1.05)-8);
-    ctx.fillStyle='#6fc3f7';ctx.fillText('Pump: ΔP_b = η·Rd·Q',tx(1.05),ty(eta*Rd*1.05)+14);
+    ctx.fillStyle='#e94560';ctx.fillText('Motor-Eingang ΔP_a = 200 bar',tx(0.1),ty(dpa)-8);
+    ctx.fillStyle='#6fc3f7';ctx.fillText('Pumpe: ΔP_b über Q_b (mit Verlusten)',tx(0.1),ty(pGain*dpa)+16);
+    ctx.fillStyle='#ffdd44';ctx.fillText('η_ges = '+etaTot.toFixed(3),tx(2.6),ty(40));
 }
 function qrDrawCircuit(type,p){
     const svg=document.getElementById('qr-circuit');if(!svg)return;
@@ -801,14 +828,7 @@ function isoUpdate(){
     +`<tr style="background:#16213e;font-weight:bold;"><td style="padding:4px 6px;">Σ</td><td></td><td style="padding:4px 6px;text-align:right;">${(agg.HP.L+agg.LP.L).toFixed(1)}</td><td style="padding:4px 6px;text-align:right;">${(agg.HP.t+agg.LP.t).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;">${(agg.HP.f+agg.LP.f).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${(agg.HP.tr+agg.LP.tr).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;color:#ffdd44;">${(agg.HP.fr+agg.LP.fr).toFixed(2)}</td><td style="padding:4px 6px;text-align:right;">${((agg.HP.tr+agg.LP.tr)-(agg.HP.t+agg.LP.t)).toFixed(2)}</td></tr>`;
 
 
-  let m3=0,m5=0,rows=[];
-  for(const r of hpRows){ const p3=pHP, p5=pHP*5/3;
-    const d3=r.rec.id, dm3=(r.rec.od+r.rec.id)/2, sig=p3*dm3/(2*r.rec.wt);
-    const d5=d3*Math.sqrt(3/5); const t5=p5*(d5)/(2*sig-p5);
-    const od5=d5+2*t5;
-    const M3=Math.PI/4*((r.rec.od/1000)**2-(d3/1000)**2)*r.L*r.mat.rho, M5=Math.PI/4*((od5/1000)**2-(d5/1000)**2)*r.L*r.mat.rho;
-    m3+=M3; m5+=M5; rows.push(`${r.name.padEnd(6)} d₃₀₀₀ ${d3.toFixed(1).padStart(5)} t ${r.rec.wt.toFixed(2)} → d₅₀₀₀ ${d5.toFixed(1).padStart(5)} t ${t5.toFixed(2)}  ${M3.toFixed(3)} → ${M5.toFixed(3)} kg`); }
-  document.getElementById('iso5000').innerHTML = hpRows.length ? `<div style="white-space:pre;">${rows.join('\n')}</div><div style="margin-top:8px;color:#ffdd44;font-weight:bold;">HP tube mass (recommended sizing): 3 000 psi ${m3.toFixed(2)} kg → 5 000 psi ${m5.toFixed(2)} kg (${((m5-m3)/m3*100).toFixed(0)} %)</div><div style="color:#888;font-size:11px;margin-top:4px;">Further arguments for 5 000 psi: smaller actuators and pumps, less fluid, thinner lines fit in thin wings; against: higher leakage/fatigue stress, seal life, more expensive components.</div>` : '<span style="color:#888;">No HP pipes.</span>';
+
 
 
   const cb=document.getElementById('isoConsBody'), ch=document.getElementById('isoConsHint');
@@ -960,7 +980,7 @@ function redrawPipesForNode(name){
     window.pipeSegments.forEach(seg=>{
         if(seg.n1===name||seg.n2===name){
             const a=nodePositions[seg.n1],b=nodePositions[seg.n2];
-            if(a&&b){seg.line.geometry.setFromPoints([nodePoint3D(a),nodePoint3D(b)]);seg.line.geometry.attributes.position.needsUpdate=true;}
+            if(a&&b){const g=pipeTubeGeometry(pipePoints3D(seg.n1,seg.n2),seg.radius||0.007);seg.line.geometry.dispose();seg.line.geometry=g;}
         }
     });
 }
@@ -1157,7 +1177,8 @@ for i in range(net.Ncomp):
        'qdyn': net.OutQdyn[i],
        'dp': net.OutDP[i],
        'pow': net.OutPow[i],
-       'orient': net.OutDiri[i]
+       'orient': net.OutDiri[i],
+       'rval': (net.OutDP[i] / net.OutQ[i]) if abs(net.OutQ[i]) > 1e-12 else 0.0
    })
 
 nodes = []
@@ -1166,7 +1187,8 @@ for i in range(net.Nnode):
        'id': net.OutNnam[i],
        'ptot': net.OutX[i],
        'z': net.OutZ[i],
-       'pstat': net.OutPtmP[i]
+       'pstat': net.OutPtmP[i],
+       'rhs': float(net.B[i + 1]) if hasattr(net, 'B') and len(net.B) > i + 1 else 0.0
    })
 
 json.dumps({
@@ -1215,6 +1237,25 @@ const mat = new THREE.SpriteMaterial({map: tex, transparent: true, depthTest: fa
 const sprite = new THREE.Sprite(mat);
 sprite.scale.set(0.24, 0.09, 1);
 return sprite;
+}
+
+
+function routeViaFor(n1,n2){
+const e=(networkJsonComponents||[]).find(c=>(c.from===n1&&c.to===n2)||(c.from===n2&&c.to===n1));
+if(!e||!Array.isArray(e.via)||!e.via.length)return[];
+return e.from===n1?e.via:e.via.slice().reverse();
+}
+function pipePoints3D(n1,n2){
+const a=nodePositions[n1],b=nodePositions[n2];
+const pts=[nodePoint3D(a)];
+routeViaFor(n1,n2).forEach(v=>pts.push(nodePoint3D({x:v[0],y:v[1],z:v[2]})));
+pts.push(nodePoint3D(b));
+return pts;
+}
+function pipeTubeGeometry(points,radius){
+const path=new THREE.CurvePath();
+for(let i=0;i<points.length-1;i++)path.add(new THREE.LineCurve3(points[i],points[i+1]));
+return new THREE.TubeGeometry(path,Math.max(6,(points.length-1)*6),radius,8,false);
 }
 
 function drawNetwork(data) {
@@ -1284,15 +1325,16 @@ skippedComponents.push(c.name + ' (' + c.n1 + ' -> ' + c.n2 + ')');
 return;
 }
 
-const p1 = nodePoint3D(a);
-const p2 = nodePoint3D(b);
-const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
 const kind = String(c.type || '').toUpperCase();
-const color = kind === 'P' ? 0xe94560 : (kind.startsWith('U') ? 0xff8844 : 0x4fc3f7);
-const line = new THREE.Line(geo, new THREE.LineBasicMaterial({color, transparent:true, opacity:0.85}));
-line.userData = {kind: 'component', name: c.name, n1: c.n1, n2: c.n2};
+const dmm = Number(c.d) * 1000;
+const isReturn = kind === 'R' && dmm > 30;
+const color = (kind === 'P' || kind === 'UPM') ? 0xe94560 : (kind === 'UPT' ? 0xc070ff : (kind.startsWith('U') ? 0xff8844 : (isReturn ? 0x3a78d8 : 0x4fc3f7)));
+const radius = kind.startsWith('U') || kind === 'P' ? 0.011 : 0.007;
+const line = new THREE.Mesh(pipeTubeGeometry(pipePoints3D(c.n1, c.n2), radius), new THREE.MeshBasicMaterial({color}));
+line.renderOrder = 2;
+line.userData = {kind: 'component', name: c.name, n1: c.n1, n2: c.n2, radius};
 pipeGroup.add(line);
-window.pipeSegments.push({line:line, n1:c.n1, n2:c.n2});
+window.pipeSegments.push({line:line, n1:c.n1, n2:c.n2, radius});
 renderedComponents++;
 });
 
@@ -1311,65 +1353,70 @@ console.warn('3D hints', {missingNodes, skippedComponents});
 }
 }
 
-function toggleRlF(){
-rlfState = !rlfState;
-const btn = document.getElementById('rlFToggle');
-const val = rlfState ? '1' : '999';
-btn.textContent = rlfState ? 'ON' : 'OFF';
-btn.className = 'toggle-btn ' + (rlfState ? 'on' : 'off');
-
-let found = false;
+function applyRlF(showAlert){
+const val=String((rlfState?document.getElementById('tglRlOn'):document.getElementById('tglRlOff'))?.value||(rlfState?'1':'999')).trim();
+const btn=document.getElementById('rlFToggle');
+btn.textContent=rlfState?'ON':'OFF';
+btn.className='toggle-btn '+(rlfState?'on':'off');
+let found=false;
 for(let ky in D){
-let v = D[ky].trim();
-if(v.startsWith('Rl_F')){
-let [r,c] = ky.split(',').map(Number);
-let cell = getCell(r, c);
-if(cell){
-let parts = v.split(' ');
-if(parts.length >= 3){
-parts[1] = val;
-let newText = parts.join(' ');
-cell.textContent = newText;
-D[ky] = newText;
-updateCellStyle(cell, newText);
-saveToLocalStorage();
-updateUI();
-found = true;
-break;
+let v=D[ky].trim();
+if(v.toUpperCase().startsWith('RL_F')){
+let [r,c]=ky.split(',').map(Number);
+let parts=v.split(/\s+/);
+if(parts.length>=3){
+parts[1]=val;
+const newText=parts.join(' ');
+D[ky]=newText;
+const cell=getCell(r,c);
+if(cell){cell.textContent=newText;updateCellStyle(cell,newText);}
+found=true;
 }
 }
 }
+if(found){saveToLocalStorage();updateUI();}
+else if(showAlert){alert('No cell with "Rl_F" found! Please write "Rl_F 1 999 ^" in a cell.');}
+localStorage.setItem('boheme_rlf',rlfState?'1':'999');
 }
-if(!found){
-alert('No cell with "Rl_F" found! Please write "Rl_F 1 999 ^" in a cell.');
-}
-localStorage.setItem('boheme_rlf', rlfState ? '1' : '999');
+function toggleRlF(){
+rlfState=!rlfState;
+applyRlF(true);
 }
 
+const TOGGLE_TO_TOOLBAR={itLambda:'pLambdaU',itKReD:'pKRelt',grav:'pG',krough:'pKrough',redcrit:'pRecrit'};
+const TOGGLE_TO_CHECK={itProtect:'pProtect',itZanke:'pZanke'};
+const TOGGLE_KEYS=['tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff','itLambda','itDUcrit','itNiter','itKReD','itProtect','itZanke','fluidT','pamb','grav','krough','redcrit'];
+function fluidFromT(T){return{rho:1025*Math.exp(-0.00083*T),mue:0.0000517*Math.exp(1084/(T+273.15-110))};}
+function applyFluidT(){const el=document.getElementById('fluidT');if(!el)return;const T=Number(el.value);if(!Number.isFinite(T))return;const f=fluidFromT(T);document.getElementById('fluidRho').value=f.rho.toFixed(3);document.getElementById('fluidMue').value=f.mue.toPrecision(5);const r=document.getElementById('pRho'),m=document.getElementById('pMue');if(r)r.value=f.rho.toFixed(4);if(m)m.value=f.mue.toPrecision(6);}
+function isTrueText(v){return /^(wahr|true|1|ja|yes|on)$/i.test(String(v).trim());}
+function styleBoolToggle(el){const on=isTrueText(el.value);el.value=on?'WAHR':'FALSCH';el.classList.toggle('on',on);el.classList.toggle('off',!on);}
 function applyToggle(el){
-let val = el.value;
-let id = el.id;
-const cellMap = {
-'tglRlOn': [2,4], 'tglRlOff': [2,5], 'tglRkOn1': [2,6],
-'tglRkOn54': [2,7], 'tglRkOff': [2,8],
-'itLambda': [3,4], 'itDUcrit': [3,5], 'itNiter': [3,6],
-'itKReD': [3,7], 'itProtect': [3,8], 'itZanke': [3,9],
-'nodeS': [4,4], 'nodeH': [4,5], 'pamb': [4,6],
-'grav': [4,7], 'krough': [4,8], 'redcrit': [4,9]
-};
-if(cellMap[id]){
-let r = cellMap[id][0];
-let c = cellMap[id][1];
-let cell = getCell(r, c);
-if(cell){
-cell.textContent = val;
-D[k(r,c)] = val;
-updateCellStyle(cell, val);
-saveToLocalStorage();
-updateUI();
+  const id=el.id;
+  let val=String(el.value).trim();
+  if(TOGGLE_TO_CHECK[id]){styleBoolToggle(el);val=el.value;const cb=document.getElementById(TOGGLE_TO_CHECK[id]);if(cb)cb.checked=isTrueText(val);}
+  else if(val!==''&&!Number.isFinite(Number(val))){el.style.borderColor='#e94560';el.title='Bitte eine Zahl eingeben';return;}
+  el.style.borderColor='';el.title='';
+  if(TOGGLE_TO_TOOLBAR[id]){const t=document.getElementById(TOGGLE_TO_TOOLBAR[id]);if(t)t.value=val;}
+  if(id==='tglRlOn'||id==='tglRlOff')applyRlF(false);
+  if(id==='fluidT')applyFluidT();
+  localStorage.setItem('boheme_toggle_'+id,val);
+  el.animate([{background:'#1f3a1f'},{background:'transparent'}],{duration:500});
 }
+function syncTogglesToToolbar(){
+  applyFluidT();
+  Object.keys(TOGGLE_TO_TOOLBAR).forEach(id=>{const s=document.getElementById(id),t=document.getElementById(TOGGLE_TO_TOOLBAR[id]);if(s&&t)t.value=s.value;});
+  Object.keys(TOGGLE_TO_CHECK).forEach(id=>{const s=document.getElementById(id),t=document.getElementById(TOGGLE_TO_CHECK[id]);if(s&&t){styleBoolToggle(s);t.checked=isTrueText(s.value);}});
 }
-localStorage.setItem('boheme_toggle_' + id, val);
+function bindToolbarToToggles(){
+  Object.keys(TOGGLE_TO_TOOLBAR).forEach(id=>{const t=document.getElementById(TOGGLE_TO_TOOLBAR[id]);if(t)t.addEventListener('change',()=>{const s=document.getElementById(id);if(s){s.value=t.value;localStorage.setItem('boheme_toggle_'+id,t.value);}});});
+  Object.keys(TOGGLE_TO_CHECK).forEach(id=>{const t=document.getElementById(TOGGLE_TO_CHECK[id]);if(t)t.addEventListener('change',()=>{const s=document.getElementById(id);if(s){s.value=t.checked?'WAHR':'FALSCH';styleBoolToggle(s);localStorage.setItem('boheme_toggle_'+id,s.value);}});});
+}
+function cleanToggleJunk(){
+  let removed=0;
+  for(let r=2;r<=4;r++)for(let c=4;c<=9;c++){const key=k(r,c),v=(D[key]||'').trim();
+    if(v&&(/^[-+]?[0-9.]+(e[-+]?[0-9]+)?$/i.test(v)||/^(wahr|falsch|true|false)$/i.test(v))){delete D[key];removed++;}}
+  if(removed)saveToLocalStorage();
+  return removed;
 }
 
 function applyCompDesc(el){
@@ -1533,6 +1580,7 @@ async function loadDefaultBohemeData(){
 
         Object.keys(D).forEach(key => delete D[key]);
         Object.assign(D, incomingD);
+        cleanToggleJunk();
 
         Object.keys(customColors).forEach(key => delete customColors[key]);
         if(parsed.customColors && typeof parsed.customColors === 'object'){
@@ -1558,6 +1606,9 @@ async function loadDefaultBohemeData(){
 function init(){
 
 loadFromLocalStorage();
+cleanToggleJunk();
+syncTogglesToToolbar();
+bindToolbarToToggles();
     networkLoadPromise = loadNodePositions();
 
 const savedRlf = localStorage.getItem('boheme_rlf');
@@ -1615,7 +1666,11 @@ function mv(dr,dc){let nr=sr+dr,nc=sc+dc;if(nr>=1&&nr<=R&&nc>=1&&nc<=C)sel(nr,nc
 function handleFI(e){if(e.key==='Enter'){cf(true);e.preventDefault()}if(e.key==='Tab'){cf(false);mv(0,1);e.preventDefault()}if(e.key==='Escape')xf()}
 
 document.addEventListener('keydown',e=>{
-if(document.activeElement===document.getElementById('fi'))return;
+const ae=document.activeElement;
+if(ae===document.getElementById('fi'))return;
+if(ae&&(ae.tagName==='INPUT'||ae.tagName==='SELECT'||ae.tagName==='TEXTAREA'||ae.isContentEditable))return;
+const compTab=document.getElementById('tab-comp');
+if(!compTab||!compTab.classList.contains('active'))return;
 if(e.key==='ArrowUp'){mv(-1,0);e.preventDefault()}
 if(e.key==='ArrowDown'){mv(1,0);e.preventDefault()}
 if(e.key==='ArrowLeft'){mv(0,-1);e.preventDefault()}
@@ -1644,7 +1699,7 @@ const parsed = JSON.parse(data);
 Object.assign(D, parsed.D || {});
 Object.assign(customColors, parsed.customColors || {});
 }
-const toggleKeys = ['tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff','itLambda','itDUcrit','itNiter','itKReD','itProtect','itZanke','nodeS','nodeH','pamb','grav','krough','redcrit'];
+const toggleKeys = ['tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff','itLambda','itDUcrit','itNiter','itKReD','itProtect','itZanke','fluidT','pamb','grav','krough','redcrit'];
 toggleKeys.forEach(id => {
 const el = document.getElementById(id);
 if(el){
@@ -1725,50 +1780,35 @@ return Number.isFinite(n) ? n.toFixed(digits) : '—';
 }
 
 function updateResultTable(data){
-const tbody = document.getElementById('resultBody');
-tbody.innerHTML = '';
-
-if(!data || !Array.isArray(data.components) || data.components.length === 0){
+// Same columns, order and conventions as sheet "Comp" of hydraulic_networks_v1_4.xlsm (BM:CI)
+const tbody=document.getElementById('resultBody');
+tbody.innerHTML='';
+if(!data||!Array.isArray(data.components)||data.components.length===0){
 tbody.innerHTML='<tr><td colspan="21" style="color:#666;text-align:center;padding:12px;font-size:13px;">No results</td></tr>';
 return;
 }
-
-const components = data.components.slice().sort((a,b) => (a.name||'').localeCompare(b.name||''));
-const nodes = Array.isArray(data.nodes) ? data.nodes : [];
-
-components.forEach((c, idx) => {
-const tr = document.createElement('tr');
-const node = nodes[idx] || null;
-const q = Number(c.q);
-const dp = Number(c.dp);
-const qClass = Number.isFinite(q) ? (q >= 0 ? 'q-pos' : 'q-neg') : 'val';
-const dpClass = Number.isFinite(dp) ? (Math.abs(dp)>100?'err':Math.abs(dp)>10?'warn':'val') : 'val';
-
-tr.innerHTML = `
-           <td style="color:#6fc3f7;font-size:10px;">${c.name || '?'}</td>
-           <td>${c.n1 || '?'}</td>
-           <td>${c.n2 || '?'}</td>
-           <td class="val">—</td>
-           <td class="val">${fmtNumber(c.rd,3)}</td>
-           <td class="val">${fmtNumber(c.dpoc,3)}</td>
-           <td class="val">${fmtNumber(c.qsc,3)}</td>
-           <td class="val">${fmtNumber(c.l,2)}</td>
-           <td class="val">${fmtNumber(c.d,4)}</td>
-           <td class="${qClass}">${fmtNumber(c.q,3)}</td>
-           <td class="val">${fmtNumber(c.absQ,3)}</td>
-           <td class="val">${fmtNumber(c.u,3)}</td>
-           <td class="val">${fmtNumber(c.reD,0)}</td>
-           <td class="val">${fmtNumber(c.qdyn,3)}</td>
-           <td class="${dpClass}">${fmtNumber(c.dp,3)}</td>
-           <td class="val">${fmtNumber(c.pow,3)}</td>
-           <td class="val">${node ? node.id : '—'}</td>
-           <td class="val">${node ? fmtNumber(node.ptot,3) : '—'}</td>
-           <td class="val">${node ? fmtNumber(node.z,2) : '—'}</td>
-           <td class="val">${node ? fmtNumber(node.pstat,3) : '—'}</td>
-           <td class="val">—</td>
-       `;
-tbody.appendChild(tr);
-});
+const components=data.components;                 // netlist order = Excel order
+const nodes=Array.isArray(data.nodes)?data.nodes:[];
+const rows=Math.max(components.length,nodes.length);
+for(let i=0;i<rows;i++){
+const c=components[i]||null, node=nodes[i]||null;
+let cells='';
+if(c){
+const kind=String(c.type||'').toUpperCase();
+const rdShown=(kind.startsWith('U')||kind==='P')?c.rd:0;   // Excel lists rd only for U/P components
+const q=Number(c.q);
+const qClass=Number.isFinite(q)?(q>=0?'q-pos':'q-neg'):'val';
+cells+=`<td style="color:#6fc3f7;font-size:10px;">${c.name||'?'}</td><td>${c.n1||'?'}</td><td>${c.n2||'?'}</td>
+<td class="val">${fmtNumber(c.rval,4)}</td><td class="val">${fmtNumber(rdShown,3)}</td><td class="val">${fmtNumber(c.dpoc,3)}</td><td class="val">${fmtNumber(c.qsc,3)}</td>
+<td class="val">${fmtNumber(c.l,2)}</td><td class="val">${fmtNumber(c.d,4)}</td>
+<td class="${qClass}">${fmtNumber(c.q,4)}</td><td class="val">${fmtNumber(c.absQ,4)}</td><td class="val">${fmtNumber(c.u,4)}</td><td class="val">${fmtNumber(c.reD,1)}</td>
+<td class="val">${fmtNumber(c.qdyn,6)}</td><td class="val">${fmtNumber(c.dp,4)}</td><td class="val">${fmtNumber(c.pow,4)}</td>`;
+}else{cells+='<td></td>'.repeat(16);}
+if(node){
+cells+=`<td style="color:#ffdd44;">${node.id}</td><td class="val">${fmtNumber(node.ptot,4)}</td><td class="val">${fmtNumber(node.z,2)}</td><td class="val">${fmtNumber(node.pstat,4)}</td><td class="val">${fmtNumber(node.rhs,3)}</td>`;
+}else{cells+='<td></td>'.repeat(5);}
+const tr=document.createElement('tr');tr.innerHTML=cells;tbody.appendChild(tr);
+}
 }
 
 function insertComponent(){let type=prompt('Component type (R, P, U, RZ, RK, RL, UCP, UPR, UCV):','R');if(!type)return;let params=prompt('Parameters (e.g. 10 0.05):','10 0.05');if(params===null)return;let orient=prompt('Orientation (^, >, v, <):','>');if(orient===null)return;let text=type+' '+params+' '+orient;let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
@@ -1947,14 +1987,15 @@ loadAircraft();
 
 pipeGroup=new THREE.Group();
 scene.add(pipeGroup);
+if(latestNetworkData){try{drawNetwork(latestNetworkData);}catch(e){console.warn(e);}}
 
 document.getElementById('toggleHull').addEventListener('click',()=>{
 hullVisible=!hullVisible;
-let op=hullVisible?0.9:0.05;
+let op=hullVisible?0.9:0.10;
 document.getElementById('toggleHull').textContent=hullVisible?'Hull':'Transparent';
 if(aircraftGroup){
-aircraftGroup.children.forEach(ch=>{
-if(ch.material) ch.material.opacity=op;
+aircraftGroup.traverse(ch=>{
+if(ch.material){ch.material.transparent=true;ch.material.opacity=op;ch.material.depthWrite=hullVisible;ch.material.needsUpdate=true;}
 });
 }
 });
@@ -2015,6 +2056,14 @@ renderer.setSize(rect.width,rect.height,false);
 }
 
 const SP_KEY='boheme_parking';
+const EXCEL_REFERENCE_V14={"11,3": "N04", "10,3": "R05 5 28.2", "9,3": "N05", "8,3": "R06 7 28.2", "7,3": "N06", "5,3": "N07", "5,4": "UAL -5 0.01 999", "5,5": "N08", "6,5": "R08 3 34.4", "7,5": "N09", "8,5": "R09 7 34.4", "9,5": "N10", "10,5": "R10 5 34.4", "11,5": "N36", "7,4": "U5L -10 0.01 999", "9,4": "U1L -10 0.01 999", "11,8": "N04", "10,8": "R11 18 28.2", "9,8": "I", "8,8": "N11", "7,8": "I", "6,8": "I", "5,8": "R15 2 28.2", "5,9": "-", "5,10": "N15", "4,10": "I", "5,11": "-", "3,10": "R16 2 28.2", "3,11": "N16", "3,12": "URU -5 0.01 999", "3,13": "N17", "3,14": "R17 2 34.4", "4,14": "I", "5,14": "N18", "5,13": "-", "5,12": "UYD -5 0.01 999", "5,15": "-", "5,16": "R18 2 34.4", "6,16": "I", "7,16": "I", "8,16": "N22", "9,16": "I", "10,16": "R22 18 34.4", "11,16": "N36", "8,9": "R12 2 28.2", "8,10": "N12", "7,10": "R14 2 28.2", "7,11": "N14", "9,10": "R13 2 28.2", "9,11": "N13", "7,12": "ULE -5 0.01 999", "7,13": "N19", "9,12": "UTS -2.5 0.01 999", "9,13": "N20", "7,14": "R20 2 34.4", "8,14": "N21", "9,14": "R21 2 34.4", "8,15": "R19 2 34.4", "11,18": "N04", "10,18": "R30 5 28.2", "9,18": "N30", "8,18": "R31 7 28.2", "7,18": "N31", "6,18": "R32 3 28.2", "5,18": "N32", "5,19": "UAR -5 0.01 999", "5,20": "N33", "6,20": "R33 3 34.4", "7,20": "N34", "7,19": "U5R -10 0.01 999", "8,20": "R34 7 34.4", "9,19": "U1R -10 0.01 999", "9,20": "N35", "10,20": "R35 5 34.4", "11,20": "N36", "17,6": "N02", "17,7": "R03 0.5 28.2", "17,8": "N03", "18,6": "P1 8.4 999 ^", "19,6": "N01", "18,8": "Ucv1 205 0.1 999 v", "19,8": "S 35", "19,7": "R01 0.5 34.4", "17,9": "R04 8 28.2", "19,9": "R29 8 34.4", "17,10": "N37", "17,11": "Rz04 100 28.2", "19,12": "N36", "19,11": "Rz29 100 34.4", "19,10": "N38", "6,3": "R07 3 28.2", "17,12": "N04", "19,14": "N04", "18,14": "Rl_F 1 999 ^", "18,15": "N29 ", "18,16": "R23 2 28.2", "18,17": "-", "18,18": "N23 ", "17,18": "R24 1 28.2", "17,19": "N24 ", "17,20": "UFL -2 0.01 999", "17,21": "N25", "17,22": "R25 1 34.4", "19,18": "R26 3 28.2", "19,19": "N26 ", "19,20": "USL -3.3 0.01 999", "19,21": "N27 ", "19,22": "R27 3 34.4", "18,22": "N28 ", "18,23": "-", "18,24": "R28 2 34.4", "19,24": "I", "20,24": "N36 ", "6,24": "I"};
+function spLoadExcelReference(){
+  if(!confirm('Excel-Referenz (hydraulic_networks_v1_4.xlsm, P1 + Ucv1, ohne Upm/PTU) laden? Das aktuelle Schaltbild wird ersetzt – vorher ggf. parken.'))return;
+  Object.keys(D).forEach(k=>delete D[k]);Object.assign(D,EXCEL_REFERENCE_V14);
+  const t=document.getElementById('fluidT');if(t){t.value='-40';applyToggle(t);}
+  renderGridData();saveToLocalStorage();updateUI();
+  spSay('Excel-Referenz geladen – Solve: 18 Iterationen, N02 = 209.2373 bar erwartet',true);
+}
 function spAll(){ try{ return JSON.parse(localStorage.getItem(SP_KEY)||'[]'); }catch(e){ return []; } }
 function spWrite(a){ localStorage.setItem(SP_KEY, JSON.stringify(a)); }
 function spSay(t,ok){ const m=document.getElementById('spMsg'); if(m){ m.textContent=t; m.style.color=ok?'#4caf50':'#e94560'; setTimeout(()=>{m.textContent='';},4000);} }

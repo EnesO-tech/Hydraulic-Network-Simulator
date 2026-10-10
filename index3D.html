@@ -158,24 +158,24 @@ td.c.custom-color{color:#fff}
 <div class="comp-top">
 <div class="comp-left" id="compLeft">
 <h4>Toggle Buttons</h4>
-<div style="font-size:10px;color:#667;margin:-2px 0 4px;">Wie Excel-Blatt „Comp“ · Rl_on/Rl_off = Wert für Rl_F · Werte gehen direkt in den Solver</div>
+<div style="font-size:10px;color:#667;margin:-2px 0 4px;">As in Excel sheet “Comp” · Rl_on/Rl_off = value for Rl_F · values go directly into the solver</div>
 <div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="9999" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">Rk_off</span><input class="val off" id="tglRkOff" value="0.001" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" title="Only used by the Rk example circuits in Excel sheet SchematicParking – no effect on the current schematic">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" title="Only used by the Rk example circuits in Excel sheet SchematicParking – no effect on the current schematic">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" title="Only used by the Rk example circuits in Excel sheet SchematicParking – no effect on the current schematic">Rk_off</span><input class="val off" id="tglRkOff" value="0.001" onchange="applyToggle(this)"></div>
 <h4>Iteration Controls</h4>
 <div class="toggle-item"><span class="key">lambdaU</span><input class="val" id="itLambda" value="0.6" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">dUcrit</span><input class="val" id="itDUcrit" value="1E-07" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">niter</span><input class="val" id="itNiter" value="999" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">kReD</span><input class="val" id="itKReD" value="0.2" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">boolProtect</span><input class="val off" id="itProtect" value="FALSCH" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSCH" onchange="applyToggle(this)"></div>
-<h4>Fluid (wie Excel, Skydrol)</h4>
-<div class="toggle-item"><span class="key" title="Fluidtemperatur – Excel-Standard −40 °C">T [°C]</span><input class="val" id="fluidT" value="-40" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" title="Excel: sheet protection only – no effect on the calculation">boolProtect</span><input class="val off" id="itProtect" value="FALSE" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSE" onchange="applyToggle(this)"></div>
+<h4>Fluid (as in Excel, Skydrol)</h4>
+<div class="toggle-item"><span class="key" title="Fluid temperature – Excel default −40 °C">T [°C]</span><input class="val" id="fluidT" value="-40" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key" title="ρ = 1025·exp(−0.00083·T)">rho [kg/m³]</span><input class="val" id="fluidRho" value="" readonly style="color:#667;"></div>
 <div class="toggle-item"><span class="key" title="μ = 5.17e-5·exp(1084/(T+273.15−110))">mue [Ns/m²]</span><input class="val" id="fluidMue" value="" readonly style="color:#667;"></div>
-<div class="toggle-item"><span class="key">Pamb [bar]</span><input class="val" id="pamb" value="1.01325" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" title="Reference only – not used by the solver (same as in Excel)">Pamb [bar]</span><input class="val" id="pamb" value="1.01325" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">g [m/s²]</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">krough [mm]</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320" onchange="applyToggle(this)"></div>
@@ -183,12 +183,12 @@ td.c.custom-color{color:#fff}
 <div class="toggle-item"><span class="key">Rl_F Status</span><button class="toggle-btn on" id="rlFToggle" onclick="toggleRlF()">ON</button></div>
 </div>
 <div class="comp-center">
-<button class="panel-toggle pt-left" id="ptLeft" onclick="togglePanel('left')" title="Toggle Buttons ein-/ausblenden">◀</button>
-<button class="panel-toggle pt-right" id="ptRight" onclick="togglePanel('right')" title="Components ein-/ausblenden">▶</button>
-<button class="panel-toggle pt-bottom" id="ptBottom" onclick="togglePanel('bottom')" title="Results ein-/ausblenden">▼</button>
+<button class="panel-toggle pt-left" id="ptLeft" onclick="togglePanel('left')" title="Show/hide Toggle Buttons">◀</button>
+<button class="panel-toggle pt-right" id="ptRight" onclick="togglePanel('right')" title="Show/hide Components">▶</button>
+<button class="panel-toggle pt-bottom" id="ptBottom" onclick="togglePanel('bottom')" title="Show/hide Results">▼</button>
 <div class="toolbar">
-<label title="dynamische Viskosität [Pa·s] – wird aus T berechnet (Excel-Formel)">Mue:</label><input type="text" id="pMue" value="0.343771">
-<label title="Dichte [kg/m³] – wird aus T berechnet (Excel-Formel)">Rho:</label><input type="text" id="pRho" value="1059.6012">
+<label title="Dynamic viscosity [Pa·s] – calculated from T (Excel formula)">Mue:</label><input type="text" id="pMue" value="0.343771">
+<label title="Density [kg/m³] – calculated from T (Excel formula)">Rho:</label><input type="text" id="pRho" value="1059.6012">
 <label>G:</label><input type="text" id="pG" value="9.81">
 <div class="sep"></div>
 <label>Krough:</label><input type="text" id="pKrough" value="0.05">
@@ -219,11 +219,11 @@ td.c.custom-color{color:#fff}
 <div class="comp-right" id="compRight">
 <h4>Components</h4>
 <div class="comp-item"><span class="type">Upm1</span><input class="desc" value="EDP 206 bar (3000 psi), Qmax 8.4 m³/h, 19.6mm" onchange="applyCompDesc(this)"></div>
-<div class="comp-item"><span class="type">Ucv1</span><input class="desc" value="Überdruckventil 241 bar (Annahme)" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Ucv1</span><input class="desc" value="Relief valve 241 bar (assumption)" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">P1</span><input class="desc" value="Excel-Referenz: 8.4 m³/h (140 l/min)" onchange="applyCompDesc(this)"></div>
-<div class="comp-item"><span class="type">Upt1a</span><input class="desc" value="PTU Motor: ηv 0.96, ηhm 0.92, R0 5" onchange="applyCompDesc(this)"></div>
-<div class="comp-item"><span class="type">Upt1b</span><input class="desc" value="PTU Pumpe: ηv 0.95, ηhm 0.92, Vb/Va 0.95" onchange="applyCompDesc(this)"></div>
-<div class="comp-item"><span class="type">RZ40</span><input class="desc" value="Ersatzlast Yellow, ζ 50000" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Upt1a</span><input class="desc" value="PTU motor: ηv 0.96, ηhm 0.92, R0 5" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">Upt1b</span><input class="desc" value="PTU pump: ηv 0.95, ηhm 0.92, Vb/Va 0.95" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">RZ40</span><input class="desc" value="Equivalent load Yellow, ζ 50000" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">R01</span><input class="desc" value="0.5m, 34.4mm" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">R03</span><input class="desc" value="10m, 19.6mm" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">R04</span><input class="desc" value="8m, 28.2mm" onchange="applyCompDesc(this)"></div>
@@ -412,7 +412,7 @@ td.c.custom-color{color:#fff}
 <button onclick="spPark()" style="padding:7px 16px;background:#0f3460;color:#fff;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;font-size:12px;">Park current grid</button>
 <button onclick="document.getElementById('spFile').click()" style="padding:7px 14px;background:#1a1a2e;color:#aac;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;font-size:12px;">Import file</button>
 <input type="file" id="spFile" accept=".json" style="display:none" onchange="spImport(event)">
-<button onclick="spLoadExcelReference()" title="Exaktes Schaltbild aus hydraulic_networks_v1_4.xlsm (Regressionstest)" style="padding:7px 14px;background:#1f3a1f;color:#9fe79f;border:1px solid #2f6a2f;border-radius:4px;cursor:pointer;font-size:12px;">Excel-Referenz v1.4 laden</button>
+<button onclick="spLoadExcelReference()" title="Exact schematic from hydraulic_networks_v1_4.xlsm (regression test)" style="padding:7px 14px;background:#1f3a1f;color:#9fe79f;border:1px solid #2f6a2f;border-radius:4px;cursor:pointer;font-size:12px;">Load Excel reference v1.4</button>
 </div>
 
 <div id="spMsg" style="margin-top:10px;font-size:12px;"></div>
@@ -499,8 +499,8 @@ function qrSelect(){
     let rows;
     if(pr.special==='ptu'){
         const dirSelB=dirSel.replace('id="qr_dir"','id="qr_dirB"');
-        rows=[['<b style="color:#ff8844">Motor (a)</b>','',''],['η<sub>v,a</sub> volumetrisch',qrInput('etaVa',pr.etaVa,'',false),'-'],['η<sub>hm,a</sub> hydr.-mech.',qrInput('etaHa',pr.etaHa,'',false),'-'],['R<sub>0</sub> Losbrech/Leerlauf',qrInput('R0',pr.R0,'',false),'bar/(m³/h)'],['Diameter',qrInput('Da',pr.Da,'',false),'mm'],['Direction',dirSel,'-'],
-              ['<b style="color:#ff8844">Pumpe (b)</b>','',''],['η<sub>v,b</sub> volumetrisch',qrInput('etaVb',pr.etaVb,'',false),'-'],['η<sub>hm,b</sub> hydr.-mech.',qrInput('etaHb',pr.etaHb,'',false),'-'],['V<sub>b</sub>/V<sub>a</sub> Verdrängerverh.',qrInput('ratio',pr.ratio,'',false),'-'],['Diameter',qrInput('Db',pr.Db,'',false),'mm'],['Direction',dirSelB,'-']];
+        rows=[['<b style="color:#ff8844">Motor (a)</b>','',''],['η<sub>v,a</sub> volumetric',qrInput('etaVa',pr.etaVa,'',false),'-'],['η<sub>hm,a</sub> hydro-mech.',qrInput('etaHa',pr.etaHa,'',false),'-'],['R<sub>0</sub> breakaway/idle',qrInput('R0',pr.R0,'',false),'bar/(m³/h)'],['Diameter',qrInput('Da',pr.Da,'',false),'mm'],['Direction',dirSel,'-'],
+              ['<b style="color:#ff8844">Pump (b)</b>','',''],['η<sub>v,b</sub> volumetric',qrInput('etaVb',pr.etaVb,'',false),'-'],['η<sub>hm,b</sub> hydro-mech.',qrInput('etaHb',pr.etaHb,'',false),'-'],['V<sub>b</sub>/V<sub>a</sub> displacement ratio',qrInput('ratio',pr.ratio,'',false),'-'],['Diameter',qrInput('Db',pr.Db,'',false),'mm'],['Direction',dirSelB,'-']];
     } else if(pr.special==='upm'){
         rows=[['Pset',qrInput('Pset',pr.Pset,'',false),'bar'],['Qmax',qrInput('Qmax',pr.Qmax,'',false),'m³/h'],['Diameter',qrInput('D',pr.D,'',false),'mm'],['Direction',dirSel,'-']];
     } else {
@@ -530,7 +530,7 @@ function qrLive(){
         const etaTot=eVa*eHa*eVb*eHb, qRatio=ratio*eVa*eVb, pGain=eHa*eHb/ratio;
         qrSetSyntax([`Upt1a ${eVa} ${eHa} ${R0} ${Da} ${dir}`,`Upt1b ${eVb} ${eHb} ${ratio} ${Db} ${dirB}`]);
         const row=(a,b,c)=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;" colspan="2">${a}</td><td style="text-align:right;padding:4px;color:#ffdd44;" colspan="2">${b} ${c||''}</td></tr>`;
-        document.getElementById('qr-points').innerHTML=row('Gesamtwirkungsgrad η = η<sub>v,a</sub>η<sub>hm,a</sub>η<sub>v,b</sub>η<sub>hm,b</sub>',etaTot.toFixed(3))+row('Volumenstrom Q<sub>b</sub>/Q<sub>a</sub> = (V<sub>b</sub>/V<sub>a</sub>)·η<sub>v,a</sub>·η<sub>v,b</sub>',qRatio.toFixed(3))+row('Druckübersetzung ΔP<sub>b</sub>/ΔP<sub>a,eff</sub> = η<sub>hm,a</sub>η<sub>hm,b</sub>/(V<sub>b</sub>/V<sub>a</sub>)',pGain.toFixed(3))+row('Beispiel: ΔP<sub>a</sub>=200 bar, Q<sub>a</sub>=2 m³/h → ΔP<sub>b</sub>',(pGain*(200-R0*2)).toFixed(1),'bar');
+        document.getElementById('qr-points').innerHTML=row('Overall efficiency η = η<sub>v,a</sub>η<sub>hm,a</sub>η<sub>v,b</sub>η<sub>hm,b</sub>',etaTot.toFixed(3))+row('Flow ratio Q<sub>b</sub>/Q<sub>a</sub> = (V<sub>b</sub>/V<sub>a</sub>)·η<sub>v,a</sub>·η<sub>v,b</sub>',qRatio.toFixed(3))+row('Pressure ratio ΔP<sub>b</sub>/ΔP<sub>a,eff</sub> = η<sub>hm,a</sub>η<sub>hm,b</sub>/(V<sub>b</sub>/V<sub>a</sub>)',pGain.toFixed(3))+row('Example: ΔP<sub>a</sub>=200 bar, Q<sub>a</sub>=2 m³/h → ΔP<sub>b</sub>',(pGain*(200-R0*2)).toFixed(1),'bar');
         qrDrawPtuChart(etaTot,R0,pGain,qRatio);qrDrawCircuit(t,{eta:etaTot,Rd:R0});return;
     }
     if(pr.special==='upm'){
@@ -601,13 +601,13 @@ function qrDrawUpmChart(Pset,Qmax){
 }
 function qrSetSyntax(lines){
     const box=document.getElementById('qr-syntax');if(!box)return;
-    box.innerHTML=lines.map((s,i)=>`<div style="display:flex;align-items:center;gap:8px;margin:2px 0;"><code style="flex:1;">${s}</code><button onclick="qrApply(${i})" title="In die markierte Zelle im Comp-Reiter schreiben" style="background:#0f3460;color:#fff;border:1px solid #2a4a7a;border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;">→ Zelle</button></div>`).join('')+`<div id="qr-msg" style="font-size:11px;color:#888;margin-top:4px;">Zuerst im Comp-Reiter eine Zelle markieren, dann „→ Zelle“.</div>`;
+    box.innerHTML=lines.map((s,i)=>`<div style="display:flex;align-items:center;gap:8px;margin:2px 0;"><code style="flex:1;">${s}</code><button onclick="qrApply(${i})" title="Write into the selected cell in the Comp tab" style="background:#0f3460;color:#fff;border:1px solid #2a4a7a;border-radius:3px;padding:2px 8px;font-size:11px;cursor:pointer;">→ Cell</button></div>`).join('')+`<div id="qr-msg" style="font-size:11px;color:#888;margin-top:4px;">First select a cell in the Comp tab, then click “→ Cell”.</div>`;
     box.dataset.lines=JSON.stringify(lines);
 }
 function qrApply(i){
     const box=document.getElementById('qr-syntax');const lines=JSON.parse(box.dataset.lines||'[]');const text=lines[i];if(!text)return;
     D[k(sr,sc)]=text;rc(sr,sc);updateUI();saveToLocalStorage();
-    const m=document.getElementById('qr-msg');if(m){m.textContent=`„${text}“ → Zelle ${cn(sr,sc)} übernommen`;m.style.color='#4caf50';}
+    const m=document.getElementById('qr-msg');if(m){m.textContent=`“${text}” → written to cell ${cn(sr,sc)}`;m.style.color='#4caf50';}
 }
 function qrDrawPtuChart(etaTot,R0,pGain,qRatio){
     const c=document.getElementById('qr-canvas');if(!c)return;
@@ -621,8 +621,8 @@ function qrDrawPtuChart(etaTot,R0,pGain,qRatio){
     for(let i=0;i<=40;i++){const qa=qMax*i/40;const dpb=Math.max(0,pGain*(dpa-R0*qa));const qb=qa*qRatio;if(i===0)ctx.moveTo(tx(qb),ty(dpb));else ctx.lineTo(tx(qb),ty(dpb));}
     ctx.stroke();
     ctx.font='10px Consolas';ctx.textAlign='left';
-    ctx.fillStyle='#e94560';ctx.fillText('Motor-Eingang ΔP_a = 200 bar',tx(0.1),ty(dpa)-8);
-    ctx.fillStyle='#6fc3f7';ctx.fillText('Pumpe: ΔP_b über Q_b (mit Verlusten)',tx(0.1),ty(pGain*dpa)+16);
+    ctx.fillStyle='#e94560';ctx.fillText('Motor inlet ΔP_a = 200 bar',tx(0.1),ty(dpa)-8);
+    ctx.fillStyle='#6fc3f7';ctx.fillText('Pump: ΔP_b vs Q_b (with losses)',tx(0.1),ty(pGain*dpa)+16);
     ctx.fillStyle='#ffdd44';ctx.fillText('η_ges = '+etaTot.toFixed(3),tx(2.6),ty(40));
 }
 function qrDrawCircuit(type,p){
@@ -967,6 +967,8 @@ function nodeEditLive(axis,val){
     if(!name||!nodePositions[name])return;
     const v=parseFloat(val)||0;
     nodePositions[name][axis]=v;
+    if(nodePositions[name].provisional){nodePositions[name].provisional=false;nodePositions[name].desc='User-placed node';}
+    saveUserNodePosition(name);
     document.getElementById('ed'+axis.toUpperCase()).value=v;
     document.getElementById('ed'+axis.toUpperCase()+'n').value=v.toFixed(2);
     const np=nodePoint3D(nodePositions[name]);
@@ -1033,6 +1035,7 @@ kind: n.kind || ''
 });
 }
 networkJsonComponents = Array.isArray(data.components) ? data.components : [];
+applyUserNodePositions();
 console.log('A320 coordinates loaded:', Object.keys(nodePositions).length, 'nodes from', url);
 return data;
 } catch (err) {
@@ -1243,6 +1246,54 @@ return sprite;
 
 
 function reservoirKeys(){return Object.keys(nodePositions).filter(k=>nodePositions[k].kind==='reservoir'||k==='S');}
+
+// ===== New nodes in 3D: provisional placement + user positions =====
+const USER_NODEPOS_KEY='boheme_user_node_positions';
+function loadUserNodePositions(){try{return JSON.parse(localStorage.getItem(USER_NODEPOS_KEY)||'{}');}catch(e){return {};}}
+function saveUserNodePosition(name){
+  const all=loadUserNodePositions(),p=nodePositions[name];if(!p)return;
+  all[name]={x:p.x,y:p.y,z:p.z,desc:p.desc||'User-placed node',loc:p.loc||''};
+  try{localStorage.setItem(USER_NODEPOS_KEY,JSON.stringify(all));}catch(e){}
+}
+function applyUserNodePositions(){
+  const all=loadUserNodePositions();
+  Object.keys(all).forEach(id=>{const u=all[id];nodePositions[id]=Object.assign({},nodePositions[id]||{},{x:+u.x||0,y:+u.y||0,z:+u.z||0,desc:u.desc||'',loc:u.loc||''});});
+}
+// Gives every node without coordinates a provisional position:
+// midpoint of its already placed neighbours (+ small lift), otherwise a parking row above the aircraft.
+function placeProvisionalNodes(usedNodeNames,components){
+  const missing=[...usedNodeNames].filter(n=>!nodePositions[n]);
+  if(!missing.length)return [];
+  const nb={};
+  components.forEach(c=>{const a=c.n1,b=c.n2;if(!a||!b)return;(nb[a]=nb[a]||[]).push(b);(nb[b]=nb[b]||[]).push(a);});
+  const placed=[];let pending=missing.slice(),guard=0;
+  while(pending.length&&guard++<10){
+    const still=[];
+    pending.forEach(n=>{
+      const pts=(nb[n]||[]).filter(m=>m!=='S'&&nodePositions[m]).map(m=>nodePositions[m]);
+      if(!pts.length){still.push(n);return;}
+      const avg=k=>pts.reduce((s,q)=>s+q[k],0)/pts.length;
+      nodePositions[n]={x:avg('x'),y:avg('y')+0.06,z:avg('z'),desc:'NEW node – provisional position (midpoint of neighbours), please place',loc:'not placed yet',provisional:true};
+      placed.push(n);
+    });
+    if(still.length===pending.length)break;pending=still;
+  }
+  pending.forEach((n,i)=>{nodePositions[n]={x:0,y:0.45,z:-0.6+0.15*i,desc:'NEW node – no placed neighbour, parked above the aircraft, please place',loc:'not placed yet',provisional:true};placed.push(n);});
+  return placed;
+}
+// All components that belong to the Yellow circuit: everything reachable from the Yellow reservoir
+// without crossing a PTU unit (the PTU separates Green and Yellow).
+function yellowCircuitComponents(components){
+  const keys=(typeof reservoirKeys==='function'?reservoirKeys():[]).filter(k=>/Y/i.test(k.replace(/^S/,'')));
+  const res=new Set();if(!keys.length)return res;
+  const edges=components.map(c=>({name:c.name,kind:String(c.type||'').toUpperCase(),a:resolveNodeKey(c.n1,c.n2,c.name),b:resolveNodeKey(c.n2,c.n1,c.name)}));
+  const seen=new Set(keys),queue=keys.slice();
+  while(queue.length){const n=queue.shift();
+    edges.forEach(e=>{if(e.a!==n&&e.b!==n)return;res.add(e.name);if(e.kind==='UPT')return;
+      const o=e.a===n?e.b:e.a;if(!seen.has(o)&&!/^S/.test(o)){seen.add(o);queue.push(o);}});}
+  return res;
+}
+
 function resolveNodeKey(name,other,compName){
 if(name!=='S')return name;
 const keys=reservoirKeys();if(!keys.length)return 'S';
@@ -1298,13 +1349,16 @@ const nodeMaterial = new THREE.MeshPhongMaterial({color: 0xffdd44});
 let renderedNodes = 0;
 let missingNodes = [];
 
+const provisional = placeProvisionalNodes(usedNodeNames, data.components);
+const newNodeMaterial = new THREE.MeshPhongMaterial({color: 0xff40ff, emissive: 0x440044});
 usedNodeNames.forEach(name => {
 const p = nodePositions[name];
 if (!p) {
 missingNodes.push(name);
 return;
 }
-const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 12), nodeMaterial);
+const isNew = !!p.provisional;
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(isNew ? 0.035 : 0.025, 12, 12), isNew ? newNodeMaterial : nodeMaterial);
 const pp = nodePoint3D(p);
 sphere.position.copy(pp);
 sphere.userData = {
@@ -1316,7 +1370,7 @@ loc: p.loc || ''
 pipeGroup.add(sphere);
 nodeMeshes.push(sphere);
 
-const label = makeTextSprite(name);
+const label = isNew ? makeTextSprite(name + ' (new – place me)', '#ff80ff') : makeTextSprite(name);
 label.position.copy(pp);
 label.position.y += 0.08;
 pipeGroup.add(label);
@@ -1331,6 +1385,7 @@ let renderedComponents = 0;
 let skippedComponents = [];
 
 const usedReservoirs = new Set();
+const yellowComps = yellowCircuitComponents(data.components);
 data.components.forEach(c => {
 const k1 = resolveNodeKey(c.n1, c.n2, c.name);
 const k2 = resolveNodeKey(c.n2, c.n1, c.name);
@@ -1347,7 +1402,8 @@ return;
 const kind = String(c.type || '').toUpperCase();
 const dmm = Number(c.d) * 1000;
 const isReturn = kind === 'R' && dmm > 30;
-const color = (kind === 'P' || kind === 'UPM') ? 0xe94560 : (kind === 'UPT' ? 0xc070ff : (kind.startsWith('U') ? 0xff8844 : (isReturn ? 0x3a78d8 : 0x4fc3f7)));
+const isYellowCircuit = yellowComps.has(c.name) && kind !== 'UPT';
+const color = (kind === 'P' || kind === 'UPM') ? 0xe94560 : (kind === 'UPT' ? 0xc070ff : (isYellowCircuit ? (isReturn ? 0xc9a227 : 0xffd740) : (kind.startsWith('U') ? 0xff8844 : (isReturn ? 0x3a78d8 : 0x4fc3f7))));
 const radius = kind.startsWith('U') || kind === 'P' ? 0.011 : 0.007;
 const line = new THREE.Mesh(pipeTubeGeometry(pipePoints3D(k1, k2), radius), new THREE.MeshBasicMaterial({color}));
 line.renderOrder = 2;
@@ -1377,7 +1433,8 @@ document.getElementById('pipe3dResults').textContent = compText;
 
 let message = '3D: ' + renderedComponents + ' components, ' + renderedNodes + ' nodes';
 if (missingNodes.length) message += ' | fehlende Koordinaten: ' + missingNodes.join(', ');
-if (skippedComponents.length) message += ' | nicht gezeichnet: ' + skippedComponents.length;
+if (skippedComponents.length) message += ' | not drawn: ' + skippedComponents.length;
+if (provisional.length) message += ' | ' + provisional.length + ' new node(s) shown in magenta – click to position: ' + provisional.join(', ');
 document.getElementById('statusInfo').textContent = message;
 
 if (missingNodes.length || skippedComponents.length) {
@@ -1421,12 +1478,12 @@ const TOGGLE_KEYS=['tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff','itLam
 function fluidFromT(T){return{rho:1025*Math.exp(-0.00083*T),mue:0.0000517*Math.exp(1084/(T+273.15-110))};}
 function applyFluidT(){const el=document.getElementById('fluidT');if(!el)return;const T=Number(el.value);if(!Number.isFinite(T))return;const f=fluidFromT(T);document.getElementById('fluidRho').value=f.rho.toFixed(3);document.getElementById('fluidMue').value=f.mue.toPrecision(5);const r=document.getElementById('pRho'),m=document.getElementById('pMue');if(r)r.value=f.rho.toFixed(4);if(m)m.value=f.mue.toPrecision(6);}
 function isTrueText(v){return /^(wahr|true|1|ja|yes|on)$/i.test(String(v).trim());}
-function styleBoolToggle(el){const on=isTrueText(el.value);el.value=on?'WAHR':'FALSCH';el.classList.toggle('on',on);el.classList.toggle('off',!on);}
+function styleBoolToggle(el){const on=isTrueText(el.value);el.value=on?'TRUE':'FALSE';el.classList.toggle('on',on);el.classList.toggle('off',!on);}
 function applyToggle(el){
   const id=el.id;
   let val=String(el.value).trim();
   if(TOGGLE_TO_CHECK[id]){styleBoolToggle(el);val=el.value;const cb=document.getElementById(TOGGLE_TO_CHECK[id]);if(cb)cb.checked=isTrueText(val);}
-  else if(val!==''&&!Number.isFinite(Number(val))){el.style.borderColor='#e94560';el.title='Bitte eine Zahl eingeben';return;}
+  else if(val!==''&&!Number.isFinite(Number(val))){el.style.borderColor='#e94560';el.title='Please enter a number';return;}
   el.style.borderColor='';el.title='';
   if(TOGGLE_TO_TOOLBAR[id]){const t=document.getElementById(TOGGLE_TO_TOOLBAR[id]);if(t)t.value=val;}
   if(id==='tglRlOn'||id==='tglRlOff')applyRlF(false);
@@ -1441,7 +1498,7 @@ function syncTogglesToToolbar(){
 }
 function bindToolbarToToggles(){
   Object.keys(TOGGLE_TO_TOOLBAR).forEach(id=>{const t=document.getElementById(TOGGLE_TO_TOOLBAR[id]);if(t)t.addEventListener('change',()=>{const s=document.getElementById(id);if(s){s.value=t.value;localStorage.setItem('boheme_toggle_'+id,t.value);}});});
-  Object.keys(TOGGLE_TO_CHECK).forEach(id=>{const t=document.getElementById(TOGGLE_TO_CHECK[id]);if(t)t.addEventListener('change',()=>{const s=document.getElementById(id);if(s){s.value=t.checked?'WAHR':'FALSCH';styleBoolToggle(s);localStorage.setItem('boheme_toggle_'+id,s.value);}});});
+  Object.keys(TOGGLE_TO_CHECK).forEach(id=>{const t=document.getElementById(TOGGLE_TO_CHECK[id]);if(t)t.addEventListener('change',()=>{const s=document.getElementById(id);if(s){s.value=t.checked?'TRUE':'FALSE';styleBoolToggle(s);localStorage.setItem('boheme_toggle_'+id,s.value);}});});
 }
 function cleanToggleJunk(){
   let removed=0;
@@ -1477,7 +1534,7 @@ const div = document.createElement('div');
 div.id = 'colorPicker';
 div.className = 'color-picker';
 div.innerHTML = `
-       <div class="title">🎨 Farbe wählen <span class="close-btn" onclick="closeColorPicker()">✕</span></div>
+       <div class="title">🎨 Choose colour <span class="close-btn" onclick="closeColorPicker()">✕</span></div>
        <div class="colors">
            <div class="c" style="background:#1a2a4a;" onclick="applyColor(this, '#1a2a4a')" title="Dark blue (pipe)"></div>
            <div class="c" style="background:#2a1a4a;" onclick="applyColor(this, '#2a1a4a')" title="Dark red (pump)"></div>
@@ -1796,9 +1853,13 @@ drawNetwork(result);
 updateResultTable(result);
 if(typeof isoUpdate==='function') isoUpdate();
 
-status.textContent = 'Done: ' + result.ncomp + ' components, ' + result.nnode +
+const _p = getSolverParameters();
+const notConverged = result.iterations >= _p.NiterMax && Number(result.residual) > _p.DUcrit;
+status.textContent = (notConverged ? '⚠ NOT CONVERGED (niter reached) – results are not valid! | ' : 'Done: ') +
+result.ncomp + ' components, ' + result.nnode +
 ' nodes | iterations: ' + result.iterations +
 ' | Residual: ' + Number(result.residual).toExponential(3);
+status.style.color = notConverged ? '#ff6b6b' : '';
 } catch (err) {
 console.error(err);
 status.textContent = 'Solver error: ' + (err?.message || err);
@@ -1844,7 +1905,8 @@ const tr=document.createElement('tr');tr.innerHTML=cells;tbody.appendChild(tr);
 }
 
 function insertComponent(){let type=prompt('Component type (R, P, U, RZ, RK, RL, UCP, UPR, UCV):','R');if(!type)return;let params=prompt('Parameters (e.g. 10 0.05):','10 0.05');if(params===null)return;let orient=prompt('Orientation (^, >, v, <):','>');if(orient===null)return;let text=type+' '+params+' '+orient;let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
-function insertNode(){let id=prompt('Node number (e.g. 01):','01');if(!id)return;let z=prompt('Height (m):','0');if(z===null)return;let text='N'+id+' '+z;let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
+function insertNode(){let id=prompt('Node number (e.g. 01):','01');if(!id)return;let text='N'+id;   // node height is optional: type e.g. "N05 3" directly into the cell if needed
+let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
 function insertWire(){let text='I';let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
 
 function getCell(r,c){return document.getElementById(`t${r}_${c}`);}
@@ -2090,11 +2152,11 @@ renderer.setSize(rect.width,rect.height,false);
 const SP_KEY='boheme_parking';
 const EXCEL_REFERENCE_V14={"11,3": "N04", "10,3": "R05 5 28.2", "9,3": "N05", "8,3": "R06 7 28.2", "7,3": "N06", "5,3": "N07", "5,4": "UAL -5 0.01 999", "5,5": "N08", "6,5": "R08 3 34.4", "7,5": "N09", "8,5": "R09 7 34.4", "9,5": "N10", "10,5": "R10 5 34.4", "11,5": "N36", "7,4": "U5L -10 0.01 999", "9,4": "U1L -10 0.01 999", "11,8": "N04", "10,8": "R11 18 28.2", "9,8": "I", "8,8": "N11", "7,8": "I", "6,8": "I", "5,8": "R15 2 28.2", "5,9": "-", "5,10": "N15", "4,10": "I", "5,11": "-", "3,10": "R16 2 28.2", "3,11": "N16", "3,12": "URU -5 0.01 999", "3,13": "N17", "3,14": "R17 2 34.4", "4,14": "I", "5,14": "N18", "5,13": "-", "5,12": "UYD -5 0.01 999", "5,15": "-", "5,16": "R18 2 34.4", "6,16": "I", "7,16": "I", "8,16": "N22", "9,16": "I", "10,16": "R22 18 34.4", "11,16": "N36", "8,9": "R12 2 28.2", "8,10": "N12", "7,10": "R14 2 28.2", "7,11": "N14", "9,10": "R13 2 28.2", "9,11": "N13", "7,12": "ULE -5 0.01 999", "7,13": "N19", "9,12": "UTS -2.5 0.01 999", "9,13": "N20", "7,14": "R20 2 34.4", "8,14": "N21", "9,14": "R21 2 34.4", "8,15": "R19 2 34.4", "11,18": "N04", "10,18": "R30 5 28.2", "9,18": "N30", "8,18": "R31 7 28.2", "7,18": "N31", "6,18": "R32 3 28.2", "5,18": "N32", "5,19": "UAR -5 0.01 999", "5,20": "N33", "6,20": "R33 3 34.4", "7,20": "N34", "7,19": "U5R -10 0.01 999", "8,20": "R34 7 34.4", "9,19": "U1R -10 0.01 999", "9,20": "N35", "10,20": "R35 5 34.4", "11,20": "N36", "17,6": "N02", "17,7": "R03 0.5 28.2", "17,8": "N03", "18,6": "P1 8.4 999 ^", "19,6": "N01", "18,8": "Ucv1 205 0.1 999 v", "19,8": "S 35", "19,7": "R01 0.5 34.4", "17,9": "R04 8 28.2", "19,9": "R29 8 34.4", "17,10": "N37", "17,11": "Rz04 100 28.2", "19,12": "N36", "19,11": "Rz29 100 34.4", "19,10": "N38", "6,3": "R07 3 28.2", "17,12": "N04", "19,14": "N04", "18,14": "Rl_F 1 999 ^", "18,15": "N29 ", "18,16": "R23 2 28.2", "18,17": "-", "18,18": "N23 ", "17,18": "R24 1 28.2", "17,19": "N24 ", "17,20": "UFL -2 0.01 999", "17,21": "N25", "17,22": "R25 1 34.4", "19,18": "R26 3 28.2", "19,19": "N26 ", "19,20": "USL -3.3 0.01 999", "19,21": "N27 ", "19,22": "R27 3 34.4", "18,22": "N28 ", "18,23": "-", "18,24": "R28 2 34.4", "19,24": "I", "20,24": "N36 ", "6,24": "I"};
 function spLoadExcelReference(){
-  if(!confirm('Excel-Referenz (hydraulic_networks_v1_4.xlsm, P1 + Ucv1, ohne Upm/PTU) laden? Das aktuelle Schaltbild wird ersetzt – vorher ggf. parken.'))return;
+  if(!confirm('Load Excel reference (hydraulic_networks_v1_4.xlsm, P1 + Ucv1, without Upm/PTU)? The current schematic will be replaced – park it first if needed.'))return;
   Object.keys(D).forEach(k=>delete D[k]);Object.assign(D,EXCEL_REFERENCE_V14);
   const t=document.getElementById('fluidT');if(t){t.value='-40';applyToggle(t);}
   renderGridData();saveToLocalStorage();updateUI();
-  spSay('Excel-Referenz geladen – Solve: 18 Iterationen, N02 = 209.2373 bar erwartet',true);
+  spSay('Excel reference loaded – Solve: 18 iterations, N02 = 209.2373 bar expected',true);
 }
 function spAll(){ try{ return JSON.parse(localStorage.getItem(SP_KEY)||'[]'); }catch(e){ return []; } }
 function spWrite(a){ localStorage.setItem(SP_KEY, JSON.stringify(a)); }

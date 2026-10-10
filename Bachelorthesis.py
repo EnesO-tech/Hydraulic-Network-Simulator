@@ -154,7 +154,7 @@ class Network:
             
                       
         except Exception as e:
-            print(f"Fehler im Netzwerk-Solver: {e}")
+            print(f"Error in network solver: {e}")
             raise
 
 
@@ -651,7 +651,7 @@ class Network:
                 sides['a'].PtuPartner = sides['b']
                 sides['b'].PtuPartner = sides['a']
             else:
-                raise Exception(f"PTU {nr}: Motor (a) und Pumpe (b) muessen beide vorhanden sein.")
+                raise Exception(f"PTU {nr}: motor (a) and pump (b) must both be present.")
 
     def UpdatePtuCoupling(self):
         
@@ -671,7 +671,7 @@ class Network:
                 # power balance: dp_b*Q_b = eta_total*(dp_a - R0*Q_a)*Q_a
                 etaTot = m.EtaV * m.EtaHm * c.EtaV * c.EtaHm
                 Rneu = m.Rd0 + DPb * Qb / (etaTot * Qa * Qa)
-                if abs(Rneu - m.Rd) < 0.0005 * m.Rd:
+                if abs(Rneu - m.Rd) < 1e-6 * m.Rd:
                     continue
                 m.Rd = 0.1 * Rneu + 0.9 * m.Rd
 
@@ -688,7 +688,7 @@ class Network:
                 else:
                     continue
                 
-                if abs(Pist - c.Pset) < 0.0005 * c.Pset:
+                if abs(Pist - c.Pset) < 1e-6 * c.Pset:
                     continue
                 
                 if Pist > 0:

@@ -220,7 +220,7 @@ td.c.custom-color{color:#fff}
 <h4>Components</h4>
 <div class="comp-item"><span class="type">Upm1</span><input class="desc" value="EDP 206 bar (3000 psi), Qmax 8.4 m³/h, 19.6mm" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">Ucv1</span><input class="desc" value="Relief valve 241 bar (assumption)" onchange="applyCompDesc(this)"></div>
-<div class="comp-item"><span class="type">P1</span><input class="desc" value="Excel-Referenz: 8.4 m³/h (140 l/min)" onchange="applyCompDesc(this)"></div>
+<div class="comp-item"><span class="type">P1</span><input class="desc" value="Excel reference: 8.4 m³/h (140 l/min)" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">Upt1a</span><input class="desc" value="PTU motor: ηv 0.96, ηhm 0.92, R0 5" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">Upt1b</span><input class="desc" value="PTU pump: ηv 0.95, ηhm 0.92, Vb/Va 0.95" onchange="applyCompDesc(this)"></div>
 <div class="comp-item"><span class="type">RZ40</span><input class="desc" value="Equivalent load Yellow, ζ 50000" onchange="applyCompDesc(this)"></div>
@@ -1860,6 +1860,9 @@ result.ncomp + ' components, ' + result.nnode +
 ' nodes | iterations: ' + result.iterations +
 ' | Residual: ' + Number(result.residual).toExponential(3);
 status.style.color = notConverged ? '#ff6b6b' : '';
+const solvedNodes = new Set((result.nodes||[]).map(n => String(n.id).trim().toUpperCase()));
+const unconnected = [...new Set(Object.values(D).map(v => String(v).trim().match(/^N\d+\b/i)).filter(Boolean).map(m => m[0].toUpperCase()))].filter(n => !solvedNodes.has(n));
+if (unconnected.length) { status.textContent += ' | ⚠ ' + unconnected.join(', ') + (unconnected.length>1?' are':' is') + ' not connected to any component – ignored by the solver'; if(!notConverged) status.style.color = '#ffb347'; }
 } catch (err) {
 console.error(err);
 status.textContent = 'Solver error: ' + (err?.message || err);
@@ -1905,7 +1908,7 @@ const tr=document.createElement('tr');tr.innerHTML=cells;tbody.appendChild(tr);
 }
 
 function insertComponent(){let type=prompt('Component type (R, P, U, RZ, RK, RL, UCP, UPR, UCV):','R');if(!type)return;let params=prompt('Parameters (e.g. 10 0.05):','10 0.05');if(params===null)return;let orient=prompt('Orientation (^, >, v, <):','>');if(orient===null)return;let text=type+' '+params+' '+orient;let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
-function insertNode(){let id=prompt('Node number (e.g. 01):','01');if(!id)return;let text='N'+id;   // node height is optional: type e.g. "N05 3" directly into the cell if needed
+function insertNode(){const used=Object.values(D).map(v=>String(v).trim().match(/^N(\d+)\b/i)).filter(Boolean).map(m=>+m[1]);const usedSet=new Set(used);let nn=1;while(usedSet.has(nn))nn++;const next=String(nn).padStart(2,'0');let id=prompt('Node number – node numbers must be consecutive, next free number is '+next+'. A new node must be connected to a component (e.g. "- R'+next+' 2 28.2 -").',next);if(!id)return;id=String(id).replace(/^N/i,'');let text='N'+id;   // node height is optional: type e.g. "N05 3" directly into the cell if needed
 let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
 function insertWire(){let text='I';let cell=getCell(sr,sc);if(cell){cell.textContent=text;D[k(sr,sc)]=text;updateCellStyle(cell,text);updateUI();saveToLocalStorage()}}
 

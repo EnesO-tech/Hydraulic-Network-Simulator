@@ -14,15 +14,15 @@ panel.innerHTML=`
   </div>
   <div style="display:flex;gap:4px;margin-bottom:6px;">
     <select id="asView" style="flex:1;${B}">
-      <option value="side" selected>Ansicht: Seite</option>
-      <option value="wing">Ansicht: Flügelprofil</option>
+      <option value="side" selected>View: side</option>
+      <option value="wing">View: wing profile</option>
     </select>
   </div>
   <div style="display:flex;gap:4px;margin-bottom:6px;">
     <select id="asCond" style="flex:1;${B}">
-      <option value="cruise" selected>Reiseflug M0.78</option>
-      <option value="approach">Anflug</option>
-      <option value="takeoff">Start</option>
+      <option value="cruise" selected>Cruise M0.78</option>
+      <option value="approach">Approach</option>
+      <option value="takeoff">Take-off</option>
     </select>
     <select id="asProfile" style="flex:1;${B}">
       <option value="root">Profil: Wurzel</option>
@@ -30,10 +30,10 @@ panel.innerHTML=`
       <option value="tip">Profil: Spitze</option>
     </select>
   </div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Fluglage: Winkel zwischen Anströmung und Flugzeuglängsachse"><span style="color:#888;font-size:11px;width:78px;">Anstellwinkel</span><input type="range" id="asAoA" min="-10" max="15" step="0.5" value="2" style="flex:1;"><span id="asAoAV" style="color:#aac;font-size:11px;width:34px;text-align:right;">2°</span></div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Triebwerk: Massenstromverhältnis MFR = angesaugte Luft / Einlauffläche·U. Wird beim Wechsel des Flugzustands automatisch gesetzt."><span style="color:#888;font-size:11px;width:78px;">Triebwerk MFR</span><input type="range" id="asMfr" min="0" max="2.5" step="0.05" value="0.7" style="flex:1;"><span id="asMfrV" style="color:#aac;font-size:11px;width:34px;text-align:right;">0.70</span></div>
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Nur die Geschwindigkeit der Animation – ändert keine Physik"><span style="color:#888;font-size:11px;width:78px;">Animation</span><input type="range" id="asSpeed" min="0.5" max="5" step="0.1" value="2" style="flex:1;"><span id="asSpeedV" style="color:#aac;font-size:11px;width:34px;text-align:right;">2.0</span></div>
-  <div style="font-size:10px;color:#667;line-height:1.4;margin:2px 0 4px;">Fluggeschwindigkeit U kommt aus dem <b>Flugzustand</b> (Reiseflug 230 m/s, Anflug 70 m/s, Start 75 m/s). <b>Animation</b> ist nur Darstellung. <b>Triebwerk MFR</b> steuert, wie viel Luft der Einlauf ansaugt.</div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Attitude: angle between the oncoming flow and the aircraft longitudinal axis"><span style="color:#888;font-size:11px;width:78px;">Angle of attack</span><input type="range" id="asAoA" min="-10" max="15" step="0.5" value="2" style="flex:1;"><span id="asAoAV" style="color:#aac;font-size:11px;width:34px;text-align:right;">2°</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Engine: mass flow ratio MFR = ingested air / (inlet area·U). Set automatically when the flight condition changes."><span style="color:#888;font-size:11px;width:78px;">Engine MFR</span><input type="range" id="asMfr" min="0" max="2.5" step="0.05" value="0.7" style="flex:1;"><span id="asMfrV" style="color:#aac;font-size:11px;width:34px;text-align:right;">0.70</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Animation speed only – does not change the physics"><span style="color:#888;font-size:11px;width:78px;">Animation</span><input type="range" id="asSpeed" min="0.5" max="5" step="0.1" value="2" style="flex:1;"><span id="asSpeedV" style="color:#aac;font-size:11px;width:34px;text-align:right;">2.0</span></div>
+  <div style="font-size:10px;color:#667;line-height:1.4;margin:2px 0 4px;">Flight speed U comes from the <b>flight condition</b> (cruise 230 m/s, approach 70 m/s, take-off 75 m/s). <b>Animation</b> is display only. <b>Engine MFR</b> controls how much air the inlet ingests.</div>
   <div id="asInfo" style="color:#aac;font-size:11px;line-height:1.5;margin-top:4px;"></div>
 </div>
 <div style="padding:8px 10px;border-bottom:1px solid #2a2a4a;">
@@ -55,9 +55,9 @@ let steerGrp=null,locked=false;
    (passes through zeta = 1 -> sharp trailing edge at z = 2).
    Map: z = zeta + 1/zeta.  Kutta: Gamma = 4*pi*a*U*sin(alpha + beta).     */
 const PRESETS={
-  root:{name:'A320 Wurzel',tc:0.15, fc:0.020},
+  root:{name:'A320 root',tc:0.15, fc:0.020},
   mac: {name:'A320 MAC',   tc:0.13, fc:0.020},
-  tip: {name:'A320 Spitze',tc:0.11, fc:0.015}
+  tip: {name:'A320 tip',tc:0.11, fc:0.015}
 };
 function analyse(eps,del){
   const a=Math.hypot(1+eps,del),N=2000,P=[];
@@ -197,16 +197,16 @@ function updateInfo(){
   let txt,foot;
   if(viewMode==='side'){
     const c=CONDS[condKey],vm=sideVM;
-    txt=`<b>A320 Seitenriss</b> – ${c.name}<br>U = ${c.U} m/s · Re<sub>L</sub> = ${vm?(vm.ReL/1e6).toFixed(0):'–'}·10<sup>6</sup> · α = ${aoaDeg.toFixed(1)}°<br>Grenzschicht am Heck δ ≈ ${vm?vm.dTE.toFixed(2):'–'} m · Strahl V<sub>j</sub>/U = ${c.vj.toFixed(2)} · MFR = ${mfr.toFixed(2)}`+(sideStats.n?`<br>${sideStats.n} Panels · ${sideStats.ms} ms`:'');
-    foot='Potentialströmung (Hess-Smith) + turbulente Grenzschicht (1/7-Gesetz, Haftbedingung)<br>+ Nachlauf (Schlichting) + Triebwerksstrahl + Prandtl-Glauert · halbempirisch, kein CFD<br>Leitwerk halbtransparent (dünn, seitlich umströmt) · Triebwerk in Seitenprojektion';
+    txt=`<b>A320 side view</b> – ${c.name}<br>U = ${c.U} m/s · Re<sub>L</sub> = ${vm?(vm.ReL/1e6).toFixed(0):'–'}·10<sup>6</sup> · α = ${aoaDeg.toFixed(1)}°<br>Boundary layer at tail δ ≈ ${vm?vm.dTE.toFixed(2):'–'} m · jet V<sub>j</sub>/U = ${c.vj.toFixed(2)} · MFR = ${mfr.toFixed(2)}`+(sideStats.n?`<br>${sideStats.n} Panels · ${sideStats.ms} ms`:'');
+    foot='Potential flow (Hess-Smith) + turbulent boundary layer (1/7 law, no-slip)<br>+ wake (Schlichting) + engine jet + Prandtl-Glauert · semi-empirical, not CFD<br>Tail semi-transparent (thin, flow passes sideways) · engine in side projection';
   }else{
     const ae=aero();
-    txt=`<b>${PRESETS[profKey].name}</b> (Joukowsky-Näherung)<br>t/c = ${(prof.tc*100).toFixed(1)} % · f/c = ${(prof.fc*100).toFixed(1)} %<br>α = ${aoaDeg.toFixed(1)}° · α<sub>L0</sub> = ${ae.aL0.toFixed(2)}°<br>C<sub>L</sub> = 2Γ/c = <b>${ae.CL.toFixed(3)}</b>`;
-    foot=`Modell: ${wingSrc||'…'}<br>2D-Potentialströmung · inkompressibel · reibungsfrei · Kutta-Bedingung`;
+    txt=`<b>${PRESETS[profKey].name}</b> (Joukowsky approximation)<br>t/c = ${(prof.tc*100).toFixed(1)} % · f/c = ${(prof.fc*100).toFixed(1)} %<br>α = ${aoaDeg.toFixed(1)}° · α<sub>L0</sub> = ${ae.aL0.toFixed(2)}°<br>C<sub>L</sub> = 2Γ/c = <b>${ae.CL.toFixed(3)}</b>`;
+    foot=`Model: ${wingSrc||'…'}<br>2D potential flow · incompressible · inviscid · Kutta condition`;
   }
   document.getElementById('asInfo').innerHTML=flowMode?txt:'';
   if(hud){hud.querySelector('#asHudTxt').innerHTML=txt+`<br><span style="color:#888">${foot}</span>`;
-    hud.querySelector('#asLegL').innerHTML=viewMode==='side'?'V/U = 0 (Staupunkt, Wand)':'C<sub>p</sub> = 1 (Staupunkt)';
+    hud.querySelector('#asLegL').innerHTML=viewMode==='side'?'V/U = 0 (stagnation point, wall)':'C<sub>p</sub> = 1 (stagnation point)';
     hud.querySelector('#asLegR').innerHTML=viewMode==='side'?'V/U ≥ 2 (Strahl)':'C<sub>p</sub> &lt; 0 (Sog)';}
 }
 function enterFlow(){
@@ -318,9 +318,9 @@ const DOM_MIN=[-14,-22],DOM_SIZE=[68,46],NX=340,NY=230;
 let sideGeo=null,sidePanels=null,sideFusP=null,sideNacP=null,sideSig=null,fieldTex=null,fieldData=null,sideStats={};
 let sideVM=null,sideScene=null,sideCam=null,sideQuad=null,sideLicMat=null,sideLicScene=null,rtSide=null,sideBlitMat=null,sideTimer=null,mfr=0.70;
 const CONDS={
-  cruise:  {name:'Reiseflug FL350, M 0.78',U:230,nu:3.8e-5,M:0.78,vj:1.40,mfr:0.70},
-  approach:{name:'Anflug, Meereshöhe',     U:70, nu:1.46e-5,M:0.21,vj:1.50,mfr:1.20},
-  takeoff: {name:'Start (Rotation), MSL',  U:75, nu:1.46e-5,M:0.22,vj:4.00,mfr:2.00}
+  cruise:  {name:'Cruise FL350, M 0.78',U:230,nu:3.8e-5,M:0.78,vj:1.40,mfr:0.70},
+  approach:{name:'Approach, sea level',    U:70, nu:1.46e-5,M:0.21,vj:1.50,mfr:1.20},
+  takeoff: {name:'Take-off (rotation), MSL',U:75, nu:1.46e-5,M:0.22,vj:4.00,mfr:2.00}
 };
 let condKey='cruise';
 function viscousSetup(){

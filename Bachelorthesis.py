@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Fri Sep 11 16:10:39 2026
 
@@ -301,42 +300,36 @@ class Network:
     def ParseUcp(self, c, t):
         
         c.Qsc = float(t[1]) / S_PER_H
-        c.DPoc = float(t[2]) * PA_PER_BAR
+        c.Dpoc = float(t[2]) * PA_PER_BAR
         c.Diam = float(t[3]) / MM_PER_M
         self.ReadOrient(c, t, 4)
-        c.Rd = -c.DPoc / c.Qsc
+        c.Rd = -c.Dpoc / c.Qsc
         
     def ParseUpr(self, c, t):
         
-        c.DPoc = float(t[1]) * PA_PER_BAR
+        c.Dpoc = float(t[1]) * PA_PER_BAR
         c.Rd = float(t[2]) * PA_PER_BAR * S_PER_H
         c.Diam = float(t[3]) / MM_PER_M
         self.ReadOrient(c, t, 4)
-        c.Qsc = -c.DPoc / c.Rd
+        c.Qsc = -c.Dpoc / c.Rd
         
     def ParseUcv(self, c, t):
         
-        c.DPoc = float(t[1]) * PA_PER_BAR
+        c.Dpoc = float(t[1]) * PA_PER_BAR
         c.Rd = float(t[2]) * PA_PER_BAR * S_PER_H
         c.Diam = float(t[3]) / MM_PER_M
         self.ReadOrient(c, t, 4)
-        c.Qsc = -c.DPoc / c.Rd
+        c.Qsc = -c.Dpoc / c.Rd
         
     def ParseUniversal(self, c, t):
         
-        c.DPoc = float(t[1]) * PA_PER_BAR
+        c.Dpoc = float(t[1]) * PA_PER_BAR
         c.Qsc = float(t[2]) / S_PER_H
         c.Diam = float(t[3]) / MM_PER_M
         self.ReadOrient(c, t, 4)
-        c.Rd = -c.DPoc / c.Qsc
+        c.Rd = -c.Dpoc / c.Qsc
         
     def ParseUpt(self, c, t):
-        # PTU with losses (motor side 'a', pump side 'b'):
-        #   Upt<n>a  eta_v  eta_hm  R0[bar/(m3/h)]  D[mm]  orient
-        #   Upt<n>b  eta_v  eta_hm  Vb/Va           D[mm]  orient
-        # Legacy formats are still accepted:
-        #   Upt<n>a  eta  R0  D  orient      (eta = overall efficiency)
-        #   Upt<n>b  D  orient               (loss-free pump side)
         nums = []
         for tok in t[1:]:
             try:
@@ -476,7 +469,7 @@ class Network:
             if hasZ:
                 z=float(t[1])
         elif isNr:
-            idx= int(nm[2:])
+            idx= int(nm[-2:])
             if hasZ:
                 nrP= float(t[1])*PA_PER_BAR
             
@@ -484,7 +477,7 @@ class Network:
                 raise Exception("only a single total pressure node 'Nrxx' may be connected to a pressure regulating component.")
             foundNr[0]=True
         else:
-            idx=int(nm[2:])
+            idx=int(nm[-2:])
             if hasZ:
                 z=float(t[1])
                 
@@ -569,7 +562,6 @@ class Network:
             return 4
 
     def RowStep(self, scanDir):
-        # identical to VBA i_s(): 1 = South (+1 row), 3 = North (-1 row)
         if scanDir == 1:
             return 1
         elif scanDir == 3:
@@ -578,7 +570,6 @@ class Network:
             return 0
         
     def ColStep(self, scanDir):
-        # identical to VBA j_s(): 2 = East (+1 col), 4 = West (-1 col)
         if scanDir == 2:
             return 1
         elif scanDir == 4:
@@ -661,14 +652,11 @@ class Network:
                 if m is None:
                     continue
                 Qa = abs(m.q)
-                # kinematic coupling incl. leakage of both units:
-                # Qb = Qa * (Vb/Va) * eta_v,a * eta_v,b
                 c.Qsc = Qa * c.DispRatio * m.EtaV * c.EtaV
                 if self.Iiter <= 1 or Qa < 1e-12:
                     continue
                 Qb = abs(c.q)
                 DPb = abs(c.Ptot1 - c.Ptot2)
-                # power balance: dp_b*Q_b = eta_total*(dp_a - R0*Q_a)*Q_a
                 etaTot = m.EtaV * m.EtaHm * c.EtaV * c.EtaHm
                 Rneu = m.Rd0 + DPb * Qb / (etaTot * Qa * Qa)
                 if abs(Rneu - m.Rd) < 1e-6 * m.Rd:

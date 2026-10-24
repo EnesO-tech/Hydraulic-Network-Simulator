@@ -25,9 +25,9 @@ panel.innerHTML=`
       <option value="takeoff">Take-off</option>
     </select>
     <select id="asProfile" style="flex:1;${B}">
-      <option value="root">Profil: Wurzel</option>
-      <option value="mac" selected>Profil: MAC</option>
-      <option value="tip">Profil: Spitze</option>
+      <option value="root">Profile: root</option>
+      <option value="mac" selected>Profile: MAC</option>
+      <option value="tip">Profile: tip</option>
     </select>
   </div>
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;" title="Attitude: angle between the oncoming flow and the aircraft longitudinal axis"><span style="color:#888;font-size:11px;width:78px;">Angle of attack</span><input type="range" id="asAoA" min="-10" max="15" step="0.5" value="2" style="flex:1;"><span id="asAoAV" style="color:#aac;font-size:11px;width:34px;text-align:right;">2°</span></div>
@@ -36,19 +36,9 @@ panel.innerHTML=`
   <div style="font-size:10px;color:#667;line-height:1.4;margin:2px 0 4px;">Flight speed U comes from the <b>flight condition</b> (cruise 230 m/s, approach 70 m/s, take-off 75 m/s). <b>Animation</b> is display only. <b>Engine MFR</b> controls how much air the inlet ingests.</div>
   <div id="asInfo" style="color:#aac;font-size:11px;line-height:1.5;margin-top:4px;"></div>
 </div>
-<div style="padding:8px 10px;border-bottom:1px solid #2a2a4a;">
-  <h4 style="color:#e94560;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px 0;">Lock &amp; Steer</h4>
-  <button id="asLock" style="width:100%;${B}margin-bottom:6px;">🔓 Lock Nodes to Aircraft</button>
-  <div id="asSteer" style="display:none;">
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#e94560;font-size:11px;width:36px;font-weight:700;">Pitch</span><input type="range" id="asPitch" min="-30" max="30" step="0.5" value="0" style="flex:1;"><span id="asPitchV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0°</span></div>
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#4caf50;font-size:11px;width:36px;font-weight:700;">Yaw</span><input type="range" id="asYaw" min="-45" max="45" step="0.5" value="0" style="flex:1;"><span id="asYawV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0°</span></div>
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#6fc3f7;font-size:11px;width:36px;font-weight:700;">Roll</span><input type="range" id="asRoll" min="-60" max="60" step="0.5" value="0" style="flex:1;"><span id="asRollV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0°</span></div>
-    <button id="asResetSteer" style="width:100%;padding:4px;background:#1a1a2e;border:1px solid #2a4a7a;color:#888;border-radius:3px;cursor:pointer;font-size:11px;">Reset Orientation</button>
-  </div>
-</div>`;
+`;
 
 let speed=2.0,aoaDeg=2;
-let steerGrp=null,locked=false;
 
 /* ---------------- Joukowsky airfoil geometry ----------------
    Circle in zeta-plane: centre zeta0 = (-eps, delta), radius a = |1 - zeta0|
@@ -162,8 +152,8 @@ function loadWing(key){
   if(wingCache[key]){wingSrc=wingCache[key].src;setWingGeometry(wingCache[key].g.clone());return;}
   const path='models/a320_wing_'+key+'.stl';
   const done=(g,src)=>{wingCache[key]={g,src};wingSrc=src;setWingGeometry(g.clone());};
-  if(THREE.STLLoader){new THREE.STLLoader().load(path,g=>done(g,'STL: '+path),undefined,()=>done(proceduralWing(),'prozedural (STL fehlt)'));}
-  else done(proceduralWing(),'prozedural (kein STLLoader)');
+  if(THREE.STLLoader){new THREE.STLLoader().load(path,g=>done(g,'STL: '+path),undefined,()=>done(proceduralWing(),'procedural (STL missing)'));}
+  else done(proceduralWing(),'procedural (no STLLoader)');
 }
 function initFlow(){
   ocam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
@@ -207,7 +197,7 @@ function updateInfo(){
   document.getElementById('asInfo').innerHTML=flowMode?txt:'';
   if(hud){hud.querySelector('#asHudTxt').innerHTML=txt+`<br><span style="color:#888">${foot}</span>`;
     hud.querySelector('#asLegL').innerHTML=viewMode==='side'?'V/U = 0 (stagnation point, wall)':'C<sub>p</sub> = 1 (stagnation point)';
-    hud.querySelector('#asLegR').innerHTML=viewMode==='side'?'V/U ≥ 2 (Strahl)':'C<sub>p</sub> &lt; 0 (Sog)';}
+    hud.querySelector('#asLegR').innerHTML=viewMode==='side'?'V/U ≥ 2 (jet)':'C<sub>p</sub> &lt; 0 (suction)';}
 }
 function enterFlow(){
   if(!ocam)ocam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
@@ -494,14 +484,12 @@ document.getElementById('asMfr').addEventListener('input',function(){mfr=parseFl
 document.getElementById('asCond').addEventListener('change',function(){condKey=this.value;mfr=CONDS[condKey].mfr;document.getElementById('asMfr').value=mfr;document.getElementById('asMfrV').textContent=mfr.toFixed(2);updateInfo();scheduleSide();});
 document.getElementById('asView').addEventListener('change',function(){viewMode=this.value;if(flowMode){if(viewMode==='side'&&!sideGeo)initSide();if(viewMode==='wing'&&!licMat)initFlow();}updateInfo();});
 
-document.getElementById('asLock').addEventListener('click',()=>{locked=!locked;const btn=document.getElementById('asLock');const sd=document.getElementById('asSteer');if(locked){btn.innerHTML='🔒 Nodes LOCKED';btn.style.background='#4caf50';sd.style.display='block';steerGrp=new THREE.Group();scene.add(steerGrp);if(typeof aircraftGroup!=='undefined'&&aircraftGroup){scene.remove(aircraftGroup);steerGrp.add(aircraftGroup);}if(typeof pipeGroup!=='undefined'&&pipeGroup){scene.remove(pipeGroup);steerGrp.add(pipeGroup);}}else{btn.innerHTML='🔓 Lock Nodes to Aircraft';btn.style.background='#2a2a4a';sd.style.display='none';if(steerGrp){if(typeof aircraftGroup!=='undefined'&&aircraftGroup){steerGrp.remove(aircraftGroup);scene.add(aircraftGroup);}if(typeof pipeGroup!=='undefined'&&pipeGroup){steerGrp.remove(pipeGroup);scene.add(pipeGroup);}scene.remove(steerGrp);steerGrp=null;}doResetSteer();}});
-function applySteer(){if(!steerGrp)return;const p=parseFloat(document.getElementById('asPitch').value)*Math.PI/180;const y=parseFloat(document.getElementById('asYaw').value)*Math.PI/180;const r=parseFloat(document.getElementById('asRoll').value)*Math.PI/180;steerGrp.rotation.set(p,y,r);document.getElementById('asPitchV').textContent=(p*180/Math.PI).toFixed(0)+'\u00B0';document.getElementById('asYawV').textContent=(y*180/Math.PI).toFixed(0)+'\u00B0';document.getElementById('asRollV').textContent=(r*180/Math.PI).toFixed(0)+'\u00B0';}
-function doResetSteer(){['asPitch','asYaw','asRoll'].forEach(id=>{document.getElementById(id).value=0;});if(steerGrp)steerGrp.rotation.set(0,0,0);document.getElementById('asPitchV').textContent='0\u00B0';document.getElementById('asYawV').textContent='0\u00B0';document.getElementById('asRollV').textContent='0\u00B0';}
-document.getElementById('asPitch').addEventListener('input',applySteer);
-document.getElementById('asYaw').addEventListener('input',applySteer);
-document.getElementById('asRoll').addEventListener('input',applySteer);
-document.getElementById('asResetSteer').addEventListener('click',doResetSteer);
 
-console.log('boheme_airstream.js v19 loaded – profile',prof);
+if(window.AIRSTREAM_STANDALONE){
+  const fb=document.getElementById('asFlow');if(fb)fb.style.display='none';
+  enterFlow();
+  const ex=document.getElementById('asHudExit');if(ex)ex.style.display='none';
+}
+console.log('boheme_airstream.js v20 loaded (standalone tool) – profile',prof);
 });
 })();

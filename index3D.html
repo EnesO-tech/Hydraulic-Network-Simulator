@@ -63,6 +63,15 @@ td.c.rv .rv-arr{color:inherit;font-weight:700;letter-spacing:-1px;margin-right:3
 td.c.rv .rv-zero{color:#e94560;font-weight:700;margin-right:3px}
 td.c.rv .rv-p{font-weight:700}
 #resultViewBtn.active{background:#4caf50;color:#111}
+#grid td.valve-off{outline:2px dashed #ff5252;outline-offset:-3px}
+.valve-name{cursor:pointer;text-decoration:underline dotted;margin-right:auto}
+.toggle-btn{min-width:46px;padding:3px 10px;border-radius:3px;border:1px solid #2a4a7a;font-weight:700;cursor:pointer;font-size:11px;font-family:inherit}
+.toggle-btn.on{background:#1f3a1f;color:#5fd068;border-color:#2f6a2f}
+.toggle-btn.off{background:#3a1f24;color:#ff6b81;border-color:#6a2f3a}
+#valveList .toggle-item{display:flex;align-items:center;gap:4px}
+.add-valve-btn{width:100%;margin-top:6px;padding:5px 8px;background:#0f3460;color:#fff;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;font-size:12px}
+.add-valve-btn:hover{background:#1a4a80}
+.valve-name:hover{color:#ffdd44}
 #resultTable td.err{color:#e94560}
 #resultTable td.warn{color:#ffdd44}
 #resultTable td.val{color:#aac}
@@ -184,9 +193,14 @@ td.c.custom-color{color:#fff}
 <div class="toggle-item"><span class="key">g [m/s²]</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">krough [mm]</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320" onchange="applyToggle(this)"></div>
+<h4>PTU activation</h4>
+<div style="font-size:10px;color:#667;margin:-2px 0 4px;">The PTU only runs if the Green–Yellow pressure difference without PTU exceeds the threshold (A320: 500 psi).</div>
+<div class="toggle-item"><span class="key" title="ON: activation logic as in the A320 · OFF: PTU always runs">PTU Δp logic</span><button class="toggle-btn on" id="itPtuLogic" onclick="togglePtuLogic()">ON</button></div>
+<div class="toggle-item"><span class="key" title="Activation threshold of the PTU [psi]">PTU Δp min [psi]</span><input class="val" id="itPtuDp" value="500" onchange="applyToggle(this)"></div>
 <h4>Valves (Toggle Buttons)</h4>
 <div style="font-size:10px;color:#667;margin:-2px 0 4px;">One button per valve cell in the schematic: “Rl_…” (linear resistance, ON = Rl_on, OFF = Rl_off) and “Rk_…” (k_V valve, ON = Rk_on_0.1 or Rk_on_0.54, OFF = Rk_off).</div>
 <div id="valveList"></div>
+<button class="add-valve-btn" onclick="openAddValveDialog()" title="Insert a new valve into the selected cell">+ Add valve</button>
 </div>
 <div class="comp-center">
 <button class="panel-toggle pt-left" id="ptLeft" onclick="togglePanel('left')" title="Show/hide Toggle Buttons">◀</button>
@@ -1088,7 +1102,9 @@ LambdaU: readNumber('pLambdaU', 0.5),
 KRelt: readNumber('pKRelt', 0.2),
 Recrit: readNumber('pRecrit', 2320),
 Protect: !!document.getElementById('pProtect')?.checked,
-Zanke: !!document.getElementById('pZanke')?.checked
+Zanke: !!document.getElementById('pZanke')?.checked,
+PtuLogic: (document.getElementById('itPtuLogic')?.textContent||'ON')==='ON',
+PtuDpMin: readNumber('itPtuDp', 500)
 };
 }
 
@@ -1155,24 +1171,30 @@ from boheme_web_solver import WebNetwork
 schematic = json.loads(boheme_schematic_json)
 p = json.loads(boheme_params_json)
 
-net = WebNetwork()
-net.Schematic = schematic
-net.Nrow = len(schematic)
-net.Ncol = len(schematic[0]) if schematic else 0
-net.Mue = float(p['Mue'])
-net.Rho = float(p['Rho'])
-net.G = float(p['G'])
-net.Krough = float(p['Krough'])
-net.DUcrit = float(p['DUcrit'])
-net.NiterMax = int(p['NiterMax'])
-net.LambdaU = float(p['LambdaU'])
-net.KRelt = float(p['KRelt'])
-net.Recrit = float(p['Recrit'])
-net.Protect = bool(p['Protect'])
-net.Zanke = bool(p['Zanke'])
-net.Pi = math.pi
+from Bachelorthesis import RunWithPtuLogic
 
-net.Schematic_Netlist_CoefficientMatrix_Solve()
+def make_net(ptu_off):
+    n = WebNetwork()
+    n.Schematic = schematic
+    n.Nrow = len(schematic)
+    n.Ncol = len(schematic[0]) if schematic else 0
+    n.Mue = float(p['Mue'])
+    n.Rho = float(p['Rho'])
+    n.G = float(p['G'])
+    n.Krough = float(p['Krough'])
+    n.DUcrit = float(p['DUcrit'])
+    n.NiterMax = int(p['NiterMax'])
+    n.LambdaU = float(p['LambdaU'])
+    n.KRelt = float(p['KRelt'])
+    n.Recrit = float(p['Recrit'])
+    n.Protect = bool(p['Protect'])
+    n.Zanke = bool(p['Zanke'])
+    n.Pi = math.pi
+    n.PtuOff = ptu_off
+    n.Schematic_Netlist_CoefficientMatrix_Solve()
+    return n
+
+net, ptu_info = RunWithPtuLogic(make_net, bool(p.get('PtuLogic', True)), float(p.get('PtuDpMin', 500.0)))
 
 components = []
 for i in range(net.Ncomp):
@@ -1213,7 +1235,8 @@ json.dumps({
    'iterations': net.liter,
    'residual': net.DUres,
    'ncomp': net.Ncomp,
-   'nnode': net.Nnode
+   'nnode': net.Nnode,
+   'ptu': ptu_info
 })
 `);
 
@@ -1441,7 +1464,8 @@ const kind = String(c.type || '').toUpperCase();
 const dmm = Number(c.d) * 1000;
 const isReturn = kind === 'R' && dmm > 30;
 const isYellowCircuit = yellowComps.has(c.name) && kind !== 'UPT';
-const color = (kind === 'P' || kind === 'UPM') ? 0xe94560 : (kind === 'UPT' ? 0xc070ff : (isYellowCircuit ? (isReturn ? 0xc9a227 : 0xffd740) : (kind.startsWith('U') ? 0xff8844 : (isReturn ? 0x3a78d8 : 0x4fc3f7))));
+const vClosed = (typeof ValveRegistry!=='undefined') && ValveRegistry.valves.get(String(c.name).trim()) && !ValveRegistry.valves.get(String(c.name).trim()).open;
+const color = vClosed ? 0xff1744 : (kind === 'P' || kind === 'UPM') ? 0xe94560 : (kind === 'UPT' ? 0xc070ff : (isYellowCircuit ? (isReturn ? 0xc9a227 : 0xffd740) : (kind.startsWith('U') ? 0xff8844 : (isReturn ? 0x3a78d8 : 0x4fc3f7))));
 const radius = kind.startsWith('U') || kind === 'P' ? 0.011 : 0.007;
 const line = new THREE.Mesh(pipeTubeGeometry(pipePoints3D(k1, k2), radius), new THREE.MeshBasicMaterial({color}));
 line.renderOrder = 2;
@@ -1539,26 +1563,93 @@ this.valves=next;if(changed)saveToLocalStorage();this.render();
 applyAll(){let ch=false;this.valves.forEach(v=>{if(v.apply())ch=true;});if(ch)saveToLocalStorage();this.render();},
 toggle(name){const v=this.valves.get(name);if(v)v.toggle();else alert('No cell "'+name+' …" found in the schematic.');},
 render(){
+markValveCells();
 const box=document.getElementById('valveList');if(!box)return;
 if(!this.valves.size){box.innerHTML='<div style="font-size:10px;color:#667;">No valves – write e.g. “Rl_F 1 999 ^” or “Rk_G 0.1 &lt;” into a cell.</div>';return;}
 box.innerHTML='';
 this.valves.forEach(v=>{
 const row=document.createElement('div');row.className='toggle-item';
-const key=document.createElement('span');key.className='key';key.textContent=v.name;
+const key=document.createElement('span');key.className='key valve-name';key.textContent=v.name;key.title='Show '+v.name+' in the schematic';key.addEventListener('click',()=>locateValve(v.name));
 const btn=document.createElement('button');btn.className='toggle-btn '+(v.open?'on':'off');btn.textContent=v.open?'ON':'OFF';
 btn.title=v.name+': '+(v.open?'ON':'OFF')+' → value '+v.value;btn.addEventListener('click',()=>v.toggle());
 row.appendChild(key);
 if(v.kind==='RK'){const sel=document.createElement('select');sel.title='ON value of this k_V valve (as in Excel): Rk_on_0.1 or Rk_on_0.54';sel.style.cssText='background:#1a1a2e;color:#ccc;border:1px solid #2a4a7a;border-radius:3px;font-size:10px;margin-right:4px;';['0.1','0.54'].forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent='on '+o;if(v.rkSet===o)op.selected=true;sel.appendChild(op);});sel.addEventListener('change',()=>v.setRkSet(sel.value));row.appendChild(sel);}
-row.appendChild(btn);box.appendChild(row);
+row.appendChild(btn);
+const del=document.createElement('button');del.textContent='✕';del.title='Delete '+v.name+' from the schematic';del.style.cssText='margin-left:4px;padding:1px 6px;background:transparent;color:#e94560;border:1px solid #3a2a3a;border-radius:3px;cursor:pointer;font-size:11px;';del.addEventListener('click',()=>deleteValve(v.name));row.appendChild(del);
+box.appendChild(row);
 });
 }
 };
 function applyRlF(){ValveRegistry.applyAll();}
+function togglePtuLogic(){const b=document.getElementById('itPtuLogic');const on=b.textContent!=='ON';b.textContent=on?'ON':'OFF';b.className='toggle-btn '+(on?'on':'off');try{localStorage.setItem('boheme_ptu_logic',on?'1':'0');}catch(e){}}
+function restorePtuLogic(){let v=null;try{v=localStorage.getItem('boheme_ptu_logic');}catch(e){}if(v==='0'){const b=document.getElementById('itPtuLogic');if(b){b.textContent='OFF';b.className='toggle-btn off';}}}
+function nextValveName(prefix){const used=new Set(Object.values(D).map(ToggleValve.nameOf).filter(Boolean).map(n=>n.toUpperCase()));for(const ch of 'FGHIJKLMNOPQRSTUVWXYZABCDE'){const n=prefix+'_'+ch;if(!used.has(n.toUpperCase()))return n;}let i=1;while(used.has((prefix+'_'+i).toUpperCase()))i++;return prefix+'_'+i;}
+function markValveCells(){
+document.querySelectorAll('#grid td.valve-off').forEach(t=>t.classList.remove('valve-off'));
+ValveRegistry.valves.forEach(v=>{if(v.open)return;v.cellKeys().forEach(ky=>{const [r,c]=ky.split(',').map(Number);const t=getCell(r,c);if(t)t.classList.add('valve-off');});});
+}
+function locateValve(name){
+const v=ValveRegistry.valves.get(name);if(!v)return;const ky=v.cellKeys()[0];if(!ky)return;
+const tab=document.getElementById('tab-comp');if(tab&&!tab.classList.contains('active')){const b=[...document.querySelectorAll('.tab-btn')].find(x=>/^\s*Comp\s*$/.test(x.textContent));if(b)b.click();}
+const [r,c]=ky.split(',').map(Number);sel(r,c);const t=getCell(r,c);
+if(t){t.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});t.animate([{boxShadow:'0 0 0 3px #ffdd44 inset'},{boxShadow:'0 0 0 0 transparent inset'}],{duration:1400,iterations:2});}
+}
+function deleteValve(name){
+const v=ValveRegistry.valves.get(name);if(!v)return;
+if(!confirm('Delete valve '+name+' from the schematic?'))return;
+v.cellKeys().forEach(ky=>{delete D[ky];delete customColors[ky];});
+const st=ToggleValve.states();delete st[name];try{localStorage.setItem('boheme_valves',JSON.stringify(st));}catch(e){}
+if(resultViewOn){resultViewOn=false;renderResultView();}else renderGridData();
+saveToLocalStorage();
+}
+function openAddValveDialog(){
+let dlg=document.getElementById('valveDlg');
+if(!dlg){
+dlg=document.createElement('div');dlg.id='valveDlg';dlg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;';
+const F='background:#0f0f1f;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;padding:5px 8px;font-size:12px;width:100%;';
+dlg.innerHTML='<div style="background:#16213e;border:1px solid #2a4a7a;border-radius:8px;padding:16px;width:min(420px,92vw);color:#ddd;font-size:13px;">'+
+'<div style="color:#e94560;font-weight:700;margin-bottom:8px;">Add valve</div>'+
+'<div style="display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;">'+
+'<label>Type</label><select id="avType" style="'+F+'"><option value="Rl">Rl – linear resistance (Rl_on / Rl_off)</option><option value="Rk">Rk – k_V valve (Rk_on / Rk_off)</option></select>'+
+'<label>Name</label><input id="avName" style="'+F+'">'+
+'<label id="avDLab">Diameter [mm]</label><input id="avD" value="28.2" style="'+F+'">'+
+'<label id="avRkLab">ON value</label><select id="avRk" style="'+F+'"><option value="0.1">Rk_on_0.1</option><option value="0.54">Rk_on_0.54</option></select>'+
+'<label>Flow direction</label><select id="avDir" style="'+F+'"><option value="&gt;">&gt; from west</option><option value="&lt;">&lt; from east</option><option value="^">^ from south</option><option value="v">v from north</option></select>'+
+'<label>Initial state</label><select id="avState" style="'+F+'"><option value="1">ON (open)</option><option value="0">OFF (closed)</option></select>'+
+'<label>Cell</label><div id="avCell" style="color:#ffdd44;font-family:Consolas,monospace;"></div>'+
+'</div>'+
+'<div style="color:#8fa3bf;font-size:11px;margin-top:8px;">The valve is written into the selected cell. Connect it to two nodes with “-” or “I”, then press Solve.</div>'+
+'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;"><button id="avCancel" style="padding:6px 14px;background:#2a2a4a;color:#fff;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;">Cancel</button><button id="avOk" style="padding:6px 14px;background:#4caf50;color:#111;border:none;border-radius:4px;cursor:pointer;font-weight:700;">Add</button></div></div>';
+document.body.appendChild(dlg);
+const sync=()=>{const rk=dlg.querySelector('#avType').value==='Rk';dlg.querySelector('#avD').style.display=rk?'none':'';dlg.querySelector('#avDLab').style.display=rk?'none':'';dlg.querySelector('#avRk').style.display=rk?'':'none';dlg.querySelector('#avRkLab').style.display=rk?'':'none';dlg.querySelector('#avName').value=nextValveName(rk?'Rk':'Rl');};
+dlg.querySelector('#avType').addEventListener('change',sync);
+dlg.querySelector('#avCancel').addEventListener('click',()=>{dlg.style.display='none';});
+dlg.querySelector('#avOk').addEventListener('click',()=>{
+const type=dlg.querySelector('#avType').value;let name=dlg.querySelector('#avName').value.trim().replace(/\s+/g,'_');
+const pre=type+'_';if(!name.toUpperCase().startsWith(pre.toUpperCase()))name=pre+name.replace(/^R[LK]_?/i,'');
+if(!/^R[LK]_[A-Za-z0-9]+$/i.test(name)){alert('Please use a name like '+pre+'G.');return;}
+if(Object.values(D).some(v=>ToggleValve.nameOf(v)&&ToggleValve.nameOf(v).toUpperCase()===name.toUpperCase())){alert(name+' already exists in the schematic.');return;}
+const open=dlg.querySelector('#avState').value==='1';const dir=dlg.querySelector('#avDir').value;const rkSet=dlg.querySelector('#avRk').value;
+let txt;
+if(type==='Rk'){txt=name+' '+(open?(rkSet==='0.54'?ToggleValve.rkOn54():ToggleValve.rkOn1()):ToggleValve.rkOff())+' '+dir;}
+else{const d=parseFloat(String(dlg.querySelector('#avD').value).replace(',','.'));if(!(d>0)){alert('Please enter a diameter > 0.');return;}txt=name+' '+(open?ToggleValve.rlOn():ToggleValve.rlOff())+' '+d+' '+dir;}
+const key=k(sr,sc);
+if(D[key]&&String(D[key]).trim()&&!confirm('Cell '+cn(sr,sc)+' contains “'+D[key]+'”. Overwrite?'))return;
+const st=ToggleValve.states();st[name]={open:open,rk:rkSet};try{localStorage.setItem('boheme_valves',JSON.stringify(st));}catch(e){}
+D[key]=txt;dlg.style.display='none';
+if(resultViewOn){resultViewOn=false;renderResultView();}else renderGridData();
+saveToLocalStorage();sel(sr,sc);
+const s2=document.getElementById('statusInfo');if(s2){s2.textContent=name+' added at '+cn(sr,sc)+' – connect it to two nodes, then Solve';s2.style.color='';}
+});
+dlg._sync=sync;
+}
+dlg.querySelector('#avCell').textContent=cn(sr,sc)+(D[k(sr,sc)]?' (not empty)':'');dlg._sync();dlg.style.display='flex';
+}
 function toggleRlF(){ValveRegistry.toggle('Rl_F');}
 
 const TOGGLE_TO_TOOLBAR={itLambda:'pLambdaU',itKReD:'pKRelt',grav:'pG',krough:'pKrough',redcrit:'pRecrit'};
 const TOGGLE_TO_CHECK={itProtect:'pProtect',itZanke:'pZanke'};
-const TOGGLE_KEYS=['tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff','itLambda','itDUcrit','itNiter','itKReD','itProtect','itZanke','fluidT','pamb','grav','krough','redcrit'];
+const TOGGLE_KEYS=['itPtuDp','tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff','itLambda','itDUcrit','itNiter','itKReD','itProtect','itZanke','fluidT','pamb','grav','krough','redcrit'];
 function fluidFromT(T){return{rho:1025*Math.exp(-0.00083*T),mue:0.0000517*Math.exp(1084/(T+273.15-110))};}
 function applyFluidT(){const el=document.getElementById('fluidT');if(!el)return;const T=Number(el.value);if(!Number.isFinite(T))return;const f=fluidFromT(T);document.getElementById('fluidRho').value=f.rho.toFixed(3);document.getElementById('fluidMue').value=f.mue.toPrecision(5);const r=document.getElementById('pRho'),m=document.getElementById('pMue');if(r)r.value=f.rho.toFixed(4);if(m)m.value=f.mue.toPrecision(6);}
 function isTrueText(v){return /^(wahr|true|1|ja|yes|on)$/i.test(String(v).trim());}
@@ -1734,6 +1825,7 @@ function renderGridData(){
         }
     }
     updateUI();
+    if(typeof markValveCells==='function')markValveCells();
 }
 
 function hasGridData(){
@@ -1791,6 +1883,7 @@ loadFromLocalStorage();
 cleanToggleJunk();
 syncTogglesToToolbar();
 bindToolbarToToggles();
+restorePtuLogic();
     networkLoadPromise = loadNodePositions();
 
 
@@ -1885,7 +1978,8 @@ const comp=comps.get(tok);
 if(comp){
 const q=Number(comp.q),aq=Math.abs(q);
 const band=aq<1e-6?0:(aq<qmax/3?1:(aq<2*qmax/3?2:3));
-const sym=band===0?'<span class="rv-zero">×</span>':'<span class="rv-arr">'+rvArrow(comp.orient,q).repeat(band)+'</span>';
+const vl=ValveRegistry.valves.get(tok);
+const sym=(vl&&!vl.open)?'<span class="rv-zero">⊘</span>':(band===0?'<span class="rv-zero">×</span>':'<span class="rv-arr">'+rvArrow(comp.orient,q).repeat(band)+'</span>');
 t.innerHTML=sym+aq.toFixed(3);
 t.classList.add('rv');
 t.title=tok+': |Q| = '+aq.toFixed(3)+' m³/h · ΔP = '+Number(comp.dp).toFixed(2)+' bar · Pow = '+Number(comp.pow).toFixed(3)+' kW';
@@ -1942,7 +2036,7 @@ const parsed = JSON.parse(data);
 Object.assign(D, parsed.D || {});
 Object.assign(customColors, parsed.customColors || {});
 }
-const toggleKeys = ['tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff','itLambda','itDUcrit','itNiter','itKReD','itProtect','itZanke','fluidT','pamb','grav','krough','redcrit'];
+const toggleKeys = ['itPtuDp','tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff','itLambda','itDUcrit','itNiter','itKReD','itProtect','itZanke','fluidT','pamb','grav','krough','redcrit'];
 toggleKeys.forEach(id => {
 const el = document.getElementById(id);
 if(el){
@@ -2015,6 +2109,7 @@ result.ncomp + ' components, ' + result.nnode +
 ' nodes | iterations: ' + result.iterations +
 ' | Residual: ' + Number(result.residual).toExponential(3);
 status.style.color = notConverged ? '#ff6b6b' : '';
+if (result.ptu && result.ptu.present) { status.textContent += result.ptu.enabled ? (' | PTU ' + (result.ptu.active ? 'active' : 'inactive') + ' (Δp without PTU ' + Math.round(result.ptu.dpOffPsi) + ' psi ' + (result.ptu.active ? '≥ ' : '< ') + Math.round(result.ptu.thresholdPsi) + ' psi)') : ' | PTU always on (logic OFF)'; }
 const solvedNodes = new Set((result.nodes||[]).map(n => String(n.id).trim().toUpperCase()));
 const unconnected = [...new Set(Object.values(D).map(v => String(v).trim().match(/^N\d+\b/i)).filter(Boolean).map(m => m[0].toUpperCase()))].filter(n => !solvedNodes.has(n));
 if (unconnected.length) { status.textContent += ' | ⚠ ' + unconnected.join(', ') + (unconnected.length>1?' are':' is') + ' not connected to any component – ignored by the solver'; if(!notConverged) status.style.color = '#ffb347'; }

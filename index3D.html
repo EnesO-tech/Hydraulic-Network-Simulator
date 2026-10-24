@@ -288,16 +288,7 @@ td.c.custom-color{color:#fff}
 <button onclick="setView('side')">Side</button>
 <button id="resetView">Reset</button>
 </div>
-<div id="steer-panel" style="padding:8px 10px;border-bottom:1px solid #2a2a4a;">
-<h4 style="color:#e94560;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px 0;">Lock &amp; Steer</h4>
-<button id="stLock" style="width:100%;padding:4px 8px;background:#2a2a4a;border:1px solid #2a4a7a;color:#fff;border-radius:3px;cursor:pointer;font-size:11px;margin-bottom:6px;">🔓 Lock Nodes to Aircraft</button>
-<div id="stSteer" style="display:none;">
-<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#e94560;font-size:11px;width:36px;font-weight:700;">Pitch</span><input type="range" id="stPitch" min="-30" max="30" step="0.5" value="0" style="flex:1;"><span id="stPitchV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0°</span></div>
-<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#4caf50;font-size:11px;width:36px;font-weight:700;">Yaw</span><input type="range" id="stYaw" min="-45" max="45" step="0.5" value="0" style="flex:1;"><span id="stYawV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0°</span></div>
-<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#6fc3f7;font-size:11px;width:36px;font-weight:700;">Roll</span><input type="range" id="stRoll" min="-60" max="60" step="0.5" value="0" style="flex:1;"><span id="stRollV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0°</span></div>
-<button id="stReset" style="width:100%;padding:4px;background:#1a1a2e;border:1px solid #2a4a7a;color:#888;border-radius:3px;cursor:pointer;font-size:11px;">Reset Orientation</button>
-</div>
-</div>
+
 <div id="sidebar" style="flex:1;">
 <h3>3D Network</h3>
 <div class="result-section"><h4>Nodes in 3D</h4><div id="node3dResults"></div></div>
@@ -2451,31 +2442,6 @@ try{
     }
 }
 </script>
-<script>
-(function(){
-let steerGrp=null,locked=false;
-const $=id=>document.getElementById(id);
-function label(){['Pitch','Yaw','Roll'].forEach(n=>{$('st'+n+'V').textContent=parseFloat($('st'+n).value).toFixed(0)+'°';});}
-function applySteer(){if(!steerGrp)return;const d=Math.PI/180;steerGrp.rotation.set(parseFloat($('stPitch').value)*d,parseFloat($('stYaw').value)*d,parseFloat($('stRoll').value)*d);label();}
-function resetSteer(){['stPitch','stYaw','stRoll'].forEach(id=>{$(id).value=0;});if(steerGrp)steerGrp.rotation.set(0,0,0);label();}
-function toggleLock(){
-if(typeof scene==='undefined'||!scene)return;
-locked=!locked;const btn=$('stLock');
-if(locked){
-btn.textContent='🔒 Nodes LOCKED';btn.style.background='#4caf50';$('stSteer').style.display='block';
-steerGrp=new THREE.Group();scene.add(steerGrp);
-if(aircraftGroup){scene.remove(aircraftGroup);steerGrp.add(aircraftGroup);}
-if(pipeGroup){scene.remove(pipeGroup);steerGrp.add(pipeGroup);}
-}else{
-btn.textContent='🔓 Lock Nodes to Aircraft';btn.style.background='#2a2a4a';$('stSteer').style.display='none';
-if(steerGrp){if(aircraftGroup){steerGrp.remove(aircraftGroup);scene.add(aircraftGroup);}if(pipeGroup){steerGrp.remove(pipeGroup);scene.add(pipeGroup);}scene.remove(steerGrp);steerGrp=null;}
-resetSteer();
-}
-}
-$('stLock').addEventListener('click',toggleLock);
-['stPitch','stYaw','stRoll'].forEach(id=>$(id).addEventListener('input',applySteer));
-$('stReset').addEventListener('click',resetSteer);
-})();
-</script>
+
 </body>
 </html>

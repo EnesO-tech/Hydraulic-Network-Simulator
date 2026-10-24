@@ -651,6 +651,10 @@ class Network:
                 m = c.PtuPartner
                 if m is None:
                     continue
+                if getattr(self, 'PtuOff', False):
+                    c.Qsc = 0.0
+                    m.Rd = 1e15
+                    continue
                 Qa = abs(m.q)
                 c.Qsc = Qa * c.DispRatio * m.EtaV * c.EtaV
                 if self.Iiter <= 1 or Qa < 1e-12:
@@ -1054,3 +1058,23 @@ class Network:
             self.OutX[inode] = self.X[nodeIdx] / PA_PER_BAR
             self.OutZ[inode] = self.NodeZ[nodeIdx]
             self.OutPtmP[inode] = self.OutX[inode] - self.Rho * self.G * self.NodeZ[nodeIdx] / PA_PER_BAR
+
+PSI_PER_BAR = 14.5037738
+
+
+def RunWithPtuLogic(make_net, enabled=True, dp_min_psi=500.0):
+    net = make_net(False)
+    pairs = [(c.PtuPartner, c) for c in net.Comp if net.IsPtuPump(c) and c.PtuPartner is not None]
+    info = {'enabled': bool(enabled), 'present': bool(pairs), 'active': bool(pairs), 'dpOffPsi': None, 'thresholdPsi': float(dp_min_psi)}
+    if not enabled or not pairs:
+        return net, info
+    off = make_net(True)
+    byname = {c.Name: c for c in off.Comp}
+    dps = []
+    for m, q in pairs:
+        mo, qo = byname[m.Name], byname[q.Name]
+        dps.append(max(mo.Ptot1, mo.Ptot2) - max(qo.Ptot1, qo.Ptot2))
+    dp_psi = min(dps) / PA_PER_BAR * PSI_PER_BAR
+    info['dpOffPsi'] = float(dp_psi)
+    info['active'] = bool(dp_psi >= float(dp_min_psi))
+    return (net if info['active'] else off), info

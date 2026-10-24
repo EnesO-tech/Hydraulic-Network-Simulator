@@ -3,19 +3,19 @@
  "nodes": [
   {
    "id": "N01",
-   "x": 0.133,
-   "y": -0.487,
-   "z": 1.09,
-   "desc": "Reservoir outlet (pump suction side)",
-   "loc": "Fuselage center bottom, next to hydraulic tank"
+   "x": 0.9333,
+   "y": -1.0,
+   "z": 0.5128,
+   "desc": "EDP Upm1 suction side (engine 1, accessory gearbox)",
+   "loc": "Engine 1 nacelle (left)"
   },
   {
    "id": "N02",
-   "x": -0.133,
-   "y": -0.225,
-   "z": 0.898,
-   "desc": "Pump P1 outlet (high pressure ~209 bar)",
-   "loc": "Fuselage center, pressure line"
+   "x": 1.0133,
+   "y": -1.0,
+   "z": 0.6923,
+   "desc": "EDP Upm1 pressure side, ~206 bar (engine 1)",
+   "loc": "Engine 1 nacelle (left)"
   },
   {
    "id": "N03",
@@ -351,7 +351,7 @@
    "x": 0.149,
    "y": -0.717,
    "z": -0.128,
-   "desc": "Yellow reservoir (PTU circuit B; 3D display only \u2013 same ground node S in the solver)",
+   "desc": "Yellow reservoir (PTU circuit B; 3D display only – same ground node S in the solver)",
    "loc": "Next to PTU circuit B",
    "kind": "reservoir"
   }
@@ -361,7 +361,29 @@
    "name": "R03",
    "from": "N02",
    "to": "N03",
-   "type": "R"
+   "type": "R",
+   "via": [
+    [
+     1.0,
+     -0.7,
+     0.3846
+    ],
+    [
+     1.0,
+     -0.5375,
+     0.1154
+    ],
+    [
+     0.1067,
+     -0.5375,
+     0.1154
+    ],
+    [
+     0.0533,
+     -0.3,
+     0.4487
+    ]
+   ]
   },
   {
    "name": "R048",
@@ -1284,7 +1306,24 @@
    "name": "Upt1a",
    "from": "N02",
    "to": "N39",
-   "type": "Upt"
+   "type": "Upt",
+   "via": [
+    [
+     1.04,
+     -0.7,
+     0.3846
+    ],
+    [
+     1.04,
+     -0.5375,
+     0.0513
+    ],
+    [
+     0.0533,
+     -0.5375,
+     0.0513
+    ]
+   ]
   },
   {
    "name": "Upt1b",
@@ -1296,7 +1335,29 @@
    "name": "R01",
    "from": "S",
    "to": "N01",
-   "type": "R"
+   "type": "R",
+   "via": [
+    [
+     0.16,
+     -0.55,
+     0.9615
+    ],
+    [
+     0.16,
+     -0.55,
+     0.1795
+    ],
+    [
+     0.9333,
+     -0.5375,
+     0.1795
+    ],
+    [
+     0.9333,
+     -0.7,
+     0.359
+    ]
+   ]
   },
   {
    "name": "Ucv1",

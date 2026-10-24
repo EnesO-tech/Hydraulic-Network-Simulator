@@ -50,14 +50,19 @@ main{display:flex;flex:1;overflow:hidden}
 
 .comp-bottom{height:350px;min-height:250px;background:#0f0f1f;border-top:1px solid #2a2a4a;padding:6px 10px;overflow:auto;flex-shrink:0}
 .comp-bottom h4{color:#e94560;font-size:13px;text-transform:uppercase;margin:4px 0 4px 0;letter-spacing:1px}
-#resultTable{width:100%;border-collapse:collapse;font-size:10px;font-family:Consolas,monospace}
+#resultTable{width:100%;border-collapse:collapse;font-size:12px;font-family:Consolas,monospace}
 #nodeTable{border-collapse:collapse;font-size:10px;font-family:Consolas,monospace;min-width:230px}
 #nodeTable th{background:#0f3460;color:#fff;padding:3px 4px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2;font-size:9px;white-space:nowrap}
 #nodeTable td{padding:2px 4px;border:1px solid #1a2a4a;text-align:center;font-size:10px}
 #nodeTable td.val{color:#aac}
-#resultTable th{background:#0f3460;color:#fff;padding:3px 4px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2;font-size:9px;white-space:nowrap}
-#resultTable td{padding:2px 4px;border:1px solid #1a2a4a;text-align:center;font-size:10px}
+#resultTable th{background:#0f3460;color:#fff;padding:3px 4px;border:1px solid #1a2a4a;position:sticky;top:0;z-index:2;font-size:11px;white-space:nowrap}
+#resultTable td{padding:3px 5px;border:1px solid #1a2a4a;text-align:center;font-size:12px}
 #resultTable td.ok{color:#4caf50}
+td.c.rv{font-family:Consolas,monospace;white-space:nowrap}
+td.c.rv .rv-arr{color:inherit;font-weight:700;letter-spacing:-1px;margin-right:3px}
+td.c.rv .rv-zero{color:#e94560;font-weight:700;margin-right:3px}
+td.c.rv .rv-p{font-weight:700}
+#resultViewBtn.active{background:#4caf50;color:#111}
 #resultTable td.err{color:#e94560}
 #resultTable td.warn{color:#ffdd44}
 #resultTable td.val{color:#aac}
@@ -149,6 +154,7 @@ td.c.custom-color{color:#fff}
 <button class="tab-btn" onclick="switchTab('iso', event)">ISO</button>
 <button class="tab-btn" onclick="switchTab('schematic', event)">Schematic Parking</button>
 <button class="tab-btn" onclick="switchTab('qr', event)">QRUnivComp</button>
+<button class="tab-btn" onclick="window.open('airstream.html','_blank','noopener')" title="Separate tool: flow visualisation around the A320 (not part of the hydraulic calculation)">Airstream ↗</button>
 <button class="solve" onclick="compute()">Solve</button>
 </div>
 </header>
@@ -158,12 +164,12 @@ td.c.custom-color{color:#fff}
 <div class="comp-top">
 <div class="comp-left" id="compLeft">
 <h4>Toggle Buttons</h4>
-<div style="font-size:10px;color:#667;margin:-2px 0 4px;">As in Excel sheet “Comp” · Rl_on/Rl_off = value for Rl_F · values go directly into the solver</div>
+<div style="font-size:10px;color:#667;margin:-2px 0 4px;">As in Excel sheet “Comp” · Rl_on/Rl_off and Rk_on/Rk_off are written into the valve cells Rl_…/Rk_… · values go directly into the solver</div>
 <div class="toggle-item"><span class="key">Rl_on</span><input class="val on" id="tglRlOn" value="1" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">Rl_off</span><input class="val off" id="tglRlOff" value="9999" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key" title="Only used by the Rk example circuits in Excel sheet SchematicParking – no effect on the current schematic">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key" title="Only used by the Rk example circuits in Excel sheet SchematicParking – no effect on the current schematic">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key" title="Only used by the Rk example circuits in Excel sheet SchematicParking – no effect on the current schematic">Rk_off</span><input class="val off" id="tglRkOff" value="0.001" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" title="ON value [m³/h] of k_V valves Rk_… set to “on 0.1” (as in Excel)">Rk_on_0.1</span><input class="val on" id="tglRkOn1" value="0.1" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" title="ON value [m³/h] of k_V valves Rk_… set to “on 0.54” (as in Excel)">Rk_on_0.54</span><input class="val on" id="tglRkOn54" value="0.54" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" title="OFF value [m³/h] of all k_V valves Rk_… (as in Excel)">Rk_off</span><input class="val off" id="tglRkOff" value="0.001" onchange="applyToggle(this)"></div>
 <h4>Iteration Controls</h4>
 <div class="toggle-item"><span class="key">lambdaU</span><input class="val" id="itLambda" value="0.6" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">dUcrit</span><input class="val" id="itDUcrit" value="1E-07" onchange="applyToggle(this)"></div>
@@ -179,8 +185,9 @@ td.c.custom-color{color:#fff}
 <div class="toggle-item"><span class="key">g [m/s²]</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">krough [mm]</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">ReDcrit</span><input class="val" id="redcrit" value="2320" onchange="applyToggle(this)"></div>
-<h4>Rl_F Toggle</h4>
-<div class="toggle-item"><span class="key">Rl_F Status</span><button class="toggle-btn on" id="rlFToggle" onclick="toggleRlF()">ON</button></div>
+<h4>Valves (Toggle Buttons)</h4>
+<div style="font-size:10px;color:#667;margin:-2px 0 4px;">One button per valve cell in the schematic: “Rl_…” (linear resistance, ON = Rl_on, OFF = Rl_off) and “Rk_…” (k_V valve, ON = Rk_on_0.1 or Rk_on_0.54, OFF = Rk_off).</div>
+<div id="valveList"></div>
 </div>
 <div class="comp-center">
 <button class="panel-toggle pt-left" id="ptLeft" onclick="togglePanel('left')" title="Show/hide Toggle Buttons">◀</button>
@@ -209,6 +216,9 @@ td.c.custom-color{color:#fff}
 <button class="file-btn" onclick="document.getElementById('fileInput').click()">📂</button>
 <input type="file" id="fileInput" accept=".json" style="display:none" onchange="loadDataFromFile(event)">
 <button class="file-btn" onclick="saveDataToFile()">💾</button>
+<div class="sep"></div>
+<button class="insert-btn" onclick="openPasteDialog()" title="Paste a cell range copied from Excel (Ctrl+V also works on the grid) – starts at the selected cell">📋 Paste</button>
+<button class="insert-btn" id="resultViewBtn" onclick="toggleResultView()" title="Result view as in Excel: flow arrows and |Q| on components, total pressure on nodes">📊 Result view</button>
 </div>
 <div class="formula-bar">
 <input class="cell-ref" id="cellRef" value="B4" readonly>
@@ -246,7 +256,7 @@ td.c.custom-color{color:#fff}
 </div>
 </div>
 <div class="comp-bottom" id="compBottom">
-<h4>Results (tabular)</h4>
+<h4>Results (tabular) <button onclick="exportResultsCSV()" title="Download the result table as CSV (comma-separated, decimal point)" style="margin-left:8px;padding:2px 10px;background:#0f3460;color:#fff;border:1px solid #2a4a7a;border-radius:3px;cursor:pointer;font-size:11px;text-transform:none;letter-spacing:0;">⬇ CSV</button></h4>
 <div style="overflow:auto;max-height:100%;">
 <table id="resultTable">
 <thead><tr>
@@ -278,11 +288,21 @@ td.c.custom-color{color:#fff}
 <button onclick="setView('side')">Side</button>
 <button id="resetView">Reset</button>
 </div>
-<div id="airstream-panel"></div>
+<div id="steer-panel" style="padding:8px 10px;border-bottom:1px solid #2a2a4a;">
+<h4 style="color:#e94560;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px 0;">Lock &amp; Steer</h4>
+<button id="stLock" style="width:100%;padding:4px 8px;background:#2a2a4a;border:1px solid #2a4a7a;color:#fff;border-radius:3px;cursor:pointer;font-size:11px;margin-bottom:6px;">🔓 Lock Nodes to Aircraft</button>
+<div id="stSteer" style="display:none;">
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#e94560;font-size:11px;width:36px;font-weight:700;">Pitch</span><input type="range" id="stPitch" min="-30" max="30" step="0.5" value="0" style="flex:1;"><span id="stPitchV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0°</span></div>
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#4caf50;font-size:11px;width:36px;font-weight:700;">Yaw</span><input type="range" id="stYaw" min="-45" max="45" step="0.5" value="0" style="flex:1;"><span id="stYawV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0°</span></div>
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:#6fc3f7;font-size:11px;width:36px;font-weight:700;">Roll</span><input type="range" id="stRoll" min="-60" max="60" step="0.5" value="0" style="flex:1;"><span id="stRollV" style="color:#aac;font-size:11px;width:30px;text-align:right;">0°</span></div>
+<button id="stReset" style="width:100%;padding:4px;background:#1a1a2e;border:1px solid #2a4a7a;color:#888;border-radius:3px;cursor:pointer;font-size:11px;">Reset Orientation</button>
+</div>
+</div>
 <div id="sidebar" style="flex:1;">
 <h3>3D Network</h3>
 <div class="result-section"><h4>Nodes in 3D</h4><div id="node3dResults"></div></div>
 <div class="result-section"><h4>Pipes in 3D</h4><div id="pipe3dResults"></div></div>
+<div class="result-section"><h4>Pipe lengths: 3D route vs schematic</h4><div id="pipeLengthReport" style="font-size:11px;color:#aac;"></div></div>
 <div id="selectedNodePanel">
 <div style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Selected node</div>
 <div class="node-title" id="selectedNodeName">—</div>
@@ -318,6 +338,7 @@ td.c.custom-color{color:#fff}
 <div id="tab-iso" class="tab-content">
 <div style="flex:1;padding:18px;overflow:auto;">
 <h2 style="color:#e94560;">ISO 8575 – Pipe sizing, wall thickness and mass</h2>
+<div id="isoSourceNote" style="background:#1a1a2e;border-left:3px solid #ffdd44;border-radius:4px;padding:8px 12px;margin:8px 0 6px;color:#c8d2e0;font-size:12px;line-height:1.5;max-width:1100px;"><b style="color:#ffdd44;">Source and copyright note.</b> All tube outside diameters, wall thicknesses, materials and pressure/temperature classes used on this page are cited from <b>ISO 8575:2016(E)</b>, <i>Aerospace — Fluid systems — Hydraulic system tubing</i>, Tables 2 and 3 (© ISO 2016; also published as DIN ISO 8575). They are reproduced in excerpts for reference and academic, non-commercial use only. Copyright remains with ISO. For authoritative values, always consult the official standard, available from ISO (iso.org) or DIN Media. The velocity limits and the actuator power criterion follow the course material (Berens, Hydraulic Systems Exercise); material densities are not part of the standard.</div>
 <p style="color:#888;font-size:12px;margin-top:4px;">Workflow (Berens, Hydraulic Systems Exercise): 1) Solve → 2) check flow velocities against the limits → 3) check actuator power ≥ 80 % of rating → 4) pick the standard tube (ISO 8575:2016 Tables 2/3) and verify wall thickness with Barlow → 5) sum up the mass. LP return lines must never be smaller than the HP supply lines.</p>
 
 <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;align-items:flex-end;background:#0f0f1f;padding:14px;border-radius:8px;border:1px solid #2a2a4a;">
@@ -1305,6 +1326,33 @@ let best=keys[0],bd=Infinity;
 keys.forEach(k=>{const p=nodePositions[k];const d=(p.x-o.x)**2+(p.y-o.y)**2+(p.z-o.z)**2;if(d<bd){bd=d;best=k;}});
 return best;
 }
+const A320_LENGTH_M=37.57;
+let sceneMetres=null;
+function sceneToMetres(){
+if(sceneMetres)return sceneMetres;
+if(!aircraftGroup||!aircraftGroup.children.length)return null;
+const box=new THREE.Box3().setFromObject(aircraftGroup);const len=box.max.z-box.min.z;
+if(len>0.5)sceneMetres=A320_LENGTH_M/len;return sceneMetres;
+}
+function updatePipeLengthReport(data){
+const box=document.getElementById('pipeLengthReport');if(!box||!data||!Array.isArray(data.components))return;
+const f=sceneToMetres();if(!f){box.textContent='Waiting for the aircraft model …';return;}
+const rows=[];
+data.components.forEach(c=>{
+if(String(c.type||'').toUpperCase()!=='R')return;
+const k1=resolveNodeKey(c.n1,c.n2,c.name),k2=resolveNodeKey(c.n2,c.n1,c.name);
+if(!nodePositions[k1]||!nodePositions[k2])return;
+const pts=pipePoints3D(k1,k2);let L=0;for(let i=0;i<pts.length-1;i++)L+=pts[i].distanceTo(pts[i+1]);
+const Ls=Number(c.l);if(!(Ls>0))return;
+rows.push({name:c.name,Ls,L3d:L*f,ratio:L*f/Ls});
+});
+const flagged=rows.filter(r=>r.ratio>2||r.ratio<0.5).sort((a,b)=>Math.abs(Math.log(b.ratio))-Math.abs(Math.log(a.ratio)));
+let h='<div style="margin-bottom:4px;">'+rows.length+' pipes checked (scale from A320 length 37.57 m). '+(flagged.length?'<span style="color:#ffb347;">'+flagged.length+' differ by more than a factor of 2:</span>':'<span style="color:#4caf50;">All within a factor of 2.</span>')+'</div>';
+if(flagged.length){h+='<table style="width:100%;border-collapse:collapse;font-size:11px;"><tr style="color:#888;"><td>Pipe</td><td style="text-align:right;">schematic L</td><td style="text-align:right;">3D route ≈</td></tr>';
+flagged.forEach(r=>{h+='<tr><td style="color:#6fc3f7;">'+r.name+'</td><td style="text-align:right;">'+r.Ls.toFixed(1)+' m</td><td style="text-align:right;color:#ffb347;">'+r.L3d.toFixed(1)+' m</td></tr>';});h+='</table>';}
+h+='<div style="color:#667;margin-top:4px;">Display only – the solver uses the lengths from the schematic.</div>';
+box.innerHTML=h;
+}
 function routeViaFor(n1,n2){
 const e=(networkJsonComponents||[]).find(c=>(c.from===n1&&c.to===n2)||(c.from===n2&&c.to===n1));
 if(!e||!Array.isArray(e.via)||!e.via.length)return[];
@@ -1430,6 +1478,7 @@ const nodeText = renderedNodes + ' / ' + (usedNodeNames.size + usedReservoirs.si
 const compText = renderedComponents + ' / ' + data.components.length + ' components in 3D';
 document.getElementById('node3dResults').textContent = nodeText;
 document.getElementById('pipe3dResults').textContent = compText;
+updatePipeLengthReport(data);
 
 let message = '3D: ' + renderedComponents + ' components, ' + renderedNodes + ' nodes';
 if (missingNodes.length) message += ' | fehlende Koordinaten: ' + missingNodes.join(', ');
@@ -1442,35 +1491,80 @@ console.warn('3D hints', {missingNodes, skippedComponents});
 }
 }
 
-function applyRlF(showAlert){
-const val=String((rlfState?document.getElementById('tglRlOn'):document.getElementById('tglRlOff'))?.value||(rlfState?'1':'999')).trim();
-const btn=document.getElementById('rlFToggle');
-btn.textContent=rlfState?'ON':'OFF';
-btn.className='toggle-btn '+(rlfState?'on':'off');
-let found=false;
-for(let ky in D){
-let v=D[ky].trim();
-if(v.toUpperCase().startsWith('RL_F')){
-let [r,c]=ky.split(',').map(Number);
-let parts=v.split(/\s+/);
-if(parts.length>=3){
-parts[1]=val;
-const newText=parts.join(' ');
-D[ky]=newText;
-const cell=getCell(r,c);
-if(cell){cell.textContent=newText;updateCellStyle(cell,newText);}
-found=true;
+class ToggleValve{
+constructor(name){
+this.name=name;this.kind=/^RK_/i.test(name)?'RK':'RL';
+const st=ToggleValve.loadState(name);
+this.rkSet=st.rk||ToggleValve.guessRkSet(name);
+this.open=(st.open===undefined)?this.inferOpenFromCell():st.open;
 }
+static nameOf(text){const t=String(text||'').trim().split(/\s+/)[0]||'';return /^R[LK]_/i.test(t)?t:null;}
+static val(id,def){return String(document.getElementById(id)?.value||def).trim();}
+static rlOn(){return ToggleValve.val('tglRlOn','1');}
+static rlOff(){return ToggleValve.val('tglRlOff','9999');}
+static rkOn1(){return ToggleValve.val('tglRkOn1','0.1');}
+static rkOn54(){return ToggleValve.val('tglRkOn54','0.54');}
+static rkOff(){return ToggleValve.val('tglRkOff','0.001');}
+static states(){try{return JSON.parse(localStorage.getItem('boheme_valves')||'{}');}catch(e){return {};}}
+static loadState(name){
+const s=ToggleValve.states();
+if(Object.prototype.hasOwnProperty.call(s,name)){const v=s[name];if(typeof v==='boolean')return {open:v};if(v&&typeof v==='object')return {open:v.open!==false,rk:v.rk};}
+if(name.toUpperCase()==='RL_F'){const old=localStorage.getItem('boheme_rlf');if(old!==null)return {open:old==='1'};}
+return {};
 }
+static cellValueOf(name){const key=Object.keys(D).find(k=>ToggleValve.nameOf(D[k])===name);if(!key)return NaN;return parseFloat(String(D[key]).trim().split(/\s+/)[1]);}
+static guessRkSet(name){const v=ToggleValve.cellValueOf(name);return Math.abs(v-parseFloat(ToggleValve.rkOn54()))<1e-12?'0.54':'0.1';}
+inferOpenFromCell(){const v=ToggleValve.cellValueOf(this.name);if(!Number.isFinite(v))return true;const off=parseFloat(this.kind==='RK'?ToggleValve.rkOff():ToggleValve.rlOff());return Math.abs(v-off)>1e-12;}
+saveState(){const s=ToggleValve.states();s[this.name]={open:this.open,rk:this.rkSet};try{localStorage.setItem('boheme_valves',JSON.stringify(s));}catch(e){}}
+get value(){
+if(this.kind==='RK')return this.open?(this.rkSet==='0.54'?ToggleValve.rkOn54():ToggleValve.rkOn1()):ToggleValve.rkOff();
+return this.open?ToggleValve.rlOn():ToggleValve.rlOff();
 }
-if(found){saveToLocalStorage();updateUI();}
-else if(showAlert){alert('No cell with "Rl_F" found! Please write "Rl_F 1 999 ^" in a cell.');}
-localStorage.setItem('boheme_rlf',rlfState?'1':'999');
+cellKeys(){return Object.keys(D).filter(ky=>ToggleValve.nameOf(D[ky])===this.name);}
+apply(){
+let changed=false;const minTok=this.kind==='RK'?2:3;
+for(const ky of this.cellKeys()){
+const parts=D[ky].trim().split(/\s+/);
+if(parts.length<minTok||parts[1]===this.value)continue;
+parts[1]=this.value;
+const txt=parts.join(' ');D[ky]=txt;changed=true;
+const [r,c]=ky.split(',').map(Number);const cell=getCell(r,c);
+if(cell&&!resultViewOn){cell.textContent=txt;cell.className=cc(txt);if(customColors[ky]){cell.style.background=customColors[ky];cell.style.color=readableTextColor(customColors[ky]);cell.classList.add('custom-color');}}
 }
-function toggleRlF(){
-rlfState=!rlfState;
-applyRlF(true);
+return changed;
 }
+toggle(){this.open=!this.open;this.saveState();if(this.apply())saveToLocalStorage();ValveRegistry.render();}
+setRkSet(v){this.rkSet=(v==='0.54')?'0.54':'0.1';this.saveState();if(this.apply())saveToLocalStorage();ValveRegistry.render();}
+}
+const ValveRegistry={
+valves:new Map(),
+refresh(){
+const names=[...new Set(Object.values(D).map(ToggleValve.nameOf).filter(Boolean))].sort();
+const same=names.length===this.valves.size&&names.every(n=>this.valves.has(n));
+if(same)return;
+const next=new Map();let changed=false;
+names.forEach(n=>{let v=this.valves.get(n);if(!v){v=new ToggleValve(n);if(v.apply())changed=true;}next.set(n,v);});
+this.valves=next;if(changed)saveToLocalStorage();this.render();
+},
+applyAll(){let ch=false;this.valves.forEach(v=>{if(v.apply())ch=true;});if(ch)saveToLocalStorage();this.render();},
+toggle(name){const v=this.valves.get(name);if(v)v.toggle();else alert('No cell "'+name+' …" found in the schematic.');},
+render(){
+const box=document.getElementById('valveList');if(!box)return;
+if(!this.valves.size){box.innerHTML='<div style="font-size:10px;color:#667;">No valves – write e.g. “Rl_F 1 999 ^” or “Rk_G 0.1 &lt;” into a cell.</div>';return;}
+box.innerHTML='';
+this.valves.forEach(v=>{
+const row=document.createElement('div');row.className='toggle-item';
+const key=document.createElement('span');key.className='key';key.textContent=v.name;
+const btn=document.createElement('button');btn.className='toggle-btn '+(v.open?'on':'off');btn.textContent=v.open?'ON':'OFF';
+btn.title=v.name+': '+(v.open?'ON':'OFF')+' → value '+v.value;btn.addEventListener('click',()=>v.toggle());
+row.appendChild(key);
+if(v.kind==='RK'){const sel=document.createElement('select');sel.title='ON value of this k_V valve (as in Excel): Rk_on_0.1 or Rk_on_0.54';sel.style.cssText='background:#1a1a2e;color:#ccc;border:1px solid #2a4a7a;border-radius:3px;font-size:10px;margin-right:4px;';['0.1','0.54'].forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent='on '+o;if(v.rkSet===o)op.selected=true;sel.appendChild(op);});sel.addEventListener('change',()=>v.setRkSet(sel.value));row.appendChild(sel);}
+row.appendChild(btn);box.appendChild(row);
+});
+}
+};
+function applyRlF(){ValveRegistry.applyAll();}
+function toggleRlF(){ValveRegistry.toggle('Rl_F');}
 
 const TOGGLE_TO_TOOLBAR={itLambda:'pLambdaU',itKReD:'pKRelt',grav:'pG',krough:'pKrough',redcrit:'pRecrit'};
 const TOGGLE_TO_CHECK={itProtect:'pProtect',itZanke:'pZanke'};
@@ -1486,7 +1580,7 @@ function applyToggle(el){
   else if(val!==''&&!Number.isFinite(Number(val))){el.style.borderColor='#e94560';el.title='Please enter a number';return;}
   el.style.borderColor='';el.title='';
   if(TOGGLE_TO_TOOLBAR[id]){const t=document.getElementById(TOGGLE_TO_TOOLBAR[id]);if(t)t.value=val;}
-  if(id==='tglRlOn'||id==='tglRlOff')applyRlF(false);
+  if(['tglRlOn','tglRlOff','tglRkOn1','tglRkOn54','tglRkOff'].includes(id))ValveRegistry.applyAll();
   if(id==='fluidT')applyFluidT();
   localStorage.setItem('boheme_toggle_'+id,val);
   el.animate([{background:'#1f3a1f'},{background:'transparent'}],{duration:500});
@@ -1571,7 +1665,7 @@ const col = parseInt(picker.dataset.col);
 const cell = getCell(row, col);
 if (cell) {
 cell.style.background = color;
-cell.style.color = '#fff';
+cell.style.color = readableTextColor(color);
 cell.classList.add('custom-color');
 const key = row + ',' + col;
 customColors[key] = color;
@@ -1593,7 +1687,7 @@ const col = parseInt(picker.dataset.col);
 const cell = getCell(row, col);
 if (cell) {
 cell.style.background = color;
-cell.style.color = '#fff';
+cell.style.color = readableTextColor(color);
 cell.classList.add('custom-color');
 const key = row + ',' + col;
 customColors[key] = color;
@@ -1618,6 +1712,15 @@ const R=50,C=40,SR1=4,SR2=47,SC1=2,SC2=38;
 let sr=4,sc=2,D={};
 
 function cL(c){return c<=26?String.fromCharCode(64+c):String.fromCharCode(64+Math.floor((c-1)/26))+String.fromCharCode(64+(c-1)%26+1)}
+function readableTextColor(bg){
+const m=String(bg||'').trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+if(!m)return '#fff';
+let h=m[1];if(h.length===3)h=h.split('').map(x=>x+x).join('');
+const ch=[0,2,4].map(i=>parseInt(h.substr(i,2),16)/255).map(v=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4));
+const L=0.2126*ch[0]+0.7152*ch[1]+0.0722*ch[2];
+const crDark=(L+0.05)/(0.0056+0.05),crLight=1.05/(L+0.05);
+return crDark>=crLight?'#111':'#fff';
+}
 function cn(r,c){return cL(c)+r}function k(r,c){return r+','+c}
 
 function cc(v){if(!v)return'c';let u=v.toUpperCase();if(u.startsWith('UPT')||u.startsWith('UPM'))return'c t-ptu';if(u.startsWith('MPP'))return'c t-mpp';let h=v[0];if(h==='P')return'c t-pump';if(h==='R'||h==='U')return'c t-pipe';if(h==='N')return'c t-node';if(h==='S')return'c t-ground';if('IWFTV-'.includes(v.trim()))return'c t-wire';return'c'}
@@ -1635,7 +1738,7 @@ function renderGridData(){
             t.style.color='';
             if(customColors[key]){
                 t.style.background=customColors[key];
-                t.style.color='#fff';
+                t.style.color=readableTextColor(customColors[key]);
                 t.classList.add('custom-color');
             }
         }
@@ -1700,15 +1803,6 @@ syncTogglesToToolbar();
 bindToolbarToToggles();
     networkLoadPromise = loadNodePositions();
 
-const savedRlf = localStorage.getItem('boheme_rlf');
-if(savedRlf !== null){
-rlfState = savedRlf === '1';
-const btn = document.getElementById('rlFToggle');
-if(btn){
-btn.textContent = rlfState ? 'ON' : 'OFF';
-btn.className = 'toggle-btn ' + (rlfState ? 'on' : 'off');
-}
-}
 
 let h='<thead><tr><th></th>';
     for(let c=1;c<=C;c++)h+=`<th>${cL(c)}</th>`;
@@ -1732,7 +1826,7 @@ h+='</tbody>';
             t.textContent=D[key];
             if(customColors[key]){
                 t.style.background=customColors[key];
-                t.style.color='#fff';
+                t.style.color=readableTextColor(customColors[key]);
                 t.classList.add('custom-color');
             }
         }
@@ -1745,12 +1839,82 @@ sel(4,2);
     loadDefaultBohemeData();
 }
 
+let resultViewOn=false;
+function pasteSchematicText(text,r0,c0){
+const lines=String(text).replace(/\r/g,'').split('\n');
+while(lines.length&&lines[lines.length-1]==='')lines.pop();
+let n=0;
+lines.forEach((line,i)=>{line.split('\t').forEach((cell,j)=>{
+const r=r0+i,c=c0+j;if(r>R||c>C)return;
+const v=cell.trim().replace(/^"(.*)"$/,'$1').replace(/(\d),(\d)/g,'$1.$2');
+const key=k(r,c);if(v)D[key]=v;else delete D[key];n++;
+});});
+if(resultViewOn){resultViewOn=false;renderResultView();}else renderGridData();
+saveToLocalStorage();
+const st=document.getElementById('statusInfo');if(st){st.textContent='Pasted '+lines.length+' row(s) at '+cn(r0,c0)+' – press Solve';st.style.color='';}
+return n;
+}
+function openPasteDialog(){
+let dlg=document.getElementById('pasteDlg');
+if(!dlg){dlg=document.createElement('div');dlg.id='pasteDlg';dlg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;';
+dlg.innerHTML='<div style="background:#16213e;border:1px solid #2a4a7a;border-radius:8px;padding:16px;width:min(640px,92vw);color:#ddd;font-size:13px;"><div style="color:#e94560;font-weight:700;margin-bottom:6px;">Paste schematic from Excel</div><div style="color:#8fa3bf;font-size:12px;margin-bottom:8px;">Copy a cell range in Excel (Ctrl+C) and paste it here (Ctrl+V). It is inserted starting at the selected cell <b id="pasteAt"></b>. Empty cells clear the target cell; decimal commas are converted to points.</div><textarea id="pasteArea" style="width:100%;height:180px;background:#0f0f1f;color:#ffdd44;border:1px solid #2a2a4a;border-radius:4px;font-family:Consolas,monospace;font-size:12px;"></textarea><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;"><button id="pasteCancel" style="padding:6px 14px;background:#2a2a4a;color:#fff;border:1px solid #2a4a7a;border-radius:4px;cursor:pointer;">Cancel</button><button id="pasteOk" style="padding:6px 14px;background:#4caf50;color:#111;border:none;border-radius:4px;cursor:pointer;font-weight:700;">Insert</button></div></div>';
+document.body.appendChild(dlg);
+dlg.querySelector('#pasteCancel').addEventListener('click',()=>{dlg.style.display='none';});
+dlg.querySelector('#pasteOk').addEventListener('click',()=>{const t=dlg.querySelector('#pasteArea').value;dlg.style.display='none';if(t.trim())pasteSchematicText(t,sr,sc);});}
+dlg.querySelector('#pasteAt').textContent=cn(sr,sc);dlg.querySelector('#pasteArea').value='';dlg.style.display='flex';dlg.querySelector('#pasteArea').focus();
+}
+document.addEventListener('paste',e=>{
+const tab=document.getElementById('tab-comp');if(!tab||!tab.classList.contains('active'))return;
+const ae=document.activeElement;
+const t=(e.clipboardData||window.clipboardData)?.getData('text')||'';
+const multi=t.includes('\t')||t.replace(/\r?\n$/,'').includes('\n');
+if(!multi)return;
+if(ae&&(ae.tagName==='TEXTAREA'||(ae.tagName==='INPUT'&&ae.id!=='fi')))return;
+e.preventDefault();pasteSchematicText(t,sr,sc);
+});
+function rvArrow(orient,q){const pos=q>0;switch(orient){case '<':return pos?'←':'→';case 'v':return pos?'↓':'↑';case '>':return pos?'→':'←';default:return pos?'↑':'↓';}}
+function toggleResultView(){
+if(!resultViewOn&&!(loadedResults&&Array.isArray(loadedResults.components))){alert('Please press "Solve" first – the result view shows the last solution.');return;}
+resultViewOn=!resultViewOn;renderResultView();
+}
+function renderResultView(){
+const btn=document.getElementById('resultViewBtn');
+if(btn){btn.classList.toggle('active',resultViewOn);btn.textContent=resultViewOn?'✏️ Edit view':'📊 Result view';}
+if(!resultViewOn){renderGridData();return;}
+const widths={};for(const key in D){const [r,c]=key.split(',').map(Number);const t=getCell(r,c);if(t)widths[key]=t.offsetWidth;}
+renderGridData();
+for(const key in widths){const [r,c]=key.split(',').map(Number);const t=getCell(r,c);if(t&&widths[key])t.style.minWidth=widths[key]+'px';}
+const comps=new Map(loadedResults.components.map(c=>[String(c.name).trim(),c]));
+const nodes=new Map((loadedResults.nodes||[]).map(n=>[String(n.id).trim().toUpperCase(),n]));
+const qs=[...comps.values()].map(c=>Math.abs(Number(c.q))).filter(q=>q>1e-9);
+const qmax=qs.length?Math.max(...qs):1;
+for(const key in D){
+const [r,c]=key.split(',').map(Number);const t=getCell(r,c);if(!t)continue;
+const tok=String(D[key]).trim().split(/\s+/)[0]||'';
+const comp=comps.get(tok);
+if(comp){
+const q=Number(comp.q),aq=Math.abs(q);
+const band=aq<1e-6?0:(aq<qmax/3?1:(aq<2*qmax/3?2:3));
+const sym=band===0?'<span class="rv-zero">×</span>':'<span class="rv-arr">'+rvArrow(comp.orient,q).repeat(band)+'</span>';
+t.innerHTML=sym+aq.toFixed(3);
+t.classList.add('rv');
+t.title=tok+': |Q| = '+aq.toFixed(3)+' m³/h · ΔP = '+Number(comp.dp).toFixed(2)+' bar · Pow = '+Number(comp.pow).toFixed(3)+' kW';
+continue;
+}
+const nd=nodes.get(tok.toUpperCase());
+if(nd&&/^N/i.test(tok)){
+t.innerHTML='<span class="rv-p">'+Number(nd.ptot).toFixed(2)+'</span>';
+t.classList.add('rv');
+t.title=tok+': Ptot = '+Number(nd.ptot).toFixed(4)+' bar · z = '+Number(nd.z).toFixed(2)+' m';
+}
+}
+}
 function sel(r,c){rc(sr,sc);sr=r;sc=c;let t=document.getElementById(`t${r}_${c}`);if(t)t.classList.add('sel');document.getElementById('cellRef').value=cn(r,c);document.getElementById('fi').value=D[k(r,c)]||'';if(document.activeElement&&document.activeElement.tagName==='INPUT'&&document.activeElement.id!=='fi')document.activeElement.blur()}
 
-function ed(r,c){sel(r,c);document.getElementById('fi').focus();document.getElementById('fi').select()}
+function ed(r,c){if(resultViewOn){resultViewOn=false;renderResultView();}sel(r,c);document.getElementById('fi').focus();document.getElementById('fi').select()}
 function cf(moveDown=true){let v=document.getElementById('fi').value.trim(),ky=k(sr,sc);if(v)D[ky]=v;else delete D[ky];rc(sr,sc);if(moveDown)mv(1,0);updateUI();saveToLocalStorage()}
 function xf(){document.getElementById('fi').value=D[k(sr,sc)]||''}
-function rc(r,c){let t=document.getElementById(`t${r}_${c}`);if(!t)return;let v=D[k(r,c)]||'';t.className=cc(v);t.textContent=v;if(customColors[k(r,c)]){t.style.background=customColors[k(r,c)];t.style.color='#fff';t.classList.add('custom-color')}}
+function rc(r,c){if(resultViewOn){let t0=document.getElementById(`t${r}_${c}`);if(t0)t0.classList.remove('sel');return;}let t=document.getElementById(`t${r}_${c}`);if(!t)return;let v=D[k(r,c)]||'';t.className=cc(v);t.textContent=v;if(customColors[k(r,c)]){t.style.background=customColors[k(r,c)];t.style.color=readableTextColor(customColors[k(r,c)]);t.classList.add('custom-color')}}
 function mv(dr,dc){let nr=sr+dr,nc=sc+dc;if(nr>=1&&nr<=R&&nc>=1&&nc<=C)sel(nr,nc)}
 function handleFI(e){if(e.key==='Enter'){cf(true);e.preventDefault()}if(e.key==='Tab'){cf(false);mv(0,1);e.preventDefault()}if(e.key==='Escape')xf()}
 
@@ -1838,7 +2002,7 @@ alert('Error loading: ' + err.message);
 reader.readAsText(file);
 }
 
-function updateUI(){let co=0,ns=new Set();for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim(),h=v[0];if('RPU'.includes(h))co++;if(h==='N'){let n=parseInt(v.substring(1));if(!isNaN(n))ns.add(n)}}return{components:co,nodes:ns.size}}
+function updateUI(){let co=0,ns=new Set();for(let ky in D){let[r,c]=ky.split(',').map(Number);if(r<SR1||r>SR2||c<SC1||c>SC2)continue;let v=D[ky].trim(),h=v[0];if('RPU'.includes(h))co++;if(h==='N'){let n=parseInt(v.substring(1));if(!isNaN(n))ns.add(n)}}if(typeof ValveRegistry!=='undefined')ValveRegistry.refresh();return{components:co,nodes:ns.size}}
 
 async function compute(){
 const status = document.getElementById('statusInfo');
@@ -1851,6 +2015,7 @@ loadedResults = result;
 
 drawNetwork(result);
 updateResultTable(result);
+if(resultViewOn) renderResultView();
 if(typeof isoUpdate==='function') isoUpdate();
 
 const _p = getSolverParameters();
@@ -1870,6 +2035,20 @@ alert('Solver error:\n' + (err?.message || err));
 }
 }
 
+function exportResultsCSV(){
+if(!loadedResults||!Array.isArray(loadedResults.components)){alert('Please press "Solve" first.');return;}
+const esc=v=>{const s=String(v===undefined||v===null?'':v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+const L=['BOHEME results','iterations,'+loadedResults.iterations,'residual,'+loadedResults.residual,'',
+'Rnam,Node1,Node2,Rval [bar/(m3/h)],rd [bar/(m3/h)],DPoc [bar],Qsc [m3/h],L [m],D [m],Q [m3/h],ABS(Q) [m3/h],ABS(U) [m/s],Re_D [-],q [bar],DPtot [bar],Pow [kW]'];
+loadedResults.components.forEach(c=>{const kind=String(c.type||'').toUpperCase();const rdShown=(kind.startsWith('U')||kind==='P')?c.rd:0;
+L.push([c.name,c.n1,c.n2,c.rval,rdShown,c.dpoc,c.qsc,c.l,c.d,c.q,c.absQ,c.u,c.reD,c.qdyn,c.dp,c.pow].map(esc).join(','));});
+L.push('','Nnam,Ptot [bar],z [m],Ptot-rho*g*H [bar],RHS [m3/h]');
+(loadedResults.nodes||[]).forEach(n=>L.push([n.id,n.ptot,n.z,n.pstat,n.rhs].map(esc).join(',')));
+const blob=new Blob([L.join('\r\n')+'\r\n'],{type:'text/csv;charset=utf-8'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='boheme_results.csv';document.body.appendChild(a);a.click();
+setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+return L.join('\n');
+}
 function fmtNumber(value, digits=3){
 const n = Number(value);
 return Number.isFinite(n) ? n.toFixed(digits) : '—';
@@ -1894,7 +2073,7 @@ const kind=String(c.type||'').toUpperCase();
 const rdShown=(kind.startsWith('U')||kind==='P')?c.rd:0;   // Excel lists rd only for U/P components
 const q=Number(c.q);
 const qClass=Number.isFinite(q)?(q>=0?'q-pos':'q-neg'):'val';
-cells+=`<td style="color:#6fc3f7;font-size:10px;">${c.name||'?'}</td><td>${c.n1||'?'}</td><td>${c.n2||'?'}</td>
+cells+=`<td style="color:#6fc3f7;">${c.name||'?'}</td><td>${c.n1||'?'}</td><td>${c.n2||'?'}</td>
 <td class="val">${fmtNumber(c.rval,4)}</td><td class="val">${fmtNumber(rdShown,3)}</td><td class="val">${fmtNumber(c.dpoc,3)}</td><td class="val">${fmtNumber(c.qsc,3)}</td>
 <td class="val">${fmtNumber(c.l,2)}</td><td class="val">${fmtNumber(c.d,4)}</td>
 <td class="${qClass}">${fmtNumber(c.q,4)}</td><td class="val">${fmtNumber(c.absQ,4)}</td><td class="val">${fmtNumber(c.u,4)}</td><td class="val">${fmtNumber(c.reD,1)}</td>
@@ -2068,6 +2247,7 @@ mesh.rotation.x=-Math.PI/2;
 mesh.rotation.z=Math.PI/2;
 aircraftGroup.add(mesh);
 scene.add(aircraftGroup);
+sceneMetres=null;if(latestNetworkData)updatePipeLengthReport(latestNetworkData);
 document.getElementById('statusInfo').textContent='A320 model loaded';
 },
 undefined,
@@ -2271,6 +2451,31 @@ try{
     }
 }
 </script>
-<script src="boheme_airstream.js"></script>
+<script>
+(function(){
+let steerGrp=null,locked=false;
+const $=id=>document.getElementById(id);
+function label(){['Pitch','Yaw','Roll'].forEach(n=>{$('st'+n+'V').textContent=parseFloat($('st'+n).value).toFixed(0)+'°';});}
+function applySteer(){if(!steerGrp)return;const d=Math.PI/180;steerGrp.rotation.set(parseFloat($('stPitch').value)*d,parseFloat($('stYaw').value)*d,parseFloat($('stRoll').value)*d);label();}
+function resetSteer(){['stPitch','stYaw','stRoll'].forEach(id=>{$(id).value=0;});if(steerGrp)steerGrp.rotation.set(0,0,0);label();}
+function toggleLock(){
+if(typeof scene==='undefined'||!scene)return;
+locked=!locked;const btn=$('stLock');
+if(locked){
+btn.textContent='🔒 Nodes LOCKED';btn.style.background='#4caf50';$('stSteer').style.display='block';
+steerGrp=new THREE.Group();scene.add(steerGrp);
+if(aircraftGroup){scene.remove(aircraftGroup);steerGrp.add(aircraftGroup);}
+if(pipeGroup){scene.remove(pipeGroup);steerGrp.add(pipeGroup);}
+}else{
+btn.textContent='🔓 Lock Nodes to Aircraft';btn.style.background='#2a2a4a';$('stSteer').style.display='none';
+if(steerGrp){if(aircraftGroup){steerGrp.remove(aircraftGroup);scene.add(aircraftGroup);}if(pipeGroup){steerGrp.remove(pipeGroup);scene.add(pipeGroup);}scene.remove(steerGrp);steerGrp=null;}
+resetSteer();
+}
+}
+$('stLock').addEventListener('click',toggleLock);
+['stPitch','stYaw','stRoll'].forEach(id=>$(id).addEventListener('input',applySteer));
+$('stReset').addEventListener('click',resetSteer);
+})();
+</script>
 </body>
 </html>

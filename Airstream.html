@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BOHEME – Airstream (separate tool)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0a0a1a;color:#ddd;font-family:'Segoe UI',Arial,sans-serif}
+header{display:flex;align-items:center;gap:14px;height:46px;padding:0 16px;background:#16213e;border-bottom:2px solid #e94560}
+header b{color:#e94560;font-size:18px;letter-spacing:.5px}
+header .t{font-size:16px;color:#fff}
+header .s{font-size:12px;color:#8fa3bf}
+header a{margin-left:auto;color:#fff;text-decoration:none;background:#0f3460;border:1px solid #2a4a7a;border-radius:4px;padding:5px 12px;font-size:13px}
+header a:hover{background:#1a4a80}
+main{display:flex;height:calc(100% - 46px)}
+#airstream-panel{width:300px;flex-shrink:0;overflow:auto;background:#12122a;border-right:1px solid #2a2a4a}
+#view{flex:1;position:relative;min-width:0}
+#view canvas{display:block}
+</style>
+</head>
+<body>
+<header>
+<b>BOHEME</b><span class="t">Airstream</span>
+<span class="s">Separate visualisation tool · not part of the hydraulic calculation · semi-empirical, not CFD</span>
+<a href="index3D.html">← Back to BOHEME</a>
+</header>
+<main>
+<aside id="airstream-panel"></aside>
+<section id="view"></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script>
+window.AIRSTREAM_STANDALONE = true;
+var scene, camera, renderer, controls;
+(function () {
+  const host = document.getElementById('view');
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0a1a);
+  camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(0, 0, 6);
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  host.appendChild(renderer.domElement);
+  function size() {
+    const w = host.clientWidth, h = host.clientHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', size);
+  size();
+  (function loop() { requestAnimationFrame(loop); renderer.render(scene, camera); })();
+})();
+</script>
+<script src="boheme_airstream.js"></script>
+</body>
+</html>

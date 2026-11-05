@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOHEME – Berens Odobasic Hydraulic Environment</title>
+<link rel="stylesheet" href="boheme_studio.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v314.0.6/full/pyodide.js"></script>
 <style>
@@ -185,10 +186,12 @@ td.c.custom-color{color:#fff}
 <div class="toggle-item"><span class="key">kReD</span><input class="val" id="itKReD" value="0.2" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key" title="Excel: sheet protection only – no effect on the calculation">boolProtect</span><input class="val off" id="itProtect" value="FALSE" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">boolZanke</span><input class="val off" id="itZanke" value="FALSE" onchange="applyToggle(this)"></div>
-<h4>Fluid (as in Excel, Skydrol)</h4>
-<div class="toggle-item"><span class="key" title="Fluid temperature – Excel default −40 °C">T [°C]</span><input class="val" id="fluidT" value="-40" onchange="applyToggle(this)"></div>
-<div class="toggle-item"><span class="key" title="ρ = 1025·exp(−0.00083·T)">rho [kg/m³]</span><input class="val" id="fluidRho" value="" readonly style="color:#667;"></div>
-<div class="toggle-item"><span class="key" title="μ = 5.17e-5·exp(1084/(T+273.15−110))">mue [Ns/m²]</span><input class="val" id="fluidMue" value="" readonly style="color:#667;"></div>
+<h4>Fluid</h4>
+<div style="margin:0 0 4px;"><select id="fluidPreset" title="Fluid model – density and viscosity as functions of temperature"></select></div>
+<div class="toggle-item"><span class="key" title="Fluid temperature – default −40 °C">T [°C]</span><input class="val" id="fluidT" value="-40" onchange="applyToggle(this)"></div>
+<div class="toggle-item"><span class="key" id="fluidRhoKey" title="ρ = ρ0·exp(−β·T)">rho [kg/m³]</span><input class="val" id="fluidRho" value="" readonly style="color:#667;"></div>
+<div class="toggle-item"><span class="key" id="fluidMueKey" title="μ = A·exp(B/(T+273.15−C))">mue [Ns/m²]</span><input class="val" id="fluidMue" value="" readonly style="color:#667;"></div>
+<div id="fluidModel" class="fluid-model"></div>
 <div class="toggle-item"><span class="key" title="Reference only – not used by the solver (same as in Excel)">Pamb [bar]</span><input class="val" id="pamb" value="1.01325" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">g [m/s²]</span><input class="val" id="grav" value="9.80665" onchange="applyToggle(this)"></div>
 <div class="toggle-item"><span class="key">krough [mm]</span><input class="val" id="krough" value="0.0015" onchange="applyToggle(this)"></div>
@@ -207,8 +210,11 @@ td.c.custom-color{color:#fff}
 <button class="panel-toggle pt-right" id="ptRight" onclick="togglePanel('right')" title="Show/hide Components">▶</button>
 <button class="panel-toggle pt-bottom" id="ptBottom" onclick="togglePanel('bottom')" title="Show/hide Results">▼</button>
 <div class="toolbar">
-<label title="Dynamic viscosity [Pa·s] – calculated from T (Excel formula)">Mue:</label><input type="text" id="pMue" value="0.343771">
-<label title="Density [kg/m³] – calculated from T (Excel formula)">Rho:</label><input type="text" id="pRho" value="1059.6012">
+<button class="insert-btn bs-modebtn" data-mode="studio" onclick="BohemeStudio.setMode(true)" title="Object-oriented schematic editor and animated result view">◈ Studio</button>
+<button class="insert-btn bs-modebtn" data-mode="grid" onclick="BohemeStudio.setMode(false)" title="Classic cell grid (Excel-compatible editing and paste)">▦ Grid</button>
+<div class="sep"></div>
+<label title="Dynamic viscosity [Pa·s] – from the selected fluid model at temperature T">Mue:</label><input type="text" id="pMue" value="0.343771">
+<label title="Density [kg/m³] – from the selected fluid model at temperature T">Rho:</label><input type="text" id="pRho" value="1059.6012">
 <label>G:</label><input type="text" id="pG" value="9.81">
 <div class="sep"></div>
 <label>Krough:</label><input type="text" id="pKrough" value="0.05">
@@ -238,6 +244,7 @@ td.c.custom-color{color:#fff}
 <input class="formula-input" id="fi" onkeydown="handleFI(event)">
 </div>
 <div class="grid-wrap"><table class="grid" id="grid"></table></div>
+<div id="studioWrap" class="studio-wrap"></div>
 </div>
 <div class="comp-right" id="compRight">
 <h4>Components</h4>
@@ -1971,6 +1978,7 @@ const comps=new Map(loadedResults.components.map(c=>[String(c.name).trim(),c]));
 const nodes=new Map((loadedResults.nodes||[]).map(n=>[String(n.id).trim().toUpperCase(),n]));
 const qs=[...comps.values()].map(c=>Math.abs(Number(c.q))).filter(q=>q>1e-9);
 const qmax=qs.length?Math.max(...qs):1;
+const pvs=[...nodes.values()].map(n=>Number(n.ptot)).filter(Number.isFinite);const rvPmin=Math.min(...pvs),rvPmax=Math.max(...pvs);
 for(const key in D){
 const [r,c]=key.split(',').map(Number);const t=getCell(r,c);if(!t)continue;
 const tok=String(D[key]).trim().split(/\s+/)[0]||'';
@@ -1979,8 +1987,9 @@ if(comp){
 const q=Number(comp.q),aq=Math.abs(q);
 const band=aq<1e-6?0:(aq<qmax/3?1:(aq<2*qmax/3?2:3));
 const vl=ValveRegistry.valves.get(tok);
-const sym=(vl&&!vl.open)?'<span class="rv-zero">⊘</span>':(band===0?'<span class="rv-zero">×</span>':'<span class="rv-arr">'+rvArrow(comp.orient,q).repeat(band)+'</span>');
-t.innerHTML=sym+aq.toFixed(3);
+const ang={'→':0,'↓':90,'←':180,'↑':270}[rvArrow(comp.orient,q)]||0;
+const sym=(vl&&!vl.open)?'<span class="rv-zero">⊘</span>':(band===0?'<span class="rv-zero">×</span>':'<span class="rvx b'+band+'"><svg viewBox="0 0 20 12" style="transform:rotate('+ang+'deg)"><path d="M2 6H16M12 2L17 6L12 10"/></svg></span>');
+t.innerHTML=sym+'<span class="rvq">'+aq.toFixed(3)+'</span>'+(band?'<span class="rvbar" style="width:'+Math.max(8,Math.round(100*Math.sqrt(aq/qmax)))+'%"></span>':'');
 t.classList.add('rv');
 t.title=tok+': |Q| = '+aq.toFixed(3)+' m³/h · ΔP = '+Number(comp.dp).toFixed(2)+' bar · Pow = '+Number(comp.pow).toFixed(3)+' kW';
 continue;
@@ -1989,6 +1998,7 @@ const nd=nodes.get(tok.toUpperCase());
 if(nd&&/^N/i.test(tok)){
 t.innerHTML='<span class="rv-p">'+Number(nd.ptot).toFixed(2)+'</span>';
 t.classList.add('rv');
+if(window.BohemeStudio&&rvPmax>rvPmin){const pc=BohemeStudio.pcol((Number(nd.ptot)-rvPmin)/(rvPmax-rvPmin),0.9);t.style.setProperty('background',pc,'important');t.style.setProperty('color',((Number(nd.ptot)-rvPmin)/(rvPmax-rvPmin))<0.5?'#ffffff':'#0a0f24','important');t.style.setProperty('box-shadow','inset 0 0 0 1px rgba(255,255,255,.35)','important');}
 t.title=tok+': Ptot = '+Number(nd.ptot).toFixed(4)+' bar · z = '+Number(nd.z).toFixed(2)+' m';
 }
 }
@@ -2100,6 +2110,7 @@ loadedResults = result;
 drawNetwork(result);
 updateResultTable(result);
 if(resultViewOn) renderResultView();
+if(window.BohemeStudio) BohemeStudio.setResults(result);
 if(typeof isoUpdate==='function') isoUpdate();
 
 const _p = getSolverParameters();
@@ -2537,5 +2548,10 @@ try{
 }
 </script>
 
+<script src="boheme_fluid.js"></script>
+<script src="boheme_studio.js"></script>
+<script>
+window.addEventListener('load',()=>{if(window.BohemeFluid)BohemeFluid.init();if(window.BohemeStudio)BohemeStudio.init();});
+</script>
 </body>
 </html>

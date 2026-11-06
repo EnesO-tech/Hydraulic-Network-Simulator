@@ -117,7 +117,9 @@
     st.wrap = wrap;
     let renderer;
     try { renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false }); } catch (e) { wrap.remove(); return false; }
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    renderer.setPixelRatio(Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.NoToneMapping;
     renderer.autoClear = false;
@@ -140,6 +142,18 @@
     st.scene.add(new THREE.HemisphereLight(0xffffff, 0x7d828a, 0.75));
     const key = new THREE.DirectionalLight(0xffffff, 0.85);
     key.position.set(0.5, 1, 0.7);
+    key.castShadow = true;
+    key.shadow.mapSize.set(4096, 4096);
+    key.shadow.bias = -0.0005;
+    key.shadow.normalBias = 0.02;
+    key.shadow.radius = 5;
+    st.key = key;
+    st.scene.add(key.target);
+    st.floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShadowMaterial({ opacity: 0.3 }));
+    st.floor.rotation.x = -Math.PI / 2;
+    st.floor.position.y = 0;
+    st.floor.receiveShadow = true;
+    st.scene.add(st.floor);
     const fill = new THREE.DirectionalLight(0xffffff, 0.3);
     fill.position.set(-0.7, 0.4, -0.5);
     st.camLight = new THREE.DirectionalLight(0xffffff, 0.35);
@@ -157,8 +171,9 @@
     wrap.appendChild(st.tip);
     const help = document.createElement('div');
     help.className = 's3-help';
-    help.textContent = 'Rotate: left drag · Pan: right drag · Zoom: wheel';
     wrap.appendChild(help);
+    st.help = help;
+    try { st.nav = localStorage.getItem('boheme_nav') || 'pan'; } catch (e) { st.nav = 'pan'; }
     st.clock = new THREE.Clock();
     events();
     S.on('redraw', () => schedule());
@@ -169,6 +184,7 @@
     new ResizeObserver(resize).observe(wrap);
     addToggle();
     st.ok = true;
+    syncControls();
     let pref = '3d';
     try { pref = localStorage.getItem('boheme_view_dim') || '3d'; } catch (e) { }
     setActive(pref !== '2d');
@@ -183,17 +199,30 @@
   }
   function markToggle() { document.querySelectorAll('[data-dim]').forEach(b => b.classList.toggle('on', (b.dataset.dim === '3d') === st.on)); }
 
+  function gridMode(on) {
+    const vp = $('#wbViewport');
+    let box = $('#wbGrid2d');
+    if (!box) { box = document.createElement('div'); box.id = 'wbGrid2d'; box.className = 'wb-grid2d'; vp.appendChild(box); }
+    const fb = document.querySelector('.formula-bar'), gw = document.querySelector('.grid-wrap'), rp = $('#wbRaster');
+    if (on) { if (fb) box.appendChild(fb); if (gw) { box.appendChild(gw); gw.style.display = ''; } box.style.display = 'flex'; }
+    else { if (rp) { if (fb) rp.appendChild(fb); if (gw) rp.appendChild(gw); } box.style.display = 'none'; }
+    vp.classList.toggle('wb-is-grid', on);
+    const note = $('#wbRaster .wb-raster-note');
+    if (note) note.innerHTML = on ? 'The cell grid is shown in the graphics window (2D view).' : 'Expert view of the solver input. Every cell is synchronised with the 3D model – paste from Excel with Ctrl+V after selecting a cell.';
+  }
+  function setNav(m) { st.nav = m; try { localStorage.setItem('boheme_nav', m); } catch (e) { } syncControls(); }
   function setActive(on) {
     st.on = on && st.ok;
     st.wrap.style.display = st.on ? '' : 'none';
     const sw = $('#studioWrap');
-    if (sw) sw.style.visibility = st.on ? 'hidden' : '';
+    if (sw) sw.style.visibility = 'hidden';
+    gridMode(!st.on);
     try { localStorage.setItem('boheme_view_dim', st.on ? '3d' : '2d'); } catch (e) { }
     markToggle();
     const z = $('#wbZoom');
     if (z) z.style.display = st.on ? 'none' : '';
     if (st.on) { resize(); st.sig = ''; build(); if (!st.fitted) { view('iso', true); st.fitted = true; } loop(); }
-    else { cancelAnimationFrame(st.raf); st.raf = 0; st.S.redraw(); }
+    else { cancelAnimationFrame(st.raf); st.raf = 0; }
   }
 
   function resize() {
@@ -216,10 +245,10 @@
     const path = new THREE.CurvePath();
     for (let i = 1; i < points.length; i++) path.add(new THREE.LineCurve3(points[i - 1], points[i]));
     const ts = Math.max(8, Math.round(path.getLength() * 8));
-    const geo = new THREE.TubeGeometry(path, ts, radius, 16, false);
+    const geo = new THREE.TubeGeometry(path, ts, radius, 24, false);
     if (colors) {
       const arr = new Float32Array(geo.attributes.position.count * 3);
-      for (let i = 0; i <= ts; i++) { const c = colors(i / ts); for (let j = 0; j <= 16; j++) { const k = (i * 17 + j) * 3; arr[k] = c.r; arr[k + 1] = c.g; arr[k + 2] = c.b; } }
+      for (let i = 0; i <= ts; i++) { const c = colors(i / ts); for (let j = 0; j <= 24; j++) { const k = (i * 25 + j) * 3; arr[k] = c.r; arr[k + 1] = c.g; arr[k + 2] = c.b; } }
       geo.setAttribute('color', new THREE.BufferAttribute(arr, 3));
     }
     return new THREE.Mesh(geo, mat);
@@ -342,7 +371,7 @@
     const dimOf = k => (s.dim && s.dim.has(k)) || (s.hl && !s.hl.has(k));
     const vreg = typeof ValveRegistry !== 'undefined' ? ValveRegistry.valves : new Map();
     const box = new THREE.Box3();
-    const pipeMat = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.05, roughness: 0.6 });
+    const pipeMat = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.08, roughness: 0.42 });
     pipeMat.__own = true;
     const pipeDim = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.05, roughness: 0.6, transparent: true, opacity: 0.12, depthWrite: false });
     pipeDim.__own = true;
@@ -377,6 +406,7 @@
         } else { const c = comp.error ? errC : geomC; cf = () => c; }
         const t = tube([e.P, C], rad, cf, dim ? pipeDim : pipeMat);
         t.userData.key = k;
+        t.castShadow = !dim;
         st.root.add(t);
         st.pick.push(t);
       }
@@ -391,6 +421,7 @@
         g.rotation.y = -Math.atan2(dir.z, dir.x);
       }
       addEdges(g);
+      g.traverse(o => { if (o.isMesh) o.castShadow = true; });
       g.userData.key = k;
       if (dim) g.visible = false;
       st.root.add(g);
@@ -418,6 +449,7 @@
       const c = contour && Number.isFinite(p) ? (mode === 'p' ? band(pT(p)) : null) : null;
       if (contour && mode === 'p' && Number.isFinite(p) && !ground) { if (!pmaxN || p > pmaxN.v) pmaxN = { v: p, P, key: k }; if (!pminN || p < pminN.v) pminN = { v: p, P, key: k }; }
       const g = nodeModel(c, ground, nd.nr);
+      g.traverse(o => { if (o.isMesh) o.castShadow = true; });
       g.position.add(P);
       g.userData.key = k;
       if (dimOf(k)) g.visible = false;
@@ -450,6 +482,13 @@
     st.grid.position.set(Math.round(st.center.x / U) * U, 0.01, Math.round(st.center.z / U) * U);
     st.grid.visible = st.S.state.tool !== 'select';
     st.scene.add(st.grid);
+    const span = st.size * 1.6 + 30;
+    st.floor.scale.set(span, span, 1);
+    st.floor.position.set(st.center.x, 0, st.center.z);
+    st.key.position.set(st.center.x + st.size * 0.35, st.size * 0.9 + 25, st.center.z + st.size * 0.45);
+    st.key.target.position.copy(st.center);
+    const sc2 = st.key.shadow.camera;
+    sc2.left = sc2.bottom = -st.size * 0.72 - 4; sc2.right = sc2.top = st.size * 0.72 + 4; sc2.near = 1; sc2.far = st.size * 3 + 80; sc2.updateProjectionMatrix();
     markSel();
   }
 
@@ -548,8 +587,13 @@
   }
   function syncControls() {
     const t = st.S.state.tool;
-    st.controls.enableRotate = t === 'select';
-    st.controls.mouseButtons.LEFT = t === 'select' ? THREE.MOUSE.ROTATE : null;
+    const pan = st.nav !== 'rotate';
+    st.controls.enableRotate = true;
+    st.controls.mouseButtons.LEFT = t === 'select' ? (pan ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE) : null;
+    st.controls.mouseButtons.RIGHT = pan ? THREE.MOUSE.ROTATE : THREE.MOUSE.PAN;
+    st.controls.mouseButtons.MIDDLE = THREE.MOUSE.DOLLY;
+    if (st.help) st.help.textContent = pan ? 'Pan: left drag · Rotate: right drag · Zoom: wheel' : 'Rotate: left drag · Pan: right drag · Zoom: wheel';
+    document.querySelectorAll('[data-act="nav-pan"],[data-act="nav-rot"]').forEach(b => b.classList.toggle('on', (b.dataset.act === 'nav-pan') === pan));
     if (st.grid) st.grid.visible = t !== 'select';
     if (t === 'select') ghostCells([]);
   }
@@ -669,5 +713,5 @@
     }
   }
 
-  window.BohemeScene3D = { init, setActive, fit, view: n => { st.lastView = n; view(n); }, zoomBy, active: () => st.on, state: st, rebuild: () => { st.sig = ''; build(); } };
+  window.BohemeScene3D = { init, setActive, setNav, gridMode, fit, view: n => { st.lastView = n; view(n); }, zoomBy, active: () => st.on, state: st, rebuild: () => { st.sig = ''; build(); } };
 })();

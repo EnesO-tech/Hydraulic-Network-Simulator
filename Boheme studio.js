@@ -20,9 +20,9 @@
     UPTb: { title: 'PTU – pump side', family: 'pump', prefix: 'Upt', fields: [['etaV', 'Volumetric efficiency ηv', '–', 0.95], ['etaHm', 'Hydro-mechanical efficiency ηhm', '–', 0.92], ['ratio', 'Displacement ratio Vb/Va', '–', 0.95], ['d', 'Diameter', 'mm', 12.7]] },
     UPM: { title: 'Pressure-compensated pump', family: 'pump', prefix: 'Upm', fields: [['pset', 'Set pressure', 'bar', 206], ['Qmax', 'Maximum flow', 'm³/h', 8.4], ['d', 'Port diameter', 'mm', 19.6]] }
   };
-  const FAMILY_COLOR = { pipe: '#7aa2ff', res: '#c792ff', valve: '#ffc94d', pump: '#38e1c8', actuator: '#ff7eb6' };
+  const FAMILY_COLOR = { pipe: '#40546e', res: '#6b4c93', valve: '#9a6a00', pump: '#1d6b62', actuator: '#9c2f5f' };
   const PALETTE = [['R', 'Pipe'], ['RZ', 'ζ loss'], ['RL', 'Linear R'], ['RR', 'Restrictor'], ['RK', 'kv valve'], ['UCV', 'Check valve'], ['UPR', 'Regulator'], ['P', 'Pump'], ['UPM', 'Pc pump'], ['UCP', 'Char. pump'], ['U', 'Universal'], ['UPTa', 'PTU motor'], ['UPTb', 'PTU pump']];
-  const P_STOPS = [[0, [48, 18, 110]], [0.18, [64, 66, 214]], [0.38, [24, 166, 232]], [0.56, [30, 222, 160]], [0.74, [188, 236, 48]], [0.88, [255, 176, 0]], [1, [255, 60, 92]]];
+  const P_STOPS = [[0, [0, 0, 255]], [0.125, [0, 178, 255]], [0.25, [0, 255, 255]], [0.375, [0, 255, 178]], [0.5, [0, 255, 0]], [0.625, [178, 255, 0]], [0.75, [255, 255, 0]], [0.875, [255, 178, 0]], [1, [255, 0, 0]]];
 
   const st = {
     on: true, tool: 'select', place: null, sel: null, view: { x: 40, y: 40, k: 0.8 }, undo: [], redo: [], stale: false, results: null, flow: true,
@@ -624,7 +624,7 @@
           el('stop', { offset: 0, 'stop-color': ca }, gr);
           el('stop', { offset: 1, 'stop-color': cb }, gr);
           stroke = `url(#${id})`;
-          if (aq > 1e-6 && !dimmed) el('line', { x1: e.x, y1: e.y, x2: cx, y2: cy, stroke: cb, opacity: 0.5, 'stroke-width': width * 2.2, 'stroke-linecap': 'round', filter: 'url(#bs-softglow)' }, L.pipesGlow);
+          if (aq > 1e-6 && !dimmed && !st.opts.plain) el('line', { x1: e.x, y1: e.y, x2: cx, y2: cy, stroke: cb, opacity: 0.5, 'stroke-width': width * 2.2, 'stroke-linecap': 'round', filter: 'url(#bs-softglow)' }, L.pipesGlow);
         }
         el('line', { x1: e.x, y1: e.y, x2: cx, y2: cy, stroke, 'stroke-width': width, 'stroke-linecap': 'round', opacity: dimmed ? 0.1 : closed ? 0.35 : 1, class: 'bs-pipe' }, L.pipes);
         if (!res) el('line', { x1: e.x, y1: e.y, x2: cx, y2: cy, stroke: 'rgba(255,255,255,.25)', 'stroke-width': 1, 'stroke-linecap': 'round' }, L.pipes);
@@ -638,7 +638,7 @@
         ang = opposite ? Math.atan2(d1[1] - d0[1], d1[0] - d0[0]) * 180 / Math.PI : Math.atan2(-d0[1], -d0[0]) * 180 / Math.PI;
       }
       const gp = el('g', { transform: `translate(${cx},${cy})`, class: 'bs-comp' + (dimOf(comp.cell.key) ? ' bs-dim' : '') + (st.hl && st.hl.has(comp.cell.key) ? ' bs-hl' : ''), 'data-key': comp.cell.key }, L.comps);
-      if (res && aq > 1e-6 && !closed) el('circle', { r: 30, fill: pcol(pT(sc, pc), 0.18), filter: 'url(#bs-softglow)' }, gp);
+      if (res && aq > 1e-6 && !closed && !st.opts.plain) el('circle', { r: 30, fill: pcol(pT(sc, pc), 0.18), filter: 'url(#bs-softglow)' }, gp);
       const sg = el('g', { transform: `rotate(${ang})` }, gp);
       symbol(comp.kk || '?', sg, { closed });
       sg.querySelectorAll('.bs-upright').forEach(t => t.setAttribute('transform', `rotate(${-ang} 0 0)`));
@@ -681,7 +681,7 @@
       const col = sc && Number.isFinite(p) ? (mode === 'p' ? pcol(pT(sc, p)) : '#c9d6ff') : null;
       const ndim = dimOf(nd.cell.key);
       const gp = el('g', { transform: `translate(${x},${y})`, class: 'bs-node' + (ndim ? ' bs-dim' : ''), 'data-key': nd.cell.key }, L.nodes);
-      if (col) { el('circle', { r: 20, fill: col, opacity: 0.35, filter: 'url(#bs-softglow)' }, gp); el('circle', { r: 16, fill: 'none', stroke: col, 'stroke-width': 1.5, class: 'bs-ring' }, gp); }
+      if (col && !st.opts.plain) { el('circle', { r: 20, fill: col, opacity: 0.35, filter: 'url(#bs-softglow)' }, gp); el('circle', { r: 16, fill: 'none', stroke: col, 'stroke-width': 1.5, class: 'bs-ring' }, gp); }
       drawNodeGlyph(gp, ground, col);
       const lab = el('g', { transform: `translate(${x + 14},${y - 20})`, class: ndim ? 'bs-dim' : '' }, L.labels);
       const txt = col ? `${nd.name} ${fmt(p, 1)} bar` : nd.nr ? `${nd.name} set ${fmt(nd.pset, 1)} bar` : `${nd.name}${nd.z ? '  z ' + nd.z + ' m' : ''}`;

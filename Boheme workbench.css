@@ -363,3 +363,25 @@ body.bh-light #tab-iso h3,body.bh-light #tab-schematic h3,body.bh-light #tab-qr 
 body.bh-light #tab-iso button,body.bh-light #tab-schematic button,body.bh-light #tab-qr button{background:linear-gradient(#fbfaf8,#e6e3dd);border:1px solid #aaa59c;color:#222}
 body.bh-light #tab-iso button:hover,body.bh-light #tab-schematic button:hover,body.bh-light #tab-qr button:hover{background:#f3f1ec;border-color:#8c877e}
 body.bh-light #qr-canvas{border:1px solid #d3d0c9;background:#fff}
+.wb-grid2d{position:absolute;inset:0;z-index:2;display:none;flex-direction:column;background:#fff}
+.wb-is-grid .wb-leg{display:none!important}
+.wb .formula-bar{background:#f3f3f3!important;border-bottom:1px solid #d4d4d4!important;padding:4px 8px!important;gap:6px}
+.wb .cell-ref{background:#fff!important;border:1px solid #c8c8c8!important;color:#111!important;border-radius:0!important;font:12.5px "Segoe UI",Tahoma,sans-serif!important;width:64px!important}
+.wb .formula-input{background:#fff!important;border:1px solid #c8c8c8!important;color:#111!important;border-radius:0!important;font:13px Consolas,"Segoe UI",monospace!important}
+.wb .grid-wrap{background:#fff!important;padding:0!important;scrollbar-color:#c1c1c1 #f0f0f0!important}
+.wb .grid-wrap::-webkit-scrollbar-track{background:#f0f0f0!important;border-radius:0!important}
+.wb .grid-wrap::-webkit-scrollbar-thumb{background:#c1c1c1!important;border:3px solid #f0f0f0!important;border-radius:0!important}
+.wb .grid-wrap::-webkit-scrollbar-corner{background:#f0f0f0!important}
+.wb table.grid th{background:#efefef!important;color:#333!important;font:400 12px "Segoe UI",Tahoma,sans-serif!important;border:1px solid #d4d4d4!important;height:22px}
+.wb table.grid td.rh{background:#efefef!important;color:#333!important;font:400 12px "Segoe UI",Tahoma,sans-serif!important;border:1px solid #d4d4d4!important}
+.wb table.grid td.c{background:#fff;color:#1f1f1f;border:1px solid #e3e3e3;font:13px Consolas,"Segoe UI",monospace;height:24px}
+.wb td.c:hover{outline:1px solid #7eb4ea;outline-offset:-1px}
+.wb td.c.sel{outline:2px solid #217346!important;outline-offset:-2px;background:#e8f2ec!important}
+.wb td.c.t-pipe{background:#eef4fb;color:#1f4e8c}
+.wb td.c.t-pump{background:#f6eef9;color:#7b2c6b}
+.wb td.c.t-node{background:#fff8e1;color:#6d5000}
+.wb td.c.t-ground{background:#f3f3f3;color:#555}
+.wb td.c.t-wire{background:#edf7ee;color:#2e7d32}
+.wb td.c.t-ptu{background:#fff1e8;color:#a1470b}
+.wb td.c.t-mpp{background:#fdeeee;color:#b3261e}
+.wb-is-grid .wb-zoom{display:none!important}

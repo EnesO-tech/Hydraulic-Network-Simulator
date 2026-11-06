@@ -6,6 +6,8 @@
 <title>BOHEME – Berens Odobasic Hydraulic Environment</title>
 <link rel="stylesheet" href="boheme_studio.css">
 <link rel="stylesheet" href="boheme_workbench.css">
+<link rel="stylesheet" href="boheme%20studio.css">
+<link rel="stylesheet" href="boheme%20workbench.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v314.0.6/full/pyodide.js"></script>
 <style>
@@ -2549,11 +2551,23 @@ try{
 }
 </script>
 
-<script src="boheme_fluid.js"></script>
-<script src="boheme_studio.js"></script>
-<script src="boheme_workbench.js"></script>
 <script>
-window.addEventListener('load',()=>{if(window.BohemeFluid)BohemeFluid.init();if(window.BohemeStudio)BohemeStudio.init({embedded:true});if(window.BohemeWorkbench)BohemeWorkbench.init();});
+(function(){
+const mods=['boheme_fluid.js','boheme_studio.js','boheme_workbench.js'];
+function start(){
+if(window.BohemeFluid)BohemeFluid.init();
+const wb=!!window.BohemeWorkbench;
+if(window.BohemeStudio)BohemeStudio.init({embedded:wb});
+if(wb)BohemeWorkbench.init();
+else console.warn('BOHEME: boheme_workbench.js not found – classic layout with Studio/Grid switch is used.');
+}
+function load(i){
+if(i>=mods.length){start();return;}
+const tryLoad=(src,fallback)=>{const sc=document.createElement('script');sc.src=src;sc.onload=()=>load(i+1);sc.onerror=()=>{if(fallback)tryLoad(fallback,null);else{console.warn('BOHEME: module '+mods[i]+' not found');load(i+1);}};document.body.appendChild(sc);};
+tryLoad(mods[i],mods[i].replace('_','%20'));
+}
+if(document.readyState==='complete')load(0);else window.addEventListener('load',()=>load(0));
+})();
 </script>
 </body>
 </html>

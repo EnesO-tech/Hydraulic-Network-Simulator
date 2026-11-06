@@ -868,7 +868,7 @@
     const st = W.S.state;
     const T = ($('#fluidT') || {}).value;
     const state = W.solving ? ['busy', 'Solving…'] : st.stale ? ['warn', 'Model changed – solve again'] : K ? (K.conv ? ['ok', 'Solved'] : ['bad', 'Not converged']) : ['idle', 'Ready'];
-    s.innerHTML = `<span class="wb-st ${state[0]}"><i></i>${state[1]}</span><span>${M ? M.comps.length : 0} components</span><span>${M ? M.nodes.length : 0} nodes</span><span>${M ? circuits().length : 0} circuits</span><span>${icon('fluid', 13)} ${esc(fluidLabel())} · ${esc(T)} °C</span>${K ? `<span>iterations ${K.it}</span><span>residual ${K.res.toExponential(2)}</span>` : ''}<span class="wb-st-msg">${esc(W.lastStatus || '')}</span><span class="wb-st-r">Units: bar · m³/h · m/s · mm</span>`;
+    s.innerHTML = `<span class="wb-st ${state[0]}"><i></i>${state[1]}</span><span>${M ? M.comps.length : 0} components</span><span>${M ? M.nodes.length : 0} nodes</span><span>${M ? circuits().length : 0} circuits</span><span>${icon('fluid', 13)} ${esc(fluidLabel())} · ${esc(T)} °C</span>${K ? `<span>iterations ${K.it}</span><span>residual ${K.res.toExponential(2)}</span>` : ''}<span class="wb-st-msg">${esc(W.lastStatus || '')}</span><span class="wb-st-r">Units: bar · m³/h · m/s · mm</span><span class="wb-st-v" title="Loaded version of the BOHEME modules">BOHEME v${esc(window.BOHEME_V || '?')}</span>`;
     const sb = $('#wbSolve');
     if (sb) sb.classList.toggle('busy', W.solving);
   }

@@ -79,8 +79,8 @@
   };
   const W = { S: null, tabL: 'objects', tabR: 'props', tabB: 'results', search: '', hiddenGroups: new Set(), hl: null, history: [], card: true, solving: false, sel: null, collapsed: {}, mode: 'p', lastStatus: '' };
 
-  function load() { try { Object.assign(W, JSON.parse(localStorage.getItem('boheme_wb') || '{}'), { hiddenGroups: new Set(), history: [], solving: false, sel: null }); } catch (e) { } }
-  function save() { try { localStorage.setItem('boheme_wb', JSON.stringify({ tabL: W.tabL, tabR: W.tabR, tabB: W.tabB, card: W.card, collapsed: W.collapsed, mode: W.mode, bottomH: W.bottomH, hideL: W.hideL, hideR: W.hideR, hideB: W.hideB })); } catch (e) { } }
+  function load() { try { Object.assign(W, JSON.parse(localStorage.getItem('boheme_wb2') || '{}'), { hiddenGroups: new Set(), history: [], solving: false, sel: null }); } catch (e) { } }
+  function save() { try { localStorage.setItem('boheme_wb2', JSON.stringify({ tabL: W.tabL, tabR: W.tabR, tabB: W.tabB, tabRt: W.tabRt, card: W.card, collapsed: W.collapsed, mode: W.mode, bottomH: W.bottomH, hideL: W.hideL, hideB: W.hideB, outline: W.outline, probesOff: W.probesOff, labelsOff: W.labelsOff })); } catch (e) { } }
 
   function build() {
     const tab = $('#tab-comp');
@@ -92,80 +92,96 @@
     wb.className = 'wb';
     wb.innerHTML = `
 <div class="wb-ribbon">
-  <div class="wb-brand"><div class="wb-logo"><svg viewBox="0 0 40 40" width="34" height="34"><defs><linearGradient id="wbl" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#7ef9ff"/><stop offset="1" stop-color="#8a6bff"/></linearGradient></defs><path d="M6 14c6-6 10 6 16 0s10 6 16 0M6 22c6-6 10 6 16 0s10 6 16 0M6 30c6-6 10 6 16 0s10 6 16 0" fill="none" stroke="url(#wbl)" stroke-width="3.2" stroke-linecap="round"/></svg></div><div class="wb-brand-t"><b>BOHEME</b><small>Hydraulic Workbench</small></div></div>
+  <div class="wb-rtabs"><span class="wb-app">BOHEME</span><button data-rt="home">Home</button><button data-rt="results">Results</button><button data-rt="display">Display</button>
+    <div class="wb-rright">
+      <button class="wb-ib" data-act="undo" title="Undo (Ctrl+Z)">${icon('undo', 16)}</button>
+      <button class="wb-ib" data-act="redo" title="Redo (Ctrl+Y)">${icon('redo', 16)}</button>
+    </div>
+  </div>
   <div class="wb-rgroups">
-    <div class="wb-rg"><div class="wb-rg-b">
-      ${rbtn('select', 'select', 'Select', 'Select objects and pan the view (V)')}
-      ${rbtn('wire', 'wire', 'Line', 'Draw connection lines across cells (W)')}
+    <div class="wb-rg" data-rtab="home"><div class="wb-rg-b">
+      ${rbtn('select', 'select', 'Select', 'Select objects (V)')}
+      ${rbtn('wire', 'wire', 'Line', 'Draw connection lines (W)')}
       ${rbtn('node', 'node', 'Node', 'Place a node (N)')}
       ${rbtn('erase', 'erase', 'Erase', 'Erase cells (E)')}
     </div><div class="wb-rg-l">Edit</div></div>
-    <div class="wb-rg"><div class="wb-rg-b">
-      <button class="wb-rb" id="wbLibBtn" title="Insert a component from the library">${icon('lib', 22)}<span>Component ▾</span></button>
+    <div class="wb-rg" data-rtab="home"><div class="wb-rg-b">
+      <button class="wb-rb" id="wbLibBtn" title="Insert a component">${icon('lib', 24)}<span>Component ▾</span></button>
     </div><div class="wb-rg-l">Insert</div></div>
-    <div class="wb-rg"><div class="wb-rg-b">
-      <button class="wb-rb wb-solve" id="wbSolve" title="Solve the network (stationary)">${icon('play', 22)}<span>Solve</span></button>
-    </div><div class="wb-rg-l">Compute</div></div>
-    <div class="wb-rg"><div class="wb-rg-b">
-      ${rbtn('m-none', 'schema', 'Schematic', 'Schematic without result colouring')}
-      ${rbtn('m-p', 'pressure', 'Pressure', 'Colour by total pressure')}
-      ${rbtn('m-u', 'speed', 'Velocity', 'Colour by flow velocity')}
-      ${rbtn('m-q', 'flow', 'Flow rate', 'Colour by volume flow')}
-      ${rbtn('anim', 'anim', 'Animate', 'Animated flow particles')}
-    </div><div class="wb-rg-l">Results view</div></div>
-    <div class="wb-rg"><div class="wb-rg-b">
-      ${rbtn('fit', 'fit', 'Fit', 'Fit the network into the viewport (F)')}
-      ${rbtn('focus', 'focus', 'Focus', 'Hide all panels (M)')}
-      ${rbtn('card', 'chart', 'Analysis', 'Show the analysis card')}
-    </div><div class="wb-rg-l">Layout</div></div>
-    <div class="wb-rg"><div class="wb-rg-b">
+    <div class="wb-rg" data-rtab="home"><div class="wb-rg-b">
+      <button class="wb-rb wb-solve" id="wbSolve" title="Solve the steady-state network">${icon('bolt', 24)}<span>Solve</span></button>
+    </div><div class="wb-rg-l">Solve</div></div>
+    <div class="wb-rg" data-rtab="home"><div class="wb-rg-b">
       ${rbtn('open', 'open', 'Open', 'Open a BOHEME project (.json)')}
       ${rbtn('save', 'save', 'Save', 'Save the project as .json')}
-      ${rbtn('paste', 'table', 'From Excel', 'Paste a schematic copied from Excel')}
-      ${rbtn('csv', 'csv', 'CSV', 'Export the result table as CSV')}
-    </div><div class="wb-rg-l">File</div></div>
-  </div>
-  <div class="wb-rright">
-    <button class="wb-ib" data-act="undo" title="Undo (Ctrl+Z)">${icon('undo')}</button>
-    <button class="wb-ib" data-act="redo" title="Redo (Ctrl+Y)">${icon('redo')}</button>
-    <span class="wb-vsep"></span>
-    <button class="wb-ib" data-act="toggleL" title="Show / hide the object panel">${icon('panelL')}</button>
-    <button class="wb-ib" data-act="toggleB" title="Show / hide the result panel">${icon('panelB')}</button>
-    <button class="wb-ib" data-act="toggleR" title="Show / hide the properties panel">${icon('panelR')}</button>
+      ${rbtn('paste', 'table', 'Import', 'Paste a schematic copied from Excel')}
+      ${rbtn('csv', 'csv', 'Export', 'Export the result table as CSV')}
+    </div><div class="wb-rg-l">Project</div></div>
+    <div class="wb-rg" data-rtab="results"><div class="wb-rg-b">
+      ${rbtn('m-p', 'pressure', 'Total Pressure', 'Contour plot of the total pressure')}
+      ${rbtn('m-u', 'speed', 'Velocity', 'Contour plot of the flow velocity')}
+      ${rbtn('m-q', 'flow', 'Volume Flow', 'Contour plot of the volume flow')}
+      ${rbtn('m-none', 'schema', 'Geometry', 'Show the model without results')}
+    </div><div class="wb-rg-l">Result</div></div>
+    <div class="wb-rg" data-rtab="results"><div class="wb-rg-b">
+      ${rbtn('anim', 'anim', 'Flow Arrows', 'Animated flow-direction arrows')}
+      ${rbtn('card', 'chart', 'Legend', 'Show the contour legend')}
+      ${rbtn('probes', 'locate', 'Max / Min', 'Show maximum and minimum probes')}
+      ${rbtn('labels', 'info', 'Labels', 'Show component and node annotations')}
+    </div><div class="wb-rg-l">Display</div></div>
+    <div class="wb-rg" data-rtab="display"><div class="wb-rg-b">
+      ${rbtn('fit', 'fit', 'Fit', 'Zoom to fit (F)')}
+      ${rbtn('v-iso', 'project', 'Isometric', 'Isometric view')}
+      ${rbtn('v-top', 'panelB', 'Top', 'View from above')}
+      ${rbtn('v-front', 'panelL', 'Front', 'Front view')}
+    </div><div class="wb-rg-l">View</div></div>
+    <div class="wb-rg" data-rtab="display"><div class="wb-rg-b">
+      ${rbtn('toggleL', 'panelL', 'Outline', 'Show / hide outline and details')}
+      ${rbtn('toggleB', 'panelB', 'Tables', 'Show / hide the tabular panel')}
+      ${rbtn('focus', 'focus', 'Full Screen', 'Graphics only (M)')}
+    </div><div class="wb-rg-l">Windows</div></div>
   </div>
 </div>
-<div class="wb-docbar"><div class="wb-doc"><span class="wb-doc-ic">${icon('project', 15)}</span><b id="wbProj">A320 hydraulic network</b><span class="wb-doc-sep">›</span><span id="wbCrumb">Schematic</span></div><div class="wb-hint" id="wbHint"></div></div>
+<div class="wb-docbar"><span id="wbProj">A320 hydraulic network</span><span id="wbCrumb"></span></div>
 <div class="wb-main">
   <aside class="wb-left">
-    <div class="wb-tabs"><button data-tl="objects">${icon('nodes', 15)} Objects</button><button data-tl="library">${icon('lib', 15)} Library</button></div>
-    <div class="wb-pane" data-pl="objects">
-      <div class="wb-search">${icon('search', 15)}<input id="wbSearch" placeholder="Search objects…" autocomplete="off"></div>
-      <div class="wb-tree" id="wbTree"></div>
+    <div class="wb-box">
+      <div class="wb-tabs"><button data-tl="objects">${icon('nodes', 13)} Outline</button><button data-tl="library">${icon('lib', 13)} Library</button></div>
+      <div class="wb-pane" data-pl="objects">
+        <div class="wb-search">${icon('search', 13)}<input id="wbSearch" placeholder="Search outline" autocomplete="off"></div>
+        <div class="wb-tree" id="wbTree"></div>
+      </div>
+      <div class="wb-pane" data-pl="library"><div class="wb-lib" id="wbLib"></div></div>
     </div>
-    <div class="wb-pane" data-pl="library"><div class="wb-lib" id="wbLib"></div></div>
+    <div class="wb-split" id="wbSplit"></div>
+    <div class="wb-box">
+      <div class="wb-boxh"><span id="wbDetT">Details of “Project”</span></div>
+      <div class="wb-tabs"><button data-tr="props">Details</button><button data-tr="analysis">Results</button><button data-tr="solver">Analysis Settings</button></div>
+      <div class="wb-pane wb-scroll" data-pr="props" id="wbProps"></div>
+      <div class="wb-pane wb-scroll" data-pr="analysis" id="wbAnalysis"></div>
+      <div class="wb-pane wb-scroll" data-pr="solver" id="wbSolver"></div>
+    </div>
   </aside>
-  <section class="wb-center"><div class="wb-viewport" id="wbViewport">
-    <div class="wb-vtools">
+  <section class="wb-center">
+    <div class="wb-gtool">
       ${vbtn('select', 'select', 'Select (V)')}${vbtn('wire', 'wire', 'Line (W)')}${vbtn('node', 'node', 'Node (N)')}${vbtn('erase', 'erase', 'Erase (E)')}
-      <span class="wb-hsep"></span>
-      ${vbtn('zin', 'zin', 'Zoom in')}${vbtn('zout', 'zout', 'Zoom out')}${vbtn('fit', 'fit', 'Fit (F)')}
+      <span class="wb-gsep"></span>
+      ${vbtn('zin', 'zin', 'Zoom in')}${vbtn('zout', 'zout', 'Zoom out')}${vbtn('fit', 'fit', 'Zoom to fit (F)')}
+      <span class="wb-gsep"></span>
+      ${vbtn('v-iso', 'project', 'Isometric view')}${vbtn('v-top', 'panelB', 'Top view')}${vbtn('v-front', 'panelL', 'Front view')}
+      <span class="wb-gsep"></span>
+      <div id="wbModes"></div>
+      <div class="wb-hint" id="wbHint"></div>
     </div>
-    <div class="wb-vmodes" id="wbModes">
-      <button data-m="none">${icon('schema', 15)}Schematic</button><button data-m="p">${icon('pressure', 15)}Pressure</button><button data-m="u">${icon('speed', 15)}Velocity</button><button data-m="q">${icon('flow', 15)}Flow rate</button>
+    <div class="wb-viewport" id="wbViewport">
+      <div class="wb-leg" id="wbCard"></div>
+      <div class="wb-zoom" id="wbZoom">100 %</div>
     </div>
-    <div class="wb-card" id="wbCard"></div>
-    <div class="wb-zoom" id="wbZoom">100 %</div>
-  </div></section>
-  <aside class="wb-right">
-    <div class="wb-tabs"><button data-tr="props">${icon('info', 15)} Properties</button><button data-tr="analysis">${icon('chart', 15)} Analysis</button><button data-tr="solver">${icon('solver', 15)} Solver</button></div>
-    <div class="wb-pane wb-scroll" data-pr="props" id="wbProps"></div>
-    <div class="wb-pane wb-scroll" data-pr="analysis" id="wbAnalysis"></div>
-    <div class="wb-pane wb-scroll" data-pr="solver" id="wbSolver"></div>
-  </aside>
+  </section>
 </div>
 <div class="wb-bottom" id="wbBottom">
   <div class="wb-bhandle" id="wbBHandle"></div>
-  <div class="wb-tabs wb-btabs"><button data-tb="results">${icon('table', 15)} Results</button><button data-tb="charts">${icon('chart', 15)} Charts</button><button data-tb="check">${icon('ok', 15)} Model check <i id="wbCheckBadge"></i></button><button data-tb="history">${icon('hist', 15)} History</button><button data-tb="raster">${icon('table', 15)} Cell grid (expert)</button><span class="wb-btab-actions" id="wbBActions"></span></div>
+  <div class="wb-tabs wb-btabs"><button data-tb="results">Tabular Data</button><button data-tb="charts">Graph</button><button data-tb="check">Model Check <i id="wbCheckBadge"></i></button><button data-tb="history">Messages</button><button data-tb="raster">Cell Grid (Expert)</button><span class="wb-btab-actions" id="wbBActions"></span></div>
   <div class="wb-bpane" data-pb="results" id="wbResults"></div>
   <div class="wb-bpane" data-pb="charts" id="wbCharts"></div>
   <div class="wb-bpane" data-pb="check" id="wbCheck"></div>
@@ -190,8 +206,8 @@
     wire();
     return true;
   }
-  function rbtn(act, ic, label, title) { return `<button class="wb-rb" data-act="${act}" title="${esc(title)}">${icon(ic, 22)}<span>${label}</span></button>`; }
-  function vbtn(act, ic, title) { return `<button class="wb-vb" data-act="${act}" title="${esc(title)}">${icon(ic, 18)}</button>`; }
+  function rbtn(act, ic, label, title) { return `<button class="wb-rb" data-act="${act}" title="${esc(title)}">${icon(ic, 24)}<span>${label}</span></button>`; }
+  function vbtn(act, ic, title) { return `<button class="wb-ib" data-act="${act}" title="${esc(title)}">${icon(ic, 16)}</button>`; }
 
   function rowOf(id) { const e = document.getElementById(id); return e ? (e.closest('.toggle-item') || e) : null; }
   function section(container, id, title, ic, bodyHTML, opts) {
@@ -256,13 +272,22 @@
 
   function wire() {
     const S = W.S;
-    $$('.wb-ribbon [data-act], .wb-vtools [data-act], .wb-rright [data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
+    $$('.wb-ribbon [data-act], .wb-gtool [data-act]').forEach(b => b.addEventListener('click', () => act(b.dataset.act)));
+    $$('[data-rt]').forEach(b => b.addEventListener('click', () => { W.tabRt = b.dataset.rt; tabs(); save(); }));
+    const sp = $('#wbSplit');
+    sp.addEventListener('pointerdown', e => {
+      const box = $('.wb-left').getBoundingClientRect();
+      sp.setPointerCapture(e.pointerId);
+      const mv = ev => { const f = Math.max(0.15, Math.min(0.85, (ev.clientY - box.top) / box.height)); W.outline = Math.round(f * 100); applyLayout(); };
+      const up = () => { sp.removeEventListener('pointermove', mv); sp.removeEventListener('pointerup', up); save(); };
+      sp.addEventListener('pointermove', mv);
+      sp.addEventListener('pointerup', up);
+    });
     $('#wbSolve').addEventListener('click', () => window.compute && window.compute());
     $('#wbLibBtn').addEventListener('click', e => { const f = $('#wbFly'); const r = e.currentTarget.getBoundingClientRect(); f.style.left = r.left + 'px'; f.style.top = (r.bottom + 6) + 'px'; f.classList.toggle('open'); e.stopPropagation(); });
     document.addEventListener('click', e => { if (!e.target.closest('#wbFly')) $('#wbFly').classList.remove('open'); });
-    $$('#wbModes [data-m]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.m)));
     $$('[data-tl]').forEach(b => b.addEventListener('click', () => { W.tabL = b.dataset.tl; tabs(); save(); }));
-    $$('[data-tr]').forEach(b => b.addEventListener('click', () => { W.tabR = b.dataset.tr; tabs(); save(); }));
+    $$('[data-tr]').forEach(b => b.addEventListener('click', () => { W.tabR = b.dataset.tr; tabs(); save(); crumb(); }));
     $$('[data-tb]').forEach(b => b.addEventListener('click', () => { W.tabB = b.dataset.tb; tabs(); save(); if (W.tabB === 'charts') renderCharts(); }));
     $('#wbSearch').addEventListener('input', e => { W.search = e.target.value.trim().toLowerCase(); renderTree(); });
     const handle = $('#wbBHandle');
@@ -327,6 +352,8 @@
     else if (a === 'fit') { if (window.BohemeScene3D && BohemeScene3D.active()) BohemeScene3D.fit(); else S.fit(); }
     else if (a === 'focus') { document.getElementById('wb').classList.toggle('wb-focus'); setTimeout(() => S.fit(), 80); }
     else if (a === 'card') { W.card = !W.card; save(); renderCard(); markTools(); }
+    else if (a === 'probes' || a === 'labels') { W[a + 'Off'] = !W[a + 'Off']; save(); markTools(); if (window.BohemeScene3D) BohemeScene3D.rebuild(); }
+    else if (a.startsWith('v-')) { if (window.BohemeScene3D && BohemeScene3D.active()) BohemeScene3D.view(a.slice(2)); else S.fit(); }
     else if (a === 'anim') { S.setAnim(!S.state.anim); markTools(); }
     else if (a.startsWith('m-')) setMode(a.slice(2));
     else if (a === 'undo') S.undo();
@@ -349,11 +376,18 @@
     $$('[data-act^="m-"]').forEach(b => b.classList.toggle('on', b.dataset.act === 'm-' + W.mode));
     $$('[data-act="anim"]').forEach(b => b.classList.toggle('on', st.anim));
     $$('[data-act="card"]').forEach(b => b.classList.toggle('on', W.card));
+    $$('[data-act="probes"]').forEach(b => b.classList.toggle('on', !W.probesOff));
+    $$('[data-act="labels"]').forEach(b => b.classList.toggle('on', !W.labelsOff));
+    $$('[data-act="toggleL"]').forEach(b => b.classList.toggle('on', !W.hideL));
+    $$('[data-act="toggleB"]').forEach(b => b.classList.toggle('on', !W.hideB));
     $$('[data-act="focus"]').forEach(b => b.classList.toggle('on', $('#wb').classList.contains('wb-focus')));
     if (tool === 'place' && st.place) hint('Click a free cell to place: ' + S.KIND[st.place].title + ' · Esc cancels');
   }
   function hint(t) { const h = $('#wbHint'); if (h) { h.innerHTML = t ? icon('info', 14) + ' ' + esc(t) : ''; h.classList.toggle('on', !!t); } }
   function tabs() {
+    W.tabRt = W.tabRt || 'home';
+    $$('[data-rt]').forEach(b => b.classList.toggle('on', b.dataset.rt === W.tabRt));
+    $$('[data-rtab]').forEach(g => g.classList.toggle('vis', g.dataset.rtab === W.tabRt));
     $$('[data-tl]').forEach(b => b.classList.toggle('on', b.dataset.tl === W.tabL));
     $$('[data-pl]').forEach(p => p.classList.toggle('on', p.dataset.pl === W.tabL));
     $$('[data-tr]').forEach(b => b.classList.toggle('on', b.dataset.tr === W.tabR));
@@ -369,7 +403,8 @@
     if (!wb) return;
     const hd = document.querySelector('header');
     wb.style.setProperty('--wb-top', (hd ? hd.offsetHeight : 56) + 'px');
-    wb.style.setProperty('--wb-bottom-h', (W.bottomH || 250) + 'px');
+    wb.style.setProperty('--wb-bottom-h', (W.bottomH || 230) + 'px');
+    wb.style.setProperty('--wb-outline', (W.outline || 52) + '%');
     wb.classList.toggle('wb-hide-l', !!W.hideL);
     wb.classList.toggle('wb-hide-r', !!W.hideR);
     wb.classList.toggle('wb-hide-b', !!W.hideB);
@@ -421,6 +456,12 @@
     return f.slice(0, 2).map((x, i) => (Number.isFinite(v[i]) ? +Number(v[i]).toPrecision(4) : '–') + (x[2] && x[2] !== '–' ? ' ' + x[2] : '')).join(' · ');
   }
 
+  const STAT = {
+    ok: '<svg class="wb-stat" viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5L10 3.5" fill="none" stroke="#2e7d32" stroke-width="2"/></svg>',
+    need: '<svg class="wb-stat" viewBox="0 0 12 12"><path d="M7 1L2.5 7H6l-1 4 4.5-6H6z" fill="#f2b600" stroke="#8a6500" stroke-width=".6"/></svg>',
+    err: '<svg class="wb-stat" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="#c62828" stroke-width="2"/></svg>',
+    none: '<svg class="wb-stat" viewBox="0 0 12 12"></svg>'
+  };
   function renderTree() {
     const box = $('#wbTree');
     const M = model();
@@ -429,36 +470,55 @@
     const q = W.search;
     const match = t => !q || String(t).toLowerCase().includes(q);
     const vs = typeof ValveRegistry !== 'undefined' ? ValveRegistry.valves : new Map();
-    let h = `<div class="wb-ti wb-root">${icon('project', 16)}<b>A320 hydraulic network</b><em>${M.comps.length} comp · ${M.nodes.length} nodes</em></div>`;
-    const group = (gid, title, ic, items, keys) => {
-      const open = !W.collapsed['t-' + gid];
-      const hidden = W.hiddenGroups.has(gid);
-      h += `<div class="wb-tg${open ? ' open' : ''}" data-g="${gid}"><div class="wb-ti wb-tgh${W.hl && W.hl.id === gid ? ' hl' : ''}" data-gk="${gid}"><i class="wb-tw">${icon('chev', 13)}</i>${icon(ic, 16)}<span>${title}</span><em>${items.length}</em><button class="wb-eye${hidden ? ' off' : ''}" data-eye="${gid}" title="Show / hide in the schematic">${icon(hidden ? 'eyeoff' : 'eye', 14)}</button></div><div class="wb-tc">`;
-      h += items.join('');
-      h += '</div></div>';
-      W._groupKeys = W._groupKeys || {};
-      W._groupKeys[gid] = keys;
-    };
+    const solved = !!results();
+    const hasErr = M.comps.some(c => c.error);
+    const solStat = hasErr ? 'err' : solved ? 'ok' : 'need';
+    let h = '';
     W._groupKeys = {};
-    const circ = circuits().filter(c => !q || c.comps.some(x => match(x.name)));
-    group('circuits', 'Circuits', 'circuit', circ.map(c => `<div class="wb-ti wb-sub${W.hl && W.hl.id === c.id ? ' hl' : ''}" data-hl="${c.id}">${icon('circuit', 14)}<span>${esc(c.title)}</span><em>${c.comps.length}</em></div>`), circ.flatMap(c => c.keys));
-    W._circ = Object.fromEntries(circ.map(c => [c.id, c.keys]));
-    for (const id in CAT) {
-      const comps = M.comps.filter(c => catOf(c.kk) === id && match(c.name)).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-      group(id, CAT[id].title, CAT[id].icon, comps.map(c => {
-        const v = vs.get(c.name);
-        return `<div class="wb-ti wb-leaf${W.sel === c.cell.key ? ' sel' : ''}${c.error ? ' err' : ''}" data-k="${c.cell.key}">${S.symbolSVG(c.kk, 30, 21)}<span>${esc(c.name)}</span>${v ? `<b class="wb-vs ${v.open ? 'on' : 'off'}">${v.open ? 'open' : 'closed'}</b>` : ''}<em>${esc(itemMeta(c))}</em></div>`;
-      }), comps.map(c => c.cell.key));
-    }
-    const nodes = M.nodes.filter(n => match(n.name)).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-    group('nodes', 'Nodes & reservoirs', 'nodes', nodes.map(n => {
-      const r = nodeRes(n.name);
-      return `<div class="wb-ti wb-leaf${W.sel === n.cell.key ? ' sel' : ''}" data-k="${n.cell.key}">${S.nodeSVG(n.name[0].toUpperCase() === 'S', 18)}<span>${esc(n.name)}</span><em>${r ? fmt(Number(r.ptot), 1) + ' bar' : n.nr ? 'set ' + fmt(n.pset, 1) + ' bar' : 'z ' + fmt(n.z, 2) + ' m'}</em></div>`;
-    }), nodes.map(n => n.cell.key));
-    h += `<div class="wb-ti wb-cfg" data-goto="solver">${icon('fluid', 16)}<span>Fluid</span><em>${esc(fluidLabel())}</em></div>`;
-    h += `<div class="wb-ti wb-cfg" data-goto="solver">${icon('solver', 16)}<span>Solver settings</span><em>λU ${esc(($('#itLambda') || {}).value || '')} · niter ${esc(($('#itNiter') || {}).value || '')}</em></div>`;
+    const open = id => !W.collapsed['t-' + id];
+    const branch = (id, ic, title, meta, stat, inner, attrs) => {
+      h += `<div class="wb-tg${open(id) ? ' open' : ''}" data-g="${id}"><div class="wb-ti${attrs && attrs.hl ? ' hl' : ''}" ${attrs && attrs.data ? attrs.data : `data-tog="${id}"`}><i class="wb-tw">${icon('chev', 11)}</i>${STAT[stat || 'none']}${icon(ic, 15)}<span>${title}</span>${meta ? `<em>${meta}</em>` : ''}${attrs && attrs.eye !== undefined ? `<button class="wb-eye${attrs.eye ? ' off' : ''}" data-eye="${id}" title="Show / hide in the graphics window">${icon(attrs.eye ? 'eyeoff' : 'eye', 13)}</button>` : ''}</div><div class="wb-tc">`;
+      inner();
+      h += '</div></div>';
+    };
+    const leaf = (attrs, stat, iconHTML, title, meta, cls) => { h += `<div class="wb-ti wb-leaf${cls || ''}" ${attrs}><i class="wb-tw"></i>${STAT[stat || 'none']}${iconHTML}<span>${title}</span>${meta ? `<em>${meta}</em>` : ''}</div>`; };
+    const group = (gid, title, ic, list, keys, render) => {
+      W._groupKeys[gid] = keys;
+      branch(gid, ic, title, String(list.length), list.some(x => x.error) ? 'err' : 'ok', () => list.forEach(render), { eye: W.hiddenGroups.has(gid), hl: W.hl && W.hl.id === gid, data: `data-gk="${gid}"` });
+    };
+    branch('project', 'project', 'Project', '', 'none', () => {
+      branch('model', 'project', 'Model (A320 hydraulic network)', '', hasErr ? 'err' : 'ok', () => {
+        leaf('data-goto="solver"', 'ok', icon('fluid', 15), 'Fluid Properties', esc(fluidLabel().split(' (')[0]));
+        branch('network', 'nodes', 'Network', `${M.comps.length} components`, hasErr ? 'err' : 'ok', () => {
+          const circ = circuits().filter(c => !q || c.comps.some(x => match(x.name)));
+          W._circ = Object.fromEntries(circ.map(c => [c.id, c.keys]));
+          group('circuits', 'Circuits', 'circuit', circ, circ.flatMap(c => c.keys), c => leaf(`data-hl="${c.id}"`, 'ok', icon('circuit', 14), esc(c.title), String(c.comps.length), W.hl && W.hl.id === c.id ? ' hl' : ''));
+          for (const id in CAT) {
+            const comps = M.comps.filter(c => catOf(c.kk) === id && match(c.name)).sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric: true }));
+            group(id, CAT[id].title, CAT[id].icon, comps, comps.map(c => c.cell.key), c => {
+              const v = vs.get(c.name);
+              leaf(`data-k="${c.cell.key}"`, c.error ? 'err' : 'ok', S.symbolSVG(c.kk, 26, 18), esc(c.name) + (v ? ` <b class="wb-vs ${v.open ? 'on' : 'off'}">${v.open ? 'open' : 'closed'}</b>` : ''), esc(itemMeta(c)), (W.sel === c.cell.key ? ' sel' : '') + (c.error ? ' err' : ''));
+            });
+          }
+          const nodes = M.nodes.filter(n => match(n.name)).sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric: true }));
+          group('nodes', 'Nodes & Reservoirs', 'nodes', nodes, nodes.map(n => n.cell.key), n => {
+            const r = nodeRes(n.name);
+            leaf(`data-k="${n.cell.key}"`, 'ok', S.nodeSVG(n.name[0].toUpperCase() === 'S', 15), esc(n.name), r ? fmt(Number(r.ptot), 2) + ' bar' : n.nr ? 'set ' + fmt(n.pset, 1) + ' bar' : 'z ' + fmt(n.z, 2) + ' m', W.sel === n.cell.key ? ' sel' : '');
+          });
+        });
+        branch('analysis', 'solver', 'Steady-State Hydraulics (A)', '', solStat, () => {
+          leaf('data-goto="solver"', 'ok', icon('gear', 15), 'Analysis Settings', 'λU ' + esc(($('#itLambda') || {}).value || '') + ' · niter ' + esc(($('#itNiter') || {}).value || ''));
+          branch('solution', 'bolt', 'Solution (A6)', solved ? 'solved' : '', solStat, () => {
+            const K = kpis();
+            leaf('data-goto="analysis"', solStat, icon('info', 15), 'Solution Information', K ? K.it + ' iterations' : '');
+            [['p', 'pressure', 'Total Pressure', K ? fmt(K.pmin, 1) + ' … ' + fmt(K.pmax, 1) + ' bar' : ''], ['u', 'speed', 'Flow Velocity', K ? 'max ' + fmt(K.umax, 2) + ' m/s' : ''], ['q', 'flow', 'Volume Flow', K ? 'pumps ' + fmt(K.qpump, 2) + ' m³/h' : '']].forEach(([m, ic, t, meta]) => leaf(`data-res="${m}"`, solved ? 'ok' : 'need', icon(ic, 15), t, meta, W.mode === m && solved ? ' sel' : ''));
+          });
+        });
+      });
+    });
     box.innerHTML = h;
-    box.querySelectorAll('.wb-tgh').forEach(el => el.addEventListener('click', e => {
+    box.querySelectorAll('[data-tog]').forEach(el => el.addEventListener('click', () => { const g = el.parentElement; g.classList.toggle('open'); W.collapsed['t-' + g.dataset.g] = !g.classList.contains('open'); save(); }));
+    box.querySelectorAll('[data-gk]').forEach(el => el.addEventListener('click', e => {
       if (e.target.closest('[data-eye]')) return;
       const g = el.parentElement;
       if (e.target.closest('.wb-tw')) { g.classList.toggle('open'); W.collapsed['t-' + g.dataset.g] = !g.classList.contains('open'); save(); return; }
@@ -481,7 +541,8 @@
       renderTree();
     }));
     box.querySelectorAll('[data-k]').forEach(el => el.addEventListener('click', () => S.focusKey(el.dataset.k, 0.95)));
-    box.querySelectorAll('[data-goto]').forEach(el => el.addEventListener('click', () => { W.tabR = el.dataset.goto; tabs(); save(); }));
+    box.querySelectorAll('[data-goto]').forEach(el => el.addEventListener('click', () => { W.tabR = el.dataset.goto; tabs(); save(); crumb(); }));
+    box.querySelectorAll('[data-res]').forEach(el => el.addEventListener('click', () => { setMode(el.dataset.res); W.tabR = 'analysis'; tabs(); save(); crumb(); renderTree(); }));
   }
 
   function propHead(svg, title, sub, badges) {
@@ -692,28 +753,28 @@
     const S = W.S;
     const sc = S.state.scales;
     const r = results();
-    if (!W.card || !r || !sc || W.mode === 'none') { c.classList.remove('open'); return; }
-    let vals, unit, title, lo, hi;
-    if (W.mode === 'p') { vals = (r.nodes || []).map(n => Number(n.ptot)).filter(Number.isFinite); unit = 'bar'; title = 'Total pressure'; lo = sc.pmin; hi = sc.pmax; }
-    else if (W.mode === 'u') { vals = (r.components || []).map(x => Math.abs(Number(x.u))).filter(v => Number.isFinite(v) && v < 1e3); unit = 'm/s'; title = 'Flow velocity'; lo = 0; hi = sc.umax; }
-    else { vals = (r.components || []).map(x => Math.abs(Number(x.q))).filter(Number.isFinite); unit = 'm³/h'; title = 'Volume flow'; lo = 0; hi = sc.qmax; }
-    const sv = vals.slice().sort((x, y) => x - y);
-    const mean = vals.reduce((s, v) => s + v, 0) / (vals.length || 1);
-    const stops = [0, .2, .4, .6, .8, 1].map(t => `${S.pcol(t)} ${t * 100}%`).join(',');
-    const tv = v => (W.mode === 'p' ? (v - lo) / ((hi - lo) || 1) : Math.sqrt(Math.max(0, v) / (hi || 1)));
-    const n = sv.length;
-    const pts = sv.map((v, i) => [n > 1 ? 120 * i / (n - 1) : 60, 46 - 42 * Math.max(0, Math.min(1, tv(v)))]);
-    const area = 'M0 48 ' + pts.map(p => `L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ') + ' L120 48Z';
-    const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
-    const gstops = [0, .25, .5, .75, 1].map(t => `<stop offset="${t}" stop-color="${S.pcol(1 - t)}"/>`).join('');
-    const bars = `<defs><linearGradient id="wbcg" x1="0" x2="0" y1="0" y2="1">${gstops}</linearGradient><linearGradient id="wbcf" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="wbcm"><path d="${area}" fill="url(#wbcf)"/></mask></defs><rect width="120" height="48" fill="url(#wbcg)" mask="url(#wbcm)"/><path d="${line}" fill="none" stroke="url(#wbcg)" stroke-width="1.6" vector-effect="non-scaling-stroke"/>` + pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="1.1" fill="#fff" opacity=".8"/>`).join('');
-    c.innerHTML = `<div class="wb-card-h"><b>${title} analysis</b><button class="wb-ib" id="wbCardX">${icon('close', 14)}</button></div>
-<div class="wb-card-b"><div class="wb-cbar"><div class="wb-cbar-g" style="background:linear-gradient(0deg,${stops})"></div><div class="wb-cbar-l"><span>${fmt(hi, 2)}</span><span>${fmt(W.mode === 'p' ? (lo + hi) / 2 : W.mode === 'u' || W.mode === 'q' ? hi / 4 : 0, 2)}</span><span>${fmt(lo, 2)}</span></div><small>${unit}</small></div>
-<div class="wb-histw"><svg viewBox="0 0 120 48" class="wb-hist" preserveAspectRatio="none">${bars}</svg><small>${vals.length} values · sorted ↑</small></div></div>
-<div class="wb-card-s"><div><span>min</span><b>${fmt(Math.min(...vals), 2)}</b></div><div><span>max</span><b>${fmt(Math.max(...vals), 2)}</b></div><div><span>mean</span><b>${fmt(mean, 2)}</b></div><div><span>n</span><b>${vals.length}</b></div></div>
-<div class="wb-card-n">${W.mode === 'p' ? 'Nodes coloured by total pressure; pipes show the gradient between their nodes.' : W.mode === 'u' ? 'Components coloured by √(U / U<sub>max</sub>).' : 'Components coloured by √(Q / Q<sub>max</sub>).'}</div>`;
-    c.classList.add('open');
-    $('#wbCardX').addEventListener('click', () => { W.card = false; save(); renderCard(); markTools(); });
+    if (!W.card || !r || !sc || W.mode === 'none') { c.innerHTML = ''; c.style.display = 'none'; return; }
+    const isP = W.mode === 'p';
+    const lo = isP ? sc.pmin : 0, hi = isP ? sc.pmax : W.mode === 'u' ? sc.umax : sc.qmax;
+    const vAt = t => isP ? lo + t * (hi - lo) : t * t * hi;
+    const name = { p: 'Total Pressure', u: 'Flow Velocity', q: 'Volume Flow' }[W.mode];
+    const unit = { p: 'bar', u: 'm/s', q: 'm³/h' }[W.mode];
+    const K = kpis();
+    let vals;
+    if (isP) vals = (r.nodes || []).map(n => Number(n.ptot)).filter(Number.isFinite);
+    else if (W.mode === 'u') vals = (r.components || []).map(x => Math.abs(Number(x.u))).filter(v => Number.isFinite(v) && v < 1e3);
+    else vals = (r.components || []).map(x => Math.abs(Number(x.q))).filter(Number.isFinite);
+    const vmax = Math.max(...vals), vmin = Math.min(...vals);
+    const N = 9, H = 17;
+    const bands = Array.from({ length: N }, (_, i) => `<i style="background:${S.pcol((N - 1 - i) / (N - 1))}"></i>`).join('');
+    const labs = Array.from({ length: N + 1 }, (_, i) => {
+      const t = 1 - i / N;
+      const v = i === 0 ? vmax : i === N ? vmin : vAt(t);
+      const flag = i === 0 ? ' <b class="mx">Max</b>' : i === N ? ' <b class="mn">Min</b>' : '';
+      return `<span style="top:${i * H}px">${fmt(v, Math.abs(v) >= 100 ? 2 : 3)}${flag}</span>`;
+    }).join('');
+    c.innerHTML = `<div class="wb-leg-h"><b>A: Steady-State Hydraulics</b><div><b>${name}</b></div><div>Type: ${name}</div><div>Unit: ${unit}</div><div>Fluid: ${esc(fluidLabel().split(' (')[0])}, ${esc(($('#fluidT') || {}).value)} °C</div><div>Iterations: ${K ? K.it : '–'}${isP ? '' : ' · scale √(x/x<sub>max</sub>)'}</div></div><div class="wb-leg-b"><div class="wb-leg-c">${bands}</div><div class="wb-leg-v" style="height:${N * H}px">${labs}</div></div>`;
+    c.style.display = '';
   }
 
   function checks() {
@@ -791,7 +852,11 @@
     const sb = $('#wbSolve');
     if (sb) sb.classList.toggle('busy', W.solving);
   }
-  function crumb() { const c = $('#wbCrumb'); if (c) c.textContent = W.sel ? nameOfKey(W.sel) : 'Schematic'; }
+  function crumb() {
+    const c = $('#wbCrumb'); if (c) c.textContent = W.sel ? nameOfKey(W.sel) : '';
+    const d = $('#wbDetT');
+    if (d) d.textContent = W.tabR === 'solver' ? 'Details of “Analysis Settings”' : W.tabR === 'analysis' ? 'Details of “Solution”' : W.sel ? 'Details of “' + nameOfKey(W.sel) + '”' : 'Details of “Model”';
+  }
 
   let rt = 0;
   function scheduleRefresh() { clearTimeout(rt); rt = setTimeout(renderAll, 40); }
@@ -809,11 +874,53 @@
     crumb();
   }
 
+  const THEME = {
+    bg: { '#0f0f1f': '#ffffff', '#1a1a2e': '#ffffff', '#16213e': '#eef1f5', '#0a0a1a': '#ffffff', '#15152a': '#fafafa', '#1a2a2a': '#f1f8f1', '#0f3460': '#e8e8e8', '#2a2a4a': '#f3f3f3', '#1a2a1a': '#e8f2e8', '#1f3a1f': '#e8f5e9', '#3a1f24': '#fdecea', '#2a1a3e': '#e5f1fb', '#1a4a80': '#e5f1fb', '#1a2a4a': '#eef1f5', '#2a1a1a': '#fdecea', '#2a2a1a': '#fff8e1', '#0a2a1a': '#e8f5e9', '#1a1a1a': '#f3f3f3', '#2a1a4a': '#f3e5f5', '#1a1a2a': '#f3f3f3', '#3a2a1a': '#fff3e0', '#1e2a3a': '#eef1f5', '#141428': '#fafafa', '#0d1b2a': '#ffffff', '#4472c4': '#e5f1fb', '#e94560': '#c62828', '#4caf50': '#2e7d32', '#2c3e50': '#eef1f5', '#2a2a3a': '#f3f3f3', '#0f2a1a': '#e8f5e9' },
+    fg: { '#ffffff': '#1f1f1f', '#e0e0e0': '#1f1f1f', '#aaaacc': '#333333', '#c8d2e0': '#333333', '#aab3cc': '#444444', '#ffdd44': '#8a6500', '#6fc3f7': '#1565c0', '#e94560': '#c62828', '#4caf50': '#2e7d32', '#9fe79f': '#2e7d32', '#5fd068': '#2e7d32', '#ff6b81': '#c62828', '#ff8844': '#b5520b', '#888888': '#5f6368', '#ffd740': '#8a6500', '#ff5252': '#c62828', '#ccc': '#333333', '#cccccc': '#333333', '#ddd': '#333333', '#dddddd': '#333333', '#8fa3bf': '#5f6368', '#ffcc00': '#8a6500', '#ff6b6b': '#c62828', '#66bb6a': '#2e7d32', '#81c784': '#2e7d32', '#ffb74d': '#b26a00', '#ffa726': '#b26a00', '#ff9800': '#b26a00', '#90caf9': '#1565c0', '#64b5f6': '#1565c0', '#aaa': '#555555', '#aaaaaa': '#555555', '#bbb': '#555555', '#999': '#5f6368', '#999999': '#5f6368', '#ccd': '#333333', '#ccccdd': '#333333', '#ffb347': '#b26a00', '#ecf0f1': '#333333' },
+    bd: { '#2a2a4a': '#c8c8c8', '#1a2a4a': '#dcdcdc', '#2a4a7a': '#b0b0b0', '#3b3b62': '#c8c8c8', '#2f6a2f': '#a5d6a7', '#6a2f3a': '#ef9a9a', '#ffdd44': '#d9a400', '#e94560': '#c62828', '#1a2a2a': '#e0e0e0', '#3a2a3a': '#e0c0c0', '#4caf50': '#66bb6a', '#4472c4': '#7eb4ea', '#0f3460': '#c8c8c8', '#16213e': '#c8c8c8', '#6fc3f7': '#7eb4ea' }
+  };
+  const themeRGB = {};
+  function toRGB(hex) { let h = hex.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`; }
+  for (const k of ['bg', 'fg', 'bd']) { themeRGB[k] = {}; for (const [a, b] of Object.entries(THEME[k])) themeRGB[k][toRGB(a)] = b; }
+  function recolor(el) {
+    if (!el || el.nodeType !== 1 || el.closest('#wb')) return;
+    const st = el.style;
+    if (st && st.length) {
+      const bg = st.backgroundColor;
+      if (bg && themeRGB.bg[bg]) st.backgroundColor = themeRGB.bg[bg];
+      if (st.backgroundImage && /gradient/.test(st.backgroundImage)) { st.backgroundImage = 'none'; if (!st.backgroundColor) st.backgroundColor = '#ffffff'; }
+      const fg = st.color;
+      if (fg && themeRGB.fg[fg]) st.color = themeRGB.fg[fg];
+      for (const side of ['Top', 'Right', 'Bottom', 'Left']) { const c = st['border' + side + 'Color']; if (c && themeRGB.bd[c]) st['border' + side + 'Color'] = themeRGB.bd[c]; }
+      if (st.borderRadius && parseFloat(st.borderRadius) > 3) st.borderRadius = '2px';
+      if (st.boxShadow && st.boxShadow !== 'none') st.boxShadow = '0 2px 8px rgba(0,0,0,.18)';
+    }
+  }
+  function recolorTree(root) { if (!root || root.nodeType !== 1) return; recolor(root); root.querySelectorAll('[style]').forEach(recolor); }
+  function themeInit() {
+    document.body.classList.add('bh-light');
+    const roots = ['#tab-view3d', '#tab-iso', '#tab-schematic', '#tab-qr'].map(q => $(q)).filter(Boolean);
+    roots.forEach(recolorTree);
+    [...document.body.children].forEach(ch => { if (ch.tagName !== 'HEADER' && !ch.classList.contains('tab-content') && ch.tagName !== 'SCRIPT') recolorTree(ch); });
+    const obs = new MutationObserver(list => {
+      for (const m of list) {
+        if (m.type === 'childList') m.addedNodes.forEach(n => { if (n.nodeType === 1 && (m.target === document.body ? n.tagName !== 'HEADER' && !n.classList.contains('tab-content') : true)) recolorTree(n); });
+        else if (m.type === 'attributes') recolor(m.target);
+      }
+    });
+    roots.forEach(r => obs.observe(r, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] }));
+    obs.observe(document.body, { childList: true });
+    const bodyObs = new MutationObserver(list => list.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1 && n.tagName !== 'HEADER' && !n.classList.contains('tab-content') && n.tagName !== 'SCRIPT') obs.observe(n, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] }); })));
+    bodyObs.observe(document.body, { childList: true });
+    [...document.body.children].forEach(n => { if (n.tagName !== 'HEADER' && !n.classList.contains('tab-content') && n.tagName !== 'SCRIPT') obs.observe(n, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] }); });
+  }
+
   function init() {
     if (!window.BohemeStudio) return;
     W.S = window.BohemeStudio;
     load();
     if (!build()) return;
+    try { themeInit(); } catch (e) { console.warn('BOHEME theme', e); }
     applyLayout();
     tabs();
     W.S.setColorMode(W.mode || 'p');
@@ -821,5 +928,5 @@
     setTimeout(() => { W.S.fit(); renderAll(); }, 120);
   }
 
-  window.BohemeWorkbench = { init, state: W, renderAll, circuits, checks };
+  window.BohemeWorkbench = { init, state: W, renderAll, circuits, checks, recolorTree };
 })();

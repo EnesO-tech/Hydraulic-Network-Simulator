@@ -293,7 +293,7 @@
     S.on('change', label => { addHistory('edit', label || 'Edited the schematic'); scheduleRefresh(); });
     S.on('redraw', () => scheduleRefresh());
     S.on('results', r => { renderAll(); });
-    S.on('tool', t => { markTools(t); });
+    S.on('tool', t => { if (t && t.tool === 'select') hint(''); markTools(t); });
     S.on('view', v => { const z = $('#wbZoom'); if (z) z.textContent = Math.round(v.k * 100) + ' %'; });
     const si = $('#statusInfo');
     if (si) new MutationObserver(() => { W.lastStatus = si.textContent; renderStatus(); }).observe(si, { childList: true, characterData: true, subtree: true });
@@ -322,9 +322,9 @@
   function act(a) {
     const S = W.S;
     if (a === 'select' || a === 'wire' || a === 'node' || a === 'erase') { S.setTool(a); hint({ select: '', wire: 'Drag across cells to draw a straight connection line.', node: 'Click a free cell to place a node.', erase: 'Click cells to erase them.' }[a]); }
-    else if (a === 'zin') S.zoomBy(1.25);
-    else if (a === 'zout') S.zoomBy(0.8);
-    else if (a === 'fit') S.fit();
+    else if (a === 'zin') { if (window.BohemeScene3D && BohemeScene3D.active()) BohemeScene3D.zoomBy(1.3); else S.zoomBy(1.25); }
+    else if (a === 'zout') { if (window.BohemeScene3D && BohemeScene3D.active()) BohemeScene3D.zoomBy(0.77); else S.zoomBy(0.8); }
+    else if (a === 'fit') { if (window.BohemeScene3D && BohemeScene3D.active()) BohemeScene3D.fit(); else S.fit(); }
     else if (a === 'focus') { document.getElementById('wb').classList.toggle('wb-focus'); setTimeout(() => S.fit(), 80); }
     else if (a === 'card') { W.card = !W.card; save(); renderCard(); markTools(); }
     else if (a === 'anim') { S.setAnim(!S.state.anim); markTools(); }
@@ -674,7 +674,7 @@
 
   function afterValve() {
     const S = W.S;
-    if (S.state.results) S.state.stale = true;
+    if (S.state.results) S.state.stale = S.state.results.__snap !== JSON.stringify(typeof D !== 'undefined' ? D : {});
     S.redraw();
     renderAll();
   }

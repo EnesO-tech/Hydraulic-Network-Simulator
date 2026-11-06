@@ -49,7 +49,8 @@
     panelR: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/>',
     panelB: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 14h18"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
-    bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>'
+    bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+    hand: '<path d="M8 11V5.5a1.5 1.5 0 013 0V11M11 10V4a1.5 1.5 0 013 0v6M14 10V5.5a1.5 1.5 0 013 0V13c0 4-2.5 8-7 8-3 0-4.5-1.5-6-4l-2-3.5a1.5 1.5 0 012.6-1.5L8 14"/>'
   };
   const icon = (n, s) => `<svg class="wbi" viewBox="0 0 24 24" width="${s || 18}" height="${s || 18}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${IC[n] || ''}</svg>`;
   const $ = (q, r) => (r || document).querySelector(q);
@@ -165,6 +166,8 @@
   <section class="wb-center">
     <div class="wb-gtool">
       ${vbtn('select', 'select', 'Select (V)')}${vbtn('wire', 'wire', 'Line (W)')}${vbtn('node', 'node', 'Node (N)')}${vbtn('erase', 'erase', 'Erase (E)')}
+      <span class="wb-gsep"></span>
+      ${vbtn('nav-pan', 'hand', 'Pan: drag with the left mouse button to move the view')}${vbtn('nav-rot', 'rotate', 'Rotate: drag with the left mouse button to rotate the model')}
       <span class="wb-gsep"></span>
       ${vbtn('zin', 'zin', 'Zoom in')}${vbtn('zout', 'zout', 'Zoom out')}${vbtn('fit', 'fit', 'Zoom to fit (F)')}
       <span class="wb-gsep"></span>
@@ -342,11 +345,28 @@
     $('#wbSolver').addEventListener('change', () => setTimeout(() => { renderNu(); renderStatus(); }, 30));
     $('#wbSolver').addEventListener('click', e => { if (e.target.closest('#valveList button, #valveList select')) setTimeout(afterValve, 30); });
     window.addEventListener('resize', () => applyLayout());
+    const vp = $('#wbViewport');
+    vp.addEventListener('contextmenu', e => { if (e.target.closest('.wb-grid2d')) e.preventDefault(); });
+    vp.addEventListener('pointerdown', e => {
+      const gw = e.target.closest('.wb-grid2d') && $('#wbGrid2d .grid-wrap');
+      if (!gw || (e.button !== 1 && e.button !== 2)) return;
+      e.preventDefault();
+      const x0 = e.clientX, y0 = e.clientY, sl = gw.scrollLeft, stp = gw.scrollTop;
+      gw.style.cursor = 'grabbing';
+      const mv = ev => { gw.scrollLeft = sl - (ev.clientX - x0); gw.scrollTop = stp - (ev.clientY - y0); };
+      const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); gw.style.cursor = ''; };
+      window.addEventListener('pointermove', mv);
+      window.addEventListener('pointerup', up);
+    });
   }
 
   function act(a) {
     const S = W.S;
     if (a === 'select' || a === 'wire' || a === 'node' || a === 'erase') { S.setTool(a); hint({ select: '', wire: 'Drag across cells to draw a straight connection line.', node: 'Click a free cell to place a node.', erase: 'Click cells to erase them.' }[a]); }
+    else if (a === 'nav-pan' || a === 'nav-rot') { if (window.BohemeScene3D) BohemeScene3D.setNav(a === 'nav-pan' ? 'pan' : 'rotate'); }
+    else if (a === 'zin' && $('#wbViewport').classList.contains('wb-is-grid')) { W.gz = Math.min(2, (W.gz || 1) * 1.15); const g = $('#grid'); if (g) g.style.zoom = W.gz; }
+    else if (a === 'zout' && $('#wbViewport').classList.contains('wb-is-grid')) { W.gz = Math.max(0.4, (W.gz || 1) / 1.15); const g = $('#grid'); if (g) g.style.zoom = W.gz; }
+    else if (a === 'fit' && $('#wbViewport').classList.contains('wb-is-grid')) { W.gz = 1; const g = $('#grid'); if (g) g.style.zoom = 1; }
     else if (a === 'zin') { if (window.BohemeScene3D && BohemeScene3D.active()) BohemeScene3D.zoomBy(1.3); else S.zoomBy(1.25); }
     else if (a === 'zout') { if (window.BohemeScene3D && BohemeScene3D.active()) BohemeScene3D.zoomBy(0.77); else S.zoomBy(0.8); }
     else if (a === 'fit') { if (window.BohemeScene3D && BohemeScene3D.active()) BohemeScene3D.fit(); else S.fit(); }

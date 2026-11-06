@@ -425,7 +425,7 @@
     afterChange();
   }
   function afterChange() {
-    st.stale = !!st.results;
+    st.stale = !!st.results && st.results.__snap !== snapshot();
     emit('change', st.lastLabel);
     st.lastLabel = null;
     st.inCommit = true;

@@ -288,3 +288,11 @@
 .wb-card{top:60px}
 .wb-card-b,.wb-histw{min-width:0}
 .wb-hist{width:100%;display:block}
+.wb>.wb-ribbon{grid-row:1}
+.wb>.wb-docbar{grid-row:2}
+.wb>.wb-main{grid-row:3}
+.wb>.wb-bottom{grid-row:4}
+.wb>.wb-status{grid-row:5}
+.wb-main>.wb-left{grid-column:1}
+.wb-main>.wb-center{grid-column:2}
+.wb-main>.wb-right{grid-column:3}

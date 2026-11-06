@@ -314,3 +314,52 @@ body.bh-light .viewer-hint{background:rgba(255,255,255,.85);color:#444;border:1p
 body.bh-light .legend-item{color:#444}
 body.bh-light .legend-color{border-color:#888}
 body.bh-light code{color:#333}
+.wb{font-size:13px}
+.wb-rtabs{height:30px}
+.wb-rtabs button{font-size:13px;padding:0 16px}
+.wb-app{font-size:13px;padding:0 16px}
+.wb-rgroups{height:84px}
+.wb-rb{min-width:60px;font-size:12.5px;padding:5px 6px 3px}
+.wb-rg-l{font-size:11.5px}
+.wb-ti{height:24px;font-size:13px}
+.wb-ti em{font-size:12px}
+.wb-tabs button{font-size:12.5px;padding:4px 12px}
+.wb-boxh{height:26px;font-size:13px}
+.wb-f,.wb-met,.wb-kv,.wb-kv2,.wb-kpi,.wb-bar,.wb-left .toggle-item{min-height:25px}
+.wb-f>label,.wb-left .toggle-item .key,.wb-met span,.wb-kv span,.wb-kv2 span,.wb-kpi span,.wb-bar span{font-size:13px}
+.wb-f input,.wb-in input,.wb-left .toggle-item .val,#wbDesc{font-size:13px;min-height:24px}
+.wb-sec-h{height:25px;font-size:13px}
+.wb-ph-t b{font-size:14px}
+.wb-gtool{height:32px}
+.wb-gtool .wb-ib{width:30px;height:26px}
+#wbModes button{height:24px;font-size:12.5px;padding:0 12px}
+.wb-leg{font-size:13px}
+.wb-leg-c i{width:20px;height:20px}
+.wb-leg-v span{font-size:12.5px}
+.wb #resultTable{font-size:12.5px}
+.wb #resultTable th{padding:3px 7px}
+.wb #resultTable td{padding:2px 7px}
+.wb-status{font-size:12.5px}
+.wb-main{grid-template-columns:var(--wb-left-w,400px) minmax(0,1fr)}
+body.bh-light #right-panel{background:#e7e5e0!important;border-left:1px solid #c9c6bf}
+body.bh-light #right-panel .toolbar{background:#dedbd5;border-bottom:1px solid #c9c6bf;padding:5px 8px;gap:4px}
+body.bh-light #right-panel .toolbar button{background:linear-gradient(#f6f5f2,#e4e2dd);border:1px solid #a9a59d;color:#222;padding:4px 12px;font-size:12.5px;border-radius:2px}
+body.bh-light #right-panel .toolbar button:hover{background:#f1efea;border-color:#8c877e}
+body.bh-light #sidebar{background:#efede9;border-top:1px solid #c9c6bf;padding:10px 14px}
+body.bh-light #sidebar h3{font-size:15px;color:#2b2a27;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #c9c6bf}
+body.bh-light .result-section{margin-bottom:10px}
+body.bh-light .result-section h4{color:#6b675f;font-size:11.5px;letter-spacing:.6px}
+body.bh-light .result-item{border-bottom:1px solid #dcd9d3;padding:3px 2px;font-size:13px}
+body.bh-light #pipeLengthReport{font-size:12px!important;color:#3a3833!important}
+body.bh-light #pipeLengthReport *{border-color:#d6d3cc!important}
+body.bh-light #statusInfo{background:#e9f1e6;color:#2f5a27;border:1px solid #c2d4bb}
+body.bh-light #selectedNodePanel{background:#f6f5f2;border:1px solid #c9c6bf}
+body.bh-light #viewer3d{border-right:1px solid #c9c6bf}
+body.bh-light #tab-iso,body.bh-light #tab-schematic,body.bh-light #tab-qr{background:#ecebe7}
+body.bh-light #tab-iso table th,body.bh-light #tab-schematic table th,body.bh-light #tab-qr table th{color:#2b2a27!important}
+body.bh-light #tab-iso tbody tr:hover td,body.bh-light #tab-schematic tbody tr:hover td{background:#f1efea}
+body.bh-light #tab-iso h2,body.bh-light #tab-schematic h2,body.bh-light #tab-qr h2{font-size:19px;color:#2b2a27!important;padding-bottom:6px;border-bottom:2px solid #d9a400;display:inline-block}
+body.bh-light #tab-iso h3,body.bh-light #tab-schematic h3,body.bh-light #tab-qr h3{color:#2b2a27!important}
+body.bh-light #tab-iso button,body.bh-light #tab-schematic button,body.bh-light #tab-qr button{background:linear-gradient(#fbfaf8,#e6e3dd);border:1px solid #aaa59c;color:#222}
+body.bh-light #tab-iso button:hover,body.bh-light #tab-schematic button:hover,body.bh-light #tab-qr button:hover{background:#f3f1ec;border-color:#8c877e}
+body.bh-light #qr-canvas{border:1px solid #d3d0c9;background:#fff}

@@ -403,7 +403,7 @@
     if (!wb) return;
     const hd = document.querySelector('header');
     wb.style.setProperty('--wb-top', (hd ? hd.offsetHeight : 56) + 'px');
-    wb.style.setProperty('--wb-bottom-h', (W.bottomH || 230) + 'px');
+    wb.style.setProperty('--wb-bottom-h', (W.bottomH || 190) + 'px');
     wb.style.setProperty('--wb-outline', (W.outline || 52) + '%');
     wb.classList.toggle('wb-hide-l', !!W.hideL);
     wb.classList.toggle('wb-hide-r', !!W.hideR);
@@ -765,7 +765,7 @@
     else if (W.mode === 'u') vals = (r.components || []).map(x => Math.abs(Number(x.u))).filter(v => Number.isFinite(v) && v < 1e3);
     else vals = (r.components || []).map(x => Math.abs(Number(x.q))).filter(Number.isFinite);
     const vmax = Math.max(...vals), vmin = Math.min(...vals);
-    const N = 9, H = 17;
+    const N = 9, H = 20;
     const bands = Array.from({ length: N }, (_, i) => `<i style="background:${S.pcol((N - 1 - i) / (N - 1))}"></i>`).join('');
     const labs = Array.from({ length: N + 1 }, (_, i) => {
       const t = 1 - i / N;
@@ -879,19 +879,27 @@
     fg: { '#ffffff': '#1f1f1f', '#e0e0e0': '#1f1f1f', '#aaaacc': '#333333', '#c8d2e0': '#333333', '#aab3cc': '#444444', '#ffdd44': '#8a6500', '#6fc3f7': '#1565c0', '#e94560': '#c62828', '#4caf50': '#2e7d32', '#9fe79f': '#2e7d32', '#5fd068': '#2e7d32', '#ff6b81': '#c62828', '#ff8844': '#b5520b', '#888888': '#5f6368', '#ffd740': '#8a6500', '#ff5252': '#c62828', '#ccc': '#333333', '#cccccc': '#333333', '#ddd': '#333333', '#dddddd': '#333333', '#8fa3bf': '#5f6368', '#ffcc00': '#8a6500', '#ff6b6b': '#c62828', '#66bb6a': '#2e7d32', '#81c784': '#2e7d32', '#ffb74d': '#b26a00', '#ffa726': '#b26a00', '#ff9800': '#b26a00', '#90caf9': '#1565c0', '#64b5f6': '#1565c0', '#aaa': '#555555', '#aaaaaa': '#555555', '#bbb': '#555555', '#999': '#5f6368', '#999999': '#5f6368', '#ccd': '#333333', '#ccccdd': '#333333', '#ffb347': '#b26a00', '#ecf0f1': '#333333' },
     bd: { '#2a2a4a': '#c8c8c8', '#1a2a4a': '#dcdcdc', '#2a4a7a': '#b0b0b0', '#3b3b62': '#c8c8c8', '#2f6a2f': '#a5d6a7', '#6a2f3a': '#ef9a9a', '#ffdd44': '#d9a400', '#e94560': '#c62828', '#1a2a2a': '#e0e0e0', '#3a2a3a': '#e0c0c0', '#4caf50': '#66bb6a', '#4472c4': '#7eb4ea', '#0f3460': '#c8c8c8', '#16213e': '#c8c8c8', '#6fc3f7': '#7eb4ea' }
   };
+  const PAPER = {
+    bg: { '#0f0f1f': '#f8f7f4', '#0f3460': '#dfdcd6', '#16213e': '#e6e3dd', '#1a2a1a': '#e2eadc', '#2a2a4a': '#ebe9e4', '#15152a': '#f8f7f4', '#1a2a4a': '#e6e3dd' },
+    bd: { '#2a2a4a': '#d3d0c9', '#1a2a4a': '#e1ded8', '#2a4a7a': '#bdb9b1', '#0f3460': '#d3d0c9' }
+  };
+  const paperRGB = {};
   const themeRGB = {};
   function toRGB(hex) { let h = hex.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`; }
   for (const k of ['bg', 'fg', 'bd']) { themeRGB[k] = {}; for (const [a, b] of Object.entries(THEME[k])) themeRGB[k][toRGB(a)] = b; }
+  for (const k of ['bg', 'bd']) { paperRGB[k] = {}; for (const [a, b] of Object.entries(PAPER[k])) paperRGB[k][toRGB(a)] = b; }
   function recolor(el) {
     if (!el || el.nodeType !== 1 || el.closest('#wb')) return;
     const st = el.style;
     if (st && st.length) {
+      const paper = !!el.closest('#tab-iso,#tab-schematic,#tab-qr');
       const bg = st.backgroundColor;
-      if (bg && themeRGB.bg[bg]) st.backgroundColor = themeRGB.bg[bg];
+      if (bg && paper && paperRGB.bg[bg]) st.backgroundColor = paperRGB.bg[bg];
+      else if (bg && themeRGB.bg[bg]) st.backgroundColor = themeRGB.bg[bg];
       if (st.backgroundImage && /gradient/.test(st.backgroundImage)) { st.backgroundImage = 'none'; if (!st.backgroundColor) st.backgroundColor = '#ffffff'; }
       const fg = st.color;
       if (fg && themeRGB.fg[fg]) st.color = themeRGB.fg[fg];
-      for (const side of ['Top', 'Right', 'Bottom', 'Left']) { const c = st['border' + side + 'Color']; if (c && themeRGB.bd[c]) st['border' + side + 'Color'] = themeRGB.bd[c]; }
+      for (const side of ['Top', 'Right', 'Bottom', 'Left']) { const c = st['border' + side + 'Color']; if (c && paper && paperRGB.bd[c]) st['border' + side + 'Color'] = paperRGB.bd[c]; else if (c && themeRGB.bd[c]) st['border' + side + 'Color'] = themeRGB.bd[c]; }
       if (st.borderRadius && parseFloat(st.borderRadius) > 3) st.borderRadius = '2px';
       if (st.boxShadow && st.boxShadow !== 'none') st.boxShadow = '0 2px 8px rgba(0,0,0,.18)';
     }

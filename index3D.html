@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOHEME – Berens Odobasic Hydraulic Environment</title>
 <script>
-window.bohemeNames=function(f){var a=f.replace('_','%20');return [f,a,'B'+a.slice(1),'B'+f.slice(1)];};
-['boheme_studio.css','boheme_workbench.css'].forEach(function(f){var c=bohemeNames(f),i=0;(function next(){if(i>=c.length)return;var l=document.createElement('link');l.rel='stylesheet';l.href=c[i++];l.onerror=function(){l.remove();next();};document.head.appendChild(l);})();});
+window.BOHEME_V='7';window.bohemeNames=function(f){var a=f.replace('_','%20');return [f,a,'B'+a.slice(1),'B'+f.slice(1)];};
+['boheme_studio.css','boheme_workbench.css'].forEach(function(f){var c=bohemeNames(f),i=0;(function next(){if(i>=c.length)return;var l=document.createElement('link');l.rel='stylesheet';l.href=c[i++]+'?v='+BOHEME_V;l.onerror=function(){l.remove();next();};document.head.appendChild(l);})();});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v314.0.6/full/pyodide.js"></script>
@@ -600,23 +600,25 @@ function qrLive(){
     qrDrawChart(pts,DPoc,rd,isUcv);
     qrDrawCircuit(t,{});
 }
+function qrCtx(c){const r=Math.max(2,window.devicePixelRatio||1);if(c.width!==460*r){c.width=460*r;c.height=340*r;}const x=c.getContext('2d');x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,460,340);x.fillStyle='#ffffff';x.fillRect(0,0,460,340);return x;}
+function qrText(ctx,t,x,y){const w=ctx.measureText(t).width;const f=ctx.fillStyle;const a=ctx.textAlign;const x0=a==='center'?x-w/2:a==='right'?x-w:x;ctx.fillStyle='rgba(255,255,255,0.9)';ctx.fillRect(x0-3,y-11,w+6,15);ctx.fillStyle=f;ctx.fillText(t,x,y);}
 function qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty){
-    ctx.strokeStyle='#e3e3e3';ctx.lineWidth=1;ctx.fillStyle='#555';ctx.font='10px Consolas';
+    ctx.strokeStyle='#e3e3e3';ctx.lineWidth=1;ctx.fillStyle='#555';ctx.font='11px "Segoe UI",Arial,sans-serif';
     const qStep=(qMax-qMin)>3?1:0.5;
     ctx.textAlign='center';
     for(let q=Math.ceil(qMin/qStep)*qStep;q<=qMax+1e-9;q+=qStep){ctx.beginPath();ctx.moveTo(tx(q),pad);ctx.lineTo(tx(q),H-pad);ctx.stroke();ctx.fillText(q.toFixed(1),tx(q),H-pad+14);}
     const span=dpMax-dpMin;const dpStep=span>400?100:span>150?50:span>40?10:span>15?5:span>4?1:span>1?0.5:span>0.2?0.05:span>0.05?0.01:0.005;
     ctx.textAlign='right';
     for(let dp=Math.ceil(dpMin/dpStep)*dpStep;dp<=dpMax+1e-9;dp+=dpStep){ctx.beginPath();ctx.moveTo(pad,ty(dp));ctx.lineTo(W-pad,ty(dp));ctx.stroke();ctx.fillText(dp.toFixed(dpStep<0.1?3:dpStep<1?1:0),pad-6,ty(dp)+3);}
-    ctx.strokeStyle='#444';ctx.lineWidth=1.5;
+    ctx.strokeStyle='#555';ctx.lineWidth=1.2;
     if(dpMin<=0&&dpMax>=0){ctx.beginPath();ctx.moveTo(pad,ty(0));ctx.lineTo(W-pad,ty(0));ctx.stroke();}
     if(qMin<=0&&qMax>=0){ctx.beginPath();ctx.moveTo(tx(0),pad);ctx.lineTo(tx(0),H-pad);ctx.stroke();}
-    ctx.fillStyle='#1565c0';ctx.font='11px Consolas';ctx.textAlign='center';ctx.fillText('Q [m³/h]',W/2,H-4);
+    ctx.fillStyle='#1565c0';ctx.font='600 12px "Segoe UI",Arial,sans-serif';ctx.textAlign='center';ctx.fillText('Q [m³/h]',W/2,H-4);
     ctx.save();ctx.translate(11,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('ΔP [bar]',0,0);ctx.restore();
 }
 function qrDrawChart(pts,DPoc,rd,isUcv){
     const c=document.getElementById('qr-canvas');if(!c)return;
-    const ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
+    const ctx=qrCtx(c),W=460,H=340;
     const pad=50;
     const qMin=isUcv?0:-2, qMax=2;
     const dps=pts.map(p=>p.DP);
@@ -632,13 +634,13 @@ function qrDrawChart(pts,DPoc,rd,isUcv){
 }
 function qrDrawUpmChart(Pset,Qmax){
     const c=document.getElementById('qr-canvas');if(!c)return;
-    const ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
+    const ctx=qrCtx(c),W=460,H=340;
     const pad=50,qMin=0,qMax=Qmax*1.2,dpMin=0,dpMax=Pset*1.2;
     const tx=q=>pad+(q-qMin)/(qMax-qMin)*(W-2*pad), ty=dp=>H-pad-(dp-dpMin)/(dpMax-dpMin)*(H-2*pad);
     qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty);
     ctx.strokeStyle='#1e3a8a';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(tx(0),ty(Pset));ctx.lineTo(tx(Qmax),ty(Pset));ctx.lineTo(tx(Qmax),ty(0));ctx.stroke();
     ctx.fillStyle='#1e3a8a';ctx.beginPath();ctx.arc(tx(Qmax),ty(Pset),4,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#333';ctx.font='10px Consolas';ctx.textAlign='left';ctx.fillText('Pset',tx(0.2),ty(Pset)-6);ctx.fillText('Qmax',tx(Qmax)+6,ty(Pset/2));
+    ctx.fillStyle='#333';ctx.font='11px "Segoe UI",Arial,sans-serif';ctx.textAlign='left';qrText(ctx,'Pset',tx(0.2),ty(Pset)-6);qrText(ctx,'Qmax',tx(Qmax)+6,ty(Pset/2));
 }
 function qrSetSyntax(lines){
     const box=document.getElementById('qr-syntax');if(!box)return;
@@ -652,7 +654,7 @@ function qrApply(i){
 }
 function qrDrawPtuChart(etaTot,R0,pGain,qRatio){
     const c=document.getElementById('qr-canvas');if(!c)return;
-    const ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
+    const ctx=qrCtx(c),W=460,H=340;
     const pad=50,qMin=0,qMax=4,dpMin=0,dpMax=220;
     const tx=q=>pad+(q-qMin)/(qMax-qMin)*(W-2*pad), ty=dp=>H-pad-(dp-dpMin)/(dpMax-dpMin)*(H-2*pad);
     qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty);
@@ -661,10 +663,10 @@ function qrDrawPtuChart(etaTot,R0,pGain,qRatio){
     ctx.strokeStyle='#1565c0';ctx.lineWidth=2.5;ctx.beginPath();
     for(let i=0;i<=40;i++){const qa=qMax*i/40;const dpb=Math.max(0,pGain*(dpa-R0*qa));const qb=qa*qRatio;if(i===0)ctx.moveTo(tx(qb),ty(dpb));else ctx.lineTo(tx(qb),ty(dpb));}
     ctx.stroke();
-    ctx.font='10px Consolas';ctx.textAlign='left';
-    ctx.fillStyle='#c62828';ctx.fillText('Motor inlet ΔP_a = 200 bar',tx(0.1),ty(dpa)-8);
-    ctx.fillStyle='#1565c0';ctx.fillText('Pump: ΔP_b vs Q_b (with losses)',tx(0.1),ty(pGain*dpa)+16);
-    ctx.fillStyle='#8a6500';ctx.fillText('η_ges = '+etaTot.toFixed(3),tx(2.6),ty(40));
+    ctx.font='11px "Segoe UI",Arial,sans-serif';ctx.textAlign='left';
+    ctx.fillStyle='#c62828';qrText(ctx,'Motor inlet ΔP_a = 200 bar',tx(0.1),ty(dpa)-8);
+    ctx.fillStyle='#1565c0';qrText(ctx,'Pump: ΔP_b vs Q_b (with losses)',tx(0.1),ty(pGain*dpa)+34);
+    ctx.fillStyle='#8a6500';qrText(ctx,'η_ges = '+etaTot.toFixed(3),tx(2.6),ty(40));
 }
 function qrDrawCircuit(type,p){
     const svg=document.getElementById('qr-circuit');if(!svg)return;
@@ -2571,7 +2573,7 @@ else console.warn('BOHEME: boheme_workbench.js not found – classic layout with
 function load(i){
 if(i>=mods.length){start();return;}
 const cand=bohemeNames(mods[i]);let j=0;
-const tryLoad=()=>{if(j>=cand.length){console.warn('BOHEME: module '+mods[i]+' not found');load(i+1);return;}const sc=document.createElement('script');sc.src=cand[j++];sc.onload=()=>load(i+1);sc.onerror=()=>{sc.remove();tryLoad();};document.body.appendChild(sc);};
+const tryLoad=()=>{if(j>=cand.length){console.warn('BOHEME: module '+mods[i]+' not found');load(i+1);return;}const sc=document.createElement('script');sc.src=cand[j++]+'?v='+BOHEME_V;sc.onload=()=>load(i+1);sc.onerror=()=>{sc.remove();tryLoad();};document.body.appendChild(sc);};
 tryLoad();
 }
 if(document.readyState==='complete')load(0);else window.addEventListener('load',()=>load(0));

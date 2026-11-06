@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOHEME – Berens Odobasic Hydraulic Environment</title>
 <script>
-['boheme_studio.css','boheme_workbench.css'].forEach(function(f){var l=document.createElement('link');l.rel='stylesheet';l.href=f;l.onerror=function(){var m=document.createElement('link');m.rel='stylesheet';m.href=f.replace('_','%20');document.head.appendChild(m);};document.head.appendChild(l);});
+window.bohemeNames=function(f){var a=f.replace('_','%20');return [f,a,'B'+a.slice(1),'B'+f.slice(1)];};
+['boheme_studio.css','boheme_workbench.css'].forEach(function(f){var c=bohemeNames(f),i=0;(function next(){if(i>=c.length)return;var l=document.createElement('link');l.rel='stylesheet';l.href=c[i++];l.onerror=function(){l.remove();next();};document.head.appendChild(l);})();});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/pyodide/v314.0.6/full/pyodide.js"></script>
@@ -2569,8 +2570,9 @@ else console.warn('BOHEME: boheme_workbench.js not found – classic layout with
 }
 function load(i){
 if(i>=mods.length){start();return;}
-const tryLoad=(src,fallback)=>{const sc=document.createElement('script');sc.src=src;sc.onload=()=>load(i+1);sc.onerror=()=>{if(fallback)tryLoad(fallback,null);else{console.warn('BOHEME: module '+mods[i]+' not found');load(i+1);}};document.body.appendChild(sc);};
-tryLoad(mods[i],mods[i].replace('_','%20'));
+const cand=bohemeNames(mods[i]);let j=0;
+const tryLoad=()=>{if(j>=cand.length){console.warn('BOHEME: module '+mods[i]+' not found');load(i+1);return;}const sc=document.createElement('script');sc.src=cand[j++];sc.onload=()=>load(i+1);sc.onerror=()=>{sc.remove();tryLoad();};document.body.appendChild(sc);};
+tryLoad();
 }
 if(document.readyState==='complete')load(0);else window.addEventListener('load',()=>load(0));
 })();

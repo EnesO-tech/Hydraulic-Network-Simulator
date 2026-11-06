@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOHEME – Berens Odobasic Hydraulic Environment</title>
 <script>
-window.BOHEME_V='7';window.bohemeNames=function(f){var a=f.replace('_','%20');return [f,a,'B'+a.slice(1),'B'+f.slice(1)];};
+window.BOHEME_V='8';window.bohemeNames=function(f){var a=f.replace('_','%20');return [f,a,'B'+a.slice(1),'B'+f.slice(1)];};
 ['boheme_studio.css','boheme_workbench.css'].forEach(function(f){var c=bohemeNames(f),i=0;(function next(){if(i>=c.length)return;var l=document.createElement('link');l.rel='stylesheet';l.href=c[i++]+'?v='+BOHEME_V;l.onerror=function(){l.remove();next();};document.head.appendChild(l);})();});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -588,49 +588,59 @@ function qrLive(){
     const name=(t==='P'?'U':t)+suffix;
     qrSetSyntax([`${name} ${DPoc} ${Qsc.toFixed(2).replace(/\.?0+$/,'')} ${D} ${dir}`]);
     const isUcv=t==='Ucv';
-    const Qr=1.49;
+    const Qr=Math.min(20,Math.max(0.05,2.5*Math.abs(Qsc)||1));
     const f=q=>DPoc+rd*q;
     let pts;
     if(isUcv){
-        pts=[{label:'Qsc min',Q:0,DP:-3},{label:'open circuit',Q:0,DP:-3},{label:'short circuit',Q:0,DP:DPoc},{label:'Qsc max',Q:Qr,DP:f(Qr)}];
+        pts=[{label:'closed: reverse Δp, no flow',Q:0,DP:-Math.max(1,2*Math.abs(DPoc))},{label:'cracking pressure ΔP<sub>oc</sub> (opens)',Q:0,DP:DPoc},{label:'open: flow end of range',Q:Qr,DP:f(Qr)}];
     } else {
-        pts=[{label:'Qsc min',Q:-Qr,DP:f(-Qr)},{label:'open circuit',Q:Qsc,DP:0},{label:'short circuit',Q:0,DP:DPoc},{label:'Qsc max',Q:Qr,DP:f(Qr)}];
+        pts=[{label:'range end (reverse flow)',Q:-Qr,DP:f(-Qr)},{label:'open circuit: Q = 0 → ΔP = ΔP<sub>oc</sub>',Q:0,DP:DPoc},{label:'short circuit: ΔP = 0 → Q = Q<sub>sc</sub>',Q:Qsc,DP:0},{label:'range end (forward flow)',Q:Qr,DP:f(Qr)}];
     }
-    document.getElementById('qr-points').innerHTML=pts.map((p,i)=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${i+1}</td><td style="padding:4px;">${p.label}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${p.Q.toFixed(2)}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${p.DP.toFixed(4).replace(/\.?0+$/,'')}</td></tr>`).join('');
-    qrDrawChart(pts,DPoc,rd,isUcv);
+    const fq=v=>Math.abs(v)<0.1&&v!==0?v.toFixed(4):v.toFixed(3);
+    const fp=v=>Math.abs(v)<1&&v!==0?v.toFixed(4):v.toFixed(2);
+    document.getElementById('qr-points').innerHTML=pts.map((p,i)=>`<tr style="border-bottom:1px solid #1a2a4a;"><td style="padding:4px;">${i+1}</td><td style="padding:4px;">${p.label}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${fq(p.Q)}</td><td style="text-align:right;padding:4px;color:#ffdd44;">${fp(p.DP)}</td></tr>`).join('')+`<tr><td colspan="4" style="padding:6px 4px;font-size:11px;color:#888;">Law used by the solver: ΔP = ΔP<sub>oc</sub> + r<sub>d</sub>·Q, with r<sub>d</sub> = −ΔP<sub>oc</sub>/Q<sub>sc</sub>. ΔP = P<sub>node 1</sub> − P<sub>node 2</sub>, Q positive in the arrow direction.${isUcv?' Check valve: no flow while ΔP &lt; ΔP<sub>oc</sub>.':''}</td></tr>`;
+    qrDrawChart(pts,DPoc,rd,isUcv,Qr,Qsc);
+
     qrDrawCircuit(t,{});
 }
 function qrCtx(c){const r=Math.max(2,window.devicePixelRatio||1);if(c.width!==460*r){c.width=460*r;c.height=340*r;}const x=c.getContext('2d');x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,460,340);x.fillStyle='#ffffff';x.fillRect(0,0,460,340);return x;}
 function qrText(ctx,t,x,y){const w=ctx.measureText(t).width;const f=ctx.fillStyle;const a=ctx.textAlign;const x0=a==='center'?x-w/2:a==='right'?x-w:x;ctx.fillStyle='rgba(255,255,255,0.9)';ctx.fillRect(x0-3,y-11,w+6,15);ctx.fillStyle=f;ctx.fillText(t,x,y);}
+function qrNice(span,n){const raw=span/(n||6);const p=Math.pow(10,Math.floor(Math.log10(raw)));const m=raw/p;return (m<1.5?1:m<3?2:m<7?5:10)*p;}
+function qrDec(step){return Math.max(0,Math.min(5,-Math.floor(Math.log10(step)+1e-9)));}
 function qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty){
-    ctx.strokeStyle='#e3e3e3';ctx.lineWidth=1;ctx.fillStyle='#555';ctx.font='11px "Segoe UI",Arial,sans-serif';
-    const qStep=(qMax-qMin)>3?1:0.5;
+    ctx.strokeStyle='#e6e6e6';ctx.lineWidth=1;ctx.fillStyle='#555';ctx.font='11px "Segoe UI",Arial,sans-serif';
+    const qStep=qrNice(qMax-qMin,6),qd=qrDec(qStep);
     ctx.textAlign='center';
-    for(let q=Math.ceil(qMin/qStep)*qStep;q<=qMax+1e-9;q+=qStep){ctx.beginPath();ctx.moveTo(tx(q),pad);ctx.lineTo(tx(q),H-pad);ctx.stroke();ctx.fillText(q.toFixed(1),tx(q),H-pad+14);}
-    const span=dpMax-dpMin;const dpStep=span>400?100:span>150?50:span>40?10:span>15?5:span>4?1:span>1?0.5:span>0.2?0.05:span>0.05?0.01:0.005;
+    for(let i=Math.ceil(qMin/qStep);i*qStep<=qMax+1e-12;i++){const q=i*qStep;ctx.beginPath();ctx.moveTo(tx(q),pad);ctx.lineTo(tx(q),H-pad);ctx.stroke();ctx.fillText((Math.abs(q)<1e-12?0:q).toFixed(qd),tx(q),H-pad+14);}
+    const dpStep=qrNice(dpMax-dpMin,6),dd=qrDec(dpStep);
     ctx.textAlign='right';
-    for(let dp=Math.ceil(dpMin/dpStep)*dpStep;dp<=dpMax+1e-9;dp+=dpStep){ctx.beginPath();ctx.moveTo(pad,ty(dp));ctx.lineTo(W-pad,ty(dp));ctx.stroke();ctx.fillText(dp.toFixed(dpStep<0.1?3:dpStep<1?1:0),pad-6,ty(dp)+3);}
+    for(let i=Math.ceil(dpMin/dpStep);i*dpStep<=dpMax+1e-12;i++){const dp=i*dpStep;ctx.beginPath();ctx.moveTo(pad,ty(dp));ctx.lineTo(W-pad,ty(dp));ctx.stroke();ctx.fillText((Math.abs(dp)<1e-12?0:dp).toFixed(dd),pad-6,ty(dp)+3);}
     ctx.strokeStyle='#555';ctx.lineWidth=1.2;
     if(dpMin<=0&&dpMax>=0){ctx.beginPath();ctx.moveTo(pad,ty(0));ctx.lineTo(W-pad,ty(0));ctx.stroke();}
     if(qMin<=0&&qMax>=0){ctx.beginPath();ctx.moveTo(tx(0),pad);ctx.lineTo(tx(0),H-pad);ctx.stroke();}
     ctx.fillStyle='#1565c0';ctx.font='600 12px "Segoe UI",Arial,sans-serif';ctx.textAlign='center';ctx.fillText('Q [m³/h]',W/2,H-4);
     ctx.save();ctx.translate(11,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('ΔP [bar]',0,0);ctx.restore();
 }
-function qrDrawChart(pts,DPoc,rd,isUcv){
+function qrDrawChart(pts,DPoc,rd,isUcv,Qr,Qsc){
     const c=document.getElementById('qr-canvas');if(!c)return;
     const ctx=qrCtx(c),W=460,H=340;
-    const pad=50;
-    const qMin=isUcv?0:-2, qMax=2;
-    const dps=pts.map(p=>p.DP);
+    const pad=52;
+    const qMin=isUcv?-0.12*Qr:-1.12*Qr, qMax=1.12*Qr;
+    const dps=pts.map(p=>p.DP).concat([0]);
     let dpMin=Math.min(...dps), dpMax=Math.max(...dps);
-    const m=(dpMax-dpMin)*0.1||0.01; dpMin-=m; dpMax+=m;
+    const m=(dpMax-dpMin)*0.12||0.05; dpMin-=m; dpMax+=m;
     const tx=q=>pad+(q-qMin)/(qMax-qMin)*(W-2*pad), ty=dp=>H-pad-(dp-dpMin)/(dpMax-dpMin)*(H-2*pad);
     qrAxes(ctx,W,H,pad,qMin,qMax,dpMin,dpMax,tx,ty);
     ctx.strokeStyle='#1e3a8a';ctx.lineWidth=2.5;ctx.beginPath();
-    if(isUcv){ctx.moveTo(tx(0),ty(pts[0].DP));ctx.lineTo(tx(0),ty(DPoc));ctx.lineTo(tx(1.49),ty(DPoc+rd*1.49));}
-    else{ctx.moveTo(tx(-1.49),ty(DPoc+rd*(-1.49)));ctx.lineTo(tx(1.49),ty(DPoc+rd*1.49));}
+    if(isUcv){ctx.moveTo(tx(0),ty(pts[0].DP));ctx.lineTo(tx(0),ty(DPoc));ctx.lineTo(tx(Qr),ty(DPoc+rd*Qr));}
+    else{ctx.moveTo(tx(-Qr),ty(DPoc-rd*Qr));ctx.lineTo(tx(Qr),ty(DPoc+rd*Qr));}
     ctx.stroke();
-    ctx.fillStyle='#1e3a8a';pts.forEach(p=>{ctx.beginPath();ctx.arc(tx(p.Q),ty(p.DP),4,0,Math.PI*2);ctx.fill();});
+    ctx.font='11px "Segoe UI",Arial,sans-serif';
+    pts.forEach((p,i)=>{ctx.fillStyle='#1e3a8a';ctx.beginPath();ctx.arc(tx(p.Q),ty(p.DP),4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#333';ctx.textAlign='right';qrText(ctx,String(i+1),tx(p.Q)-7,ty(p.DP)-7);});
+    ctx.fillStyle='#c62828';ctx.textAlign='left';
+    ctx.textAlign=isUcv?'left':'right';qrText(ctx,'ΔP_oc = '+(Math.abs(DPoc)<1?DPoc.toFixed(3):DPoc.toFixed(2))+' bar',isUcv?tx(0)+8:tx(0)-8,ty(DPoc)+(isUcv?16:4));
+    if(!isUcv&&Number.isFinite(Qsc)){ctx.fillStyle='#2e7d32';ctx.textAlign=Qsc>=0?'left':'right';qrText(ctx,'Q_sc = '+(Math.abs(Qsc)<0.1?Qsc.toFixed(4):Qsc.toFixed(3))+' m³/h',tx(Qsc)+(Qsc>=0?10:-10),ty(0)+(DPoc<0?18:-10));}
+    ctx.fillStyle='#555';ctx.textAlign='right';qrText(ctx,'slope r_d = '+(rd<0.1?rd.toFixed(4):rd.toFixed(2))+' bar/(m³/h)',W-pad-4,H-pad-8);
 }
 function qrDrawUpmChart(Pset,Qmax){
     const c=document.getElementById('qr-canvas');if(!c)return;

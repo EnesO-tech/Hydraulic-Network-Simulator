@@ -147,20 +147,20 @@
 <div class="wb-main">
   <aside class="wb-left">
     <div class="wb-box">
-      <div class="wb-tabs"><button data-tl="objects">${icon('nodes', 13)} Outline</button><button data-tl="library">${icon('lib', 13)} Library</button></div>
+      <div class="wb-tabs"><button data-tl="objects">${icon('nodes', 13)} Outline</button><button data-tl="toggles">${icon('gear', 13)} Toggle Buttons</button><button data-tl="library">${icon('lib', 13)} Library</button></div>
       <div class="wb-pane" data-pl="objects">
         <div class="wb-search">${icon('search', 13)}<input id="wbSearch" placeholder="Search outline" autocomplete="off"></div>
         <div class="wb-tree" id="wbTree"></div>
       </div>
+      <div class="wb-pane wb-scroll" data-pl="toggles" id="wbToggles"></div>
       <div class="wb-pane" data-pl="library"><div class="wb-lib" id="wbLib"></div></div>
     </div>
     <div class="wb-split" id="wbSplit"></div>
     <div class="wb-box">
       <div class="wb-boxh"><span id="wbDetT">Details of “Project”</span></div>
-      <div class="wb-tabs"><button data-tr="props">Details</button><button data-tr="analysis">Results</button><button data-tr="solver">Analysis Settings</button></div>
+      <div class="wb-tabs"><button data-tr="props">Details</button><button data-tr="analysis">Results</button></div>
       <div class="wb-pane wb-scroll" data-pr="props" id="wbProps"></div>
       <div class="wb-pane wb-scroll" data-pr="analysis" id="wbAnalysis"></div>
-      <div class="wb-pane wb-scroll" data-pr="solver" id="wbSolver"></div>
     </div>
   </aside>
   <section class="wb-center">
@@ -227,34 +227,37 @@
   }
 
   function buildSolverPanel() {
-    const box = $('#wbSolver');
+    const box = $('#wbToggles');
     box.innerHTML = '';
-    const fl = section(box, 's-fluid', 'Fluid', 'fluid', '');
+    const note = t => `<div class="wb-note">${t}</div>`;
+    const t1 = section(box, 't-toggle', 'Toggle Buttons', 'gear', note('As in Excel sheet “Comp” · Rl_on/Rl_off and Rk_on/Rk_off are written into the valve cells Rl_…/Rk_… · values go directly into the solver'));
+    ['tglRlOn', 'tglRlOff', 'tglRkOn1', 'tglRkOn54', 'tglRkOff'].forEach(id => { const r = rowOf(id); if (r) t1.appendChild(r); });
+    const t2 = section(box, 't-iter', 'Iteration Controls', 'solver', '');
+    ['itLambda', 'itDUcrit', 'itNiter', 'itKReD', 'itProtect', 'itZanke'].forEach(id => { const r = rowOf(id); if (r) t2.appendChild(r); });
+    const t3 = section(box, 't-fluid', 'Fluid', 'fluid', '');
     const fp = $('#fluidPreset');
-    if (fp) { const d = document.createElement('div'); d.className = 'wb-field-full'; d.appendChild(fp); fl.appendChild(d); }
-    ['fluidT', 'fluidRho', 'fluidMue'].forEach(id => { const r = rowOf(id); if (r) fl.appendChild(r); });
+    if (fp) { const d = document.createElement('div'); d.className = 'wb-field-full'; d.appendChild(fp); t3.appendChild(d); }
+    ['fluidT', 'fluidRho', 'fluidMue'].forEach(id => { const r = rowOf(id); if (r) t3.appendChild(r); });
     const nu = document.createElement('div');
     nu.className = 'wb-kv';
     nu.id = 'wbNu';
-    fl.appendChild(nu);
+    t3.appendChild(nu);
     const fm = $('#fluidModel');
-    if (fm) fl.appendChild(fm);
-    const nm = section(box, 's-num', 'Numerics', 'solver', '');
-    ['itLambda', 'itDUcrit', 'itNiter', 'itKReD', 'itZanke', 'itProtect'].forEach(id => { const r = rowOf(id); if (r) nm.appendChild(r); });
-    const ph = section(box, 's-phys', 'Physics & ambient', 'gear', '');
-    ['grav', 'krough', 'redcrit', 'pamb'].forEach(id => { const r = rowOf(id); if (r) ph.appendChild(r); });
-    const pt = section(box, 's-ptu', 'PTU activation', 'bolt', '<div class="wb-note">The PTU only runs if the pressure difference between the two circuits without PTU exceeds the threshold (A320: 500 psi).</div>');
-    ['itPtuLogic', 'itPtuDp'].forEach(id => { const r = rowOf(id); if (r) pt.appendChild(r); });
-    const vv = section(box, 's-vval', 'Valve on/off values', 'valve', '<div class="wb-note">Values written into Rl_… (linear resistance) and Rk_… (kv valve) when switched on or off.</div>');
-    ['tglRlOn', 'tglRlOff', 'tglRkOn1', 'tglRkOn54', 'tglRkOff'].forEach(id => { const r = rowOf(id); if (r) vv.appendChild(r); });
-    const vl = section(box, 's-valves', 'Switchable valves', 'valve', '');
+    if (fm) t3.appendChild(fm);
+    ['pamb', 'grav', 'krough', 'redcrit'].forEach(id => { const r = rowOf(id); if (r) t3.appendChild(r); });
+    const t4 = section(box, 't-ptu', 'PTU activation', 'bolt', note('The PTU only runs if the Green–Yellow pressure difference without PTU exceeds the threshold (A320: 500 psi).'));
+    ['itPtuLogic', 'itPtuDp'].forEach(id => { const r = rowOf(id); if (r) t4.appendChild(r); });
+    const t5 = section(box, 't-valves', 'Valves (Toggle Buttons)', 'valve', note('One button per valve cell in the schematic: “Rl_…” (linear resistance, ON = Rl_on, OFF = Rl_off) and “Rk_…” (k<sub>V</sub> valve, ON = Rk_on_0.1 or Rk_on_0.54, OFF = Rk_off).'));
     const list = $('#valveList');
-    if (list) vl.appendChild(list);
+    if (list) t5.appendChild(list);
     const add = document.createElement('div');
     add.className = 'wb-row-btns';
-    add.innerHTML = `<button class="wb-btn" data-place="RK">${icon('plus', 14)} kv valve</button><button class="wb-btn" data-place="RL">${icon('plus', 14)} Rl valve</button>`;
-    vl.appendChild(add);
-    add.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { W.S.setPlace(b.dataset.place); hint('Click a free cell in the schematic to place the valve.'); }));
+    add.innerHTML = `<button class="wb-btn" data-place="RK">${icon('plus', 14)} Add k<sub>V</sub> valve (Rk_)</button><button class="wb-btn" data-place="RL">${icon('plus', 14)} Add Rl valve (Rl_)</button>`;
+    t5.appendChild(add);
+    add.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { W.S.setPlace(b.dataset.place); hint('Click a free cell in the model to place the valve.'); }));
+    box.addEventListener('change', () => setTimeout(() => { renderNu(); renderStatus(); renderTree(); }, 30));
+    box.addEventListener('click', e => { const path = e.composedPath ? e.composedPath() : []; if (path.some(n => n && (n.id === 'valveList' || n.id === 'itPtuLogic')) && path.some(n => n && (n.tagName === 'BUTTON' || n.tagName === 'SELECT'))) setTimeout(afterValve, 30); });
+    box.addEventListener('change', e => { if (e.target.closest && e.target.closest('#valveList')) setTimeout(afterValve, 30); });
   }
 
   function buildLibrary() {
@@ -281,7 +284,7 @@
     sp.addEventListener('pointerdown', e => {
       const box = $('.wb-left').getBoundingClientRect();
       sp.setPointerCapture(e.pointerId);
-      const mv = ev => { const f = Math.max(0.15, Math.min(0.85, (ev.clientY - box.top) / box.height)); W.outline = Math.round(f * 100); applyLayout(); };
+      const mv = ev => { const f = Math.max(0.15, Math.min(0.85, (ev.clientY - box.top) / box.height)); if (W.tabL === 'toggles') W.tabL = W.tabL; W.outline = Math.round(f * 100); $('#wb').style.setProperty('--wb-outline', W.outline + '%'); };
       const up = () => { sp.removeEventListener('pointermove', mv); sp.removeEventListener('pointerup', up); save(); };
       sp.addEventListener('pointermove', mv);
       sp.addEventListener('pointerup', up);
@@ -343,8 +346,6 @@
     }
     const ft = $('#fluidT'), fps = $('#fluidPreset');
     [ft, fps].forEach(x => x && x.addEventListener('change', () => { addHistory('fluid', 'Fluid: ' + fluidLabel() + ' at ' + (ft ? ft.value : '') + ' °C'); setTimeout(() => { renderNu(); renderStatus(); renderProps(); }, 30); }));
-    $('#wbSolver').addEventListener('change', () => setTimeout(() => { renderNu(); renderStatus(); }, 30));
-    $('#wbSolver').addEventListener('click', e => { if (e.target.closest('#valveList button, #valveList select')) setTimeout(afterValve, 30); });
     window.addEventListener('resize', () => applyLayout());
     const vp = $('#wbViewport');
     vp.addEventListener('contextmenu', e => { if (e.target.closest('.wb-grid2d')) e.preventDefault(); });
@@ -407,10 +408,12 @@
   function hint(t) { const h = $('#wbHint'); if (h) { h.innerHTML = t ? icon('info', 14) + ' ' + esc(t) : ''; h.classList.toggle('on', !!t); } }
   function tabs() {
     W.tabRt = W.tabRt || 'home';
+    if (W.tabR === 'solver') W.tabR = 'props';
     $$('[data-rt]').forEach(b => b.classList.toggle('on', b.dataset.rt === W.tabRt));
     $$('[data-rtab]').forEach(g => g.classList.toggle('vis', g.dataset.rtab === W.tabRt));
     $$('[data-tl]').forEach(b => b.classList.toggle('on', b.dataset.tl === W.tabL));
     $$('[data-pl]').forEach(p => p.classList.toggle('on', p.dataset.pl === W.tabL));
+    applyLayout();
     $$('[data-tr]').forEach(b => b.classList.toggle('on', b.dataset.tr === W.tabR));
     $$('[data-pr]').forEach(p => p.classList.toggle('on', p.dataset.pr === W.tabR));
     $$('[data-tb]').forEach(b => b.classList.toggle('on', b.dataset.tb === W.tabB));
@@ -426,6 +429,7 @@
     wb.style.setProperty('--wb-top', (hd ? hd.offsetHeight : 56) + 'px');
     wb.style.setProperty('--wb-bottom-h', (W.bottomH || 190) + 'px');
     wb.style.setProperty('--wb-outline', (W.outline || 52) + '%');
+    wb.classList.toggle('wb-tgl-full', W.tabL === 'toggles');
     wb.classList.toggle('wb-hide-l', !!W.hideL);
     wb.classList.toggle('wb-hide-r', !!W.hideR);
     wb.classList.toggle('wb-hide-b', !!W.hideB);
@@ -562,7 +566,7 @@
       renderTree();
     }));
     box.querySelectorAll('[data-k]').forEach(el => el.addEventListener('click', () => S.focusKey(el.dataset.k, 0.95)));
-    box.querySelectorAll('[data-goto]').forEach(el => el.addEventListener('click', () => { W.tabR = el.dataset.goto; tabs(); save(); crumb(); }));
+    box.querySelectorAll('[data-goto]').forEach(el => el.addEventListener('click', () => { if (el.dataset.goto === 'solver') { W.tabL = 'toggles'; } else { W.tabR = el.dataset.goto; } tabs(); save(); crumb(); }));
     box.querySelectorAll('[data-res]').forEach(el => el.addEventListener('click', () => { setMode(el.dataset.res); W.tabR = 'analysis'; tabs(); save(); crumb(); renderTree(); }));
   }
 
@@ -715,8 +719,8 @@
     n.innerHTML = Object.keys(CAT).map(id => `<div class="wb-kv2">${icon(CAT[id].icon, 15)}<span>${CAT[id].title}</span><b>${counts[id] || 0}</b></div>`).join('') + `<div class="wb-kv2">${icon('nodes', 15)}<span>Nodes & reservoirs</span><b>${M.nodes.length}</b></div><div class="wb-kv2">${icon('circuit', 15)}<span>Circuits</span><b>${circuits().length}</b></div>`;
     const f = section(box, 'o-fluid', 'Fluid', 'fluid', '');
     const T = Number(($('#fluidT') || {}).value), rho = Number(($('#pRho') || {}).value), mue = Number(($('#pMue') || {}).value);
-    f.innerHTML = `<div class="wb-kv2"><span>Model</span><b class="wb-wrap">${esc(fluidLabel())}</b></div><div class="wb-kv2"><span>Temperature</span><b>${fmt(T, 1)} °C</b></div><div class="wb-kv2"><span>Density ρ</span><b>${fmt(rho, 2)} kg/m³</b></div><div class="wb-kv2"><span>Viscosity μ</span><b>${fmt(mue, 5)} Pa·s</b></div><div class="wb-kv2"><span>Kinematic ν</span><b>${fmt(mue / rho * 1e6, 2)} mm²/s</b></div><button class="wb-btn" id="wbToSolver">${icon('solver', 14)} Edit fluid & solver</button>`;
-    $('#wbToSolver').addEventListener('click', () => { W.tabR = 'solver'; tabs(); save(); });
+    f.innerHTML = `<div class="wb-kv2"><span>Model</span><b class="wb-wrap">${esc(fluidLabel())}</b></div><div class="wb-kv2"><span>Temperature</span><b>${fmt(T, 1)} °C</b></div><div class="wb-kv2"><span>Density ρ</span><b>${fmt(rho, 2)} kg/m³</b></div><div class="wb-kv2"><span>Viscosity μ</span><b>${fmt(mue, 5)} Pa·s</b></div><div class="wb-kv2"><span>Kinematic ν</span><b>${fmt(mue / rho * 1e6, 2)} mm²/s</b></div><button class="wb-btn" id="wbToSolver">${icon('solver', 14)} Open Toggle Buttons</button>`;
+    $('#wbToSolver').addEventListener('click', () => { W.tabL = 'toggles'; tabs(); save(); });
     const s = section(box, 'o-sol', 'Last solution', 'chart', '');
     s.innerHTML = K ? `<div class="wb-kpi2">${kpiTile('Pump power', fmt(K.ppow, 2), 'kW')}${kpiTile('Pump flow', fmt(K.qpump, 2), 'm³/h')}${kpiTile('Max. velocity', fmt(K.umax, 2), 'm/s', K.uname)}${kpiTile('Pressure range', fmt(K.pmin, 1) + '–' + fmt(K.pmax, 1), 'bar')}</div>` : `<div class="wb-empty">${icon('play', 28)}<div>Press <b>Solve</b> to compute pressures and flows.</div><button class="wb-btn primary" id="wbSolve2">${icon('play', 14)} Solve now</button></div>`;
     const s2 = $('#wbSolve2');
@@ -1017,7 +1021,7 @@
   function crumb() {
     const c = $('#wbCrumb'); if (c) c.textContent = W.sel ? nameOfKey(W.sel) : '';
     const d = $('#wbDetT');
-    if (d) d.textContent = W.tabR === 'solver' ? 'Details of “Analysis Settings”' : W.tabR === 'analysis' ? 'Details of “Solution”' : W.sel ? 'Details of “' + nameOfKey(W.sel) + '”' : 'Details of “Model”';
+    if (d) d.textContent = W.tabR === 'analysis' ? 'Details of “Solution”' : W.sel ? 'Details of “' + nameOfKey(W.sel) + '”' : 'Details of “Model”';
   }
 
   let rt = 0;

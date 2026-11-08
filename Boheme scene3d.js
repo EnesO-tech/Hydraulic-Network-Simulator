@@ -327,6 +327,18 @@
   }
 
 
+  function foldCorner(g, dWorld) {
+    const inv = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, g.rotation.y, 0)).invert();
+    const dl = dWorld.clone().applyQuaternion(inv);
+    const phi = -Math.atan2(dl.z, dl.x);
+    const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), phi);
+    g.children.forEach(ch => {
+      const cx = ch.position.x;
+      if (cx > 0.05) { ch.position.applyQuaternion(q); ch.quaternion.premultiply(q); }
+    });
+    g.userData.corner = true;
+  }
+
   function nodeModel(color, ground, nr) {
     const M = st.mats;
     const g = new THREE.Group();
@@ -415,8 +427,10 @@
       if (ends.length) {
         const d0 = ends[0].P.clone().sub(C).setY(0).normalize();
         const d1 = ends.length === 2 ? ends[1].P.clone().sub(C).setY(0).normalize() : null;
-        const dir = d1 && d0.dot(d1) < -0.5 ? d1.clone().sub(d0).normalize() : d0.clone().negate();
+        const straight = d1 && d0.dot(d1) < -0.5;
+        const dir = straight ? d1.clone().sub(d0).normalize() : d0.clone().negate();
         g.rotation.y = -Math.atan2(dir.z, dir.x);
+        if (d1 && !straight) foldCorner(g, d1);
       }
       addEdges(g);
       g.traverse(o => { if (o.isMesh) o.castShadow = true; });
@@ -713,3 +727,4 @@
 
   window.BohemeScene3D = { init, setActive, setNav, gridMode, fit, view: n => { st.lastView = n; view(n); }, zoomBy, active: () => st.on, state: st, rebuild: () => { st.sig = ''; build(); } };
 })();
+    

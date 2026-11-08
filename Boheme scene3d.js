@@ -420,6 +420,22 @@
         st.root.add(t);
         st.pick.push(t);
       }
+      if (ends.length === 2) {
+        const e0 = ends[0].P.clone().sub(C).setY(0).normalize(), e1 = ends[1].P.clone().sub(C).setY(0).normalize();
+        if (e0.dot(e1) > -0.5) {
+          let jc;
+          if (contour && r) jc = mode === 'p' ? band(pT(pc)) : valT != null ? band(valT) : geomC;
+          else jc = comp.error ? errC : geomC;
+          const jm = new THREE.MeshStandardMaterial({ color: jc, metalness: 0.08, roughness: 0.42, transparent: dim, opacity: dim ? 0.12 : 1 });
+          jm.__own = true;
+          const joint = new THREE.Mesh(new THREE.SphereGeometry(rad, 32, 20), jm);
+          joint.position.copy(C);
+          joint.castShadow = !dim;
+          joint.userData.key = k;
+          st.root.add(joint);
+          st.pick.push(joint);
+        }
+      }
       const sp = r && sc ? 0.6 + 6 * Math.sqrt(aq / sc.qmax) : 0;
       const g = model(comp.kk || '?', closed, r, sp, !!vl);
       g.position.copy(C);
@@ -727,4 +743,4 @@
 
   window.BohemeScene3D = { init, setActive, setNav, gridMode, fit, view: n => { st.lastView = n; view(n); }, zoomBy, active: () => st.on, state: st, rebuild: () => { st.sig = ''; build(); } };
 })();
-    
+                            

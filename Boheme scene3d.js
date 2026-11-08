@@ -185,9 +185,7 @@
     addToggle();
     st.ok = true;
     syncControls();
-    let pref = '3d';
-    try { pref = localStorage.getItem('boheme_view_dim') || '3d'; } catch (e) { }
-    setActive(pref !== '2d');
+    setActive(true);
     return true;
   }
 

@@ -327,13 +327,16 @@
     S.on('tool', t => { if (t && t.tool === 'select') hint(''); markTools(t); });
     S.on('view', v => { const z = $('#wbZoom'); if (z) z.textContent = Math.round(v.k * 100) + ' %'; });
     const si = $('#statusInfo');
-    if (si) new MutationObserver(() => { W.lastStatus = si.textContent; renderStatus(); }).observe(si, { childList: true, characterData: true, subtree: true });
+    if (si) new MutationObserver(() => { W.lastStatus = si.textContent; renderStatus(); const bt = $('#wbBusyTxt'); if (bt && W.busyFirst && W.lastStatus) bt.textContent = W.lastStatus; }).observe(si, { childList: true, characterData: true, subtree: true });
     if (typeof window.compute === 'function' && !window.compute.__wb) {
       const orig = window.compute;
       const wrapped = async function () {
+        const first = (typeof pyodide === 'undefined' || !pyodide);
+        busy(true, first);
         W.solving = true; renderStatus();
         const t0 = performance.now();
         try { await orig.apply(this, arguments); } finally {
+          busy(false);
           W.solving = false;
           const r = (typeof loadedResults !== 'undefined') ? loadedResults : null;
           setTimeout(() => { renderValidation(); const v = W.lastVal || []; addHistory('solve', `Validation after solve: ${v.length} checks, ${v.filter(x => x.st === 'fail').length} failed, ${v.filter(x => x.st === 'warn').length} warnings`); }, 400);
@@ -360,6 +363,22 @@
       window.addEventListener('pointermove', mv);
       window.addEventListener('pointerup', up);
     });
+  }
+
+  function busy(on, first) {
+    const vp = $('#wbViewport');
+    if (!vp) return;
+    clearTimeout(W.busyT);
+    if (!on) { const o = $('#wbBusy'); if (o) { o.classList.add('out'); setTimeout(() => o.remove(), 250); } W.busyFirst = false; return; }
+    W.busyFirst = first;
+    W.busyT = setTimeout(() => {
+      if (!W.solving || $('#wbBusy')) return;
+      const o = document.createElement('div');
+      o.id = 'wbBusy';
+      o.className = 'wb-busy';
+      o.innerHTML = `<div class="wb-ring"></div><b>${first ? 'Starting the Python solver' : 'Solving the network'}</b><span id="wbBusyTxt">${first ? 'Pyodide and NumPy are loaded once per visit (about 10 MB) …' : 'Newton iteration with the BOHEME thesis solver …'}</span>`;
+      vp.appendChild(o);
+    }, first ? 0 : 250);
   }
 
   function act(a) {
@@ -1223,3 +1242,4 @@
 
   window.BohemeWorkbench = { init, state: W, renderAll, circuits, checks, recolorTree, validate, renderValidation, insertIntoLine };
 })();
+                                                                        

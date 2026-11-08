@@ -1089,12 +1089,131 @@
     [...document.body.children].forEach(n => { if (n.tagName !== 'HEADER' && !n.classList.contains('tab-content') && n.tagName !== 'SCRIPT') obs.observe(n, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] }); });
   }
 
+  const SHEET = { get r2() { return typeof R !== 'undefined' ? R : 50; }, get c2() { return typeof C !== 'undefined' ? C : 40; } };
+  function wireAxis(t) { const x = String(t || '').trim(); return x === 'I' ? 'v' : x === '-' ? 'h' : null; }
+  function cellType(Dd, r, c) {
+    const t = Dd[r + ',' + c];
+    if (!t || !String(t).trim()) return 'empty';
+    const S = W.S;
+    if (S.isWireText(t)) return 'wire';
+    if (S.isNodeText(t)) return 'node';
+    if (S.isComponentText(t)) return 'comp';
+    return 'other';
+  }
+  function swapD(target) { const saved = Object.assign({}, D); for (const k in D) delete D[k]; Object.assign(D, target); return saved; }
+  function analyseState(target) { const saved = swapD(target); try { return W.S.analyse(); } finally { swapD(saved); } }
+  function shiftState(Dd, M, axis, at) {
+    const nd = {};
+    for (const k in Dd) {
+      const v = Dd[k];
+      if (v == null || v === '') continue;
+      let [r, c] = k.split(',').map(Number);
+      if (axis === 'r' && r >= at) r++;
+      if (axis === 'c' && c >= at) c++;
+      nd[r + ',' + c] = v;
+    }
+    for (const comp of M.comps) for (const e of comp.ends) {
+      const a = comp.cell, b = e.node;
+      if (axis === 'r' && a.c === b.c && Math.min(a.r, b.r) < at && at <= Math.max(a.r, b.r)) nd[at + ',' + a.c] = 'I';
+      if (axis === 'c' && a.r === b.r && Math.min(a.c, b.c) < at && at <= Math.max(a.c, b.c)) nd[a.r + ',' + at] = '-';
+    }
+    return nd;
+  }
+  function shiftColors(axis, at) {
+    if (typeof customColors === 'undefined') return null;
+    const before = Object.assign({}, customColors), nc = {};
+    for (const k in customColors) { let [r, c] = k.split(',').map(Number); if (axis === 'r' && r >= at) r++; if (axis === 'c' && c >= at) c++; nc[r + ',' + c] = customColors[k]; }
+    for (const k in customColors) delete customColors[k];
+    Object.assign(customColors, nc);
+    return before;
+  }
+  function freeName(prefix, Dd, extra) {
+    const used = new Set(Object.values(Dd).map(v => String(v).trim().split(/\s+/)[0].toUpperCase()));
+    (extra || []).forEach(n => used.add(n.toUpperCase()));
+    for (let i = 1; i < 999; i++) { const n = prefix + (i < 10 ? '0' + i : i); if (!used.has(n.toUpperCase())) return n; }
+    return prefix + Date.now() % 1000;
+  }
+  function planLine(Dd, kk, r, c) {
+    const axis = wireAxis(Dd[r + ',' + c]);
+    const dirs = axis === 'v' ? [[-1, 0], [1, 0]] : [[0, -1], [0, 1]];
+    const sides = dirs.map(([dr, dc]) => {
+      let k = 1;
+      while (k < 60 && wireAxis(Dd[(r + k * dr) + ',' + (c + k * dc)]) === axis) k++;
+      const er = r + k * dr, ec = c + k * dc;
+      return { dr, dc, k, type: cellType(Dd, er, ec), name: String(Dd[er + ',' + ec] || '').trim().split(/\s+/)[0] };
+    });
+    return { axis, sides };
+  }
+  function insertIntoLine(kk, r, c) {
+    const S = W.S, info = S.KIND[kk];
+    if (!info) return;
+    let Dd = Object.assign({}, D);
+    const M0 = model() || S.analyse();
+    const err0 = new Set(M0.comps.filter(x => x.error).map(x => x.name));
+    let { axis, sides } = planLine(Dd, kk, r, c);
+    const bad = sides.find(sd => sd.type !== 'node' && sd.type !== 'comp');
+    if (bad) { hint('This line does not end in a node or component on both sides – a component cannot be inserted here.'); return; }
+    let shifted = null;
+    for (let pass = 0; pass < 2; pass++) {
+      const tight = sides.find(sd => sd.type === 'comp' && sd.k === 1);
+      if (!tight) break;
+      const at = axis === 'v' ? (tight.dr < 0 ? r : r + 1) : (tight.dc < 0 ? c : c + 1);
+      const maxR = Math.max(...Object.keys(Dd).map(k => +k.split(',')[0])), maxC = Math.max(...Object.keys(Dd).map(k => +k.split(',')[1]));
+      if ((axis === 'v' && maxR + 1 > SHEET.r2) || (axis === 'h' && maxC + 1 > SHEET.c2)) { hint('No room: inserting a ' + (axis === 'v' ? 'row' : 'column') + ' would push the schematic beyond the last ' + (axis === 'v' ? 'row' : 'column') + ' of the sheet (' + (axis === 'v' ? SHEET.r2 : SHEET.c2) + ').'); return; }
+      Dd = shiftState(Dd, analyseState(Dd), axis === 'v' ? 'r' : 'c', at);
+      shifted = shifted || { axis: axis === 'v' ? 'r' : 'c', at };
+      if (axis === 'v' && tight.dr < 0) r++;
+      if (axis === 'h' && tight.dc < 0) c++;
+      ({ axis, sides } = planLine(Dd, kk, r, c));
+    }
+    const name = (kk === 'UPTa' || kk === 'UPTb') ? null : freeName(info.prefix, Dd);
+    if (!name) { hint('A PTU half cannot be inserted into a line – place both halves in free cells.'); return; }
+    const target = Object.assign({}, Dd);
+    target[r + ',' + c] = S.buildTok(name, info.fields.map(f => f[3]), axis === 'v' ? '^' : '>', []);
+    const newNodes = [];
+    for (const sd of sides) {
+      if (sd.type === 'comp') {
+        const nk = (r + sd.dr) + ',' + (c + sd.dc);
+        const nn = freeName('N', target, newNodes);
+        newNodes.push(nn);
+        target[nk] = nn + ' 0';
+      }
+    }
+    const M1 = analyseState(target);
+    const nc = M1.comps.find(x => x.cell.key === r + ',' + c);
+    const newErr = M1.comps.filter(x => x.error && x.cell.key !== r + ',' + c && !err0.has(x.name));
+    if (!nc || nc.error || nc.ends.length !== 2 || newErr.length) {
+      hint('Not inserted: ' + (nc && nc.error ? name + ' – ' + nc.error : newErr.length ? 'it would break ' + newErr.map(x => x.name).join(', ') : 'the topology check failed') + '.');
+      return;
+    }
+    const ops = [];
+    const keys = new Set([...Object.keys(D), ...Object.keys(target)]);
+    keys.forEach(k => { const a = D[k] == null ? null : D[k], b = target[k] == null ? null : target[k]; if (a !== b) ops.push([k, b]); });
+    let colorsBefore = null;
+    if (shifted) colorsBefore = shiftColors(shifted.axis, shifted.at);
+    const snapBefore = JSON.stringify(D);
+    S.commit(ops, `Inserted ${info.title} ${name} into the line${newNodes.length ? ' with new node ' + newNodes.join(', ') : ''}${shifted ? ' (' + (shifted.axis === 'r' ? 'row' : 'column') + ' inserted to make room)' : ''}`);
+    if (colorsBefore) W.colorUndo.push({ snap: snapBefore, colors: colorsBefore });
+    S.setTool('select');
+    S.select(r + ',' + c);
+    hint(`${name} inserted${newNodes.length ? ', new node ' + newNodes.join(', ') : ''}${shifted ? ' – a ' + (shifted.axis === 'r' ? 'row' : 'column') + ' was inserted to make room' : ''}.`);
+  }
+  function installLineInsert() {
+    const S = W.S;
+    W.colorUndo = [];
+    const pc = S.placeComponent, pn = S.placeNode, un = S.undo;
+    S.placeComponent = (kk, r, c) => { const t = typeof D !== 'undefined' ? D[r + ',' + c] : null; if (t && wireAxis(t)) return insertIntoLine(kk, r, c); if (t) { hint('This cell is already used by ' + String(t).split(/\s+/)[0] + ' – choose a free cell or a straight line.'); } return pc(kk, r, c); };
+    S.placeNode = (r, c) => { const t = typeof D !== 'undefined' ? D[r + ',' + c] : null; if (t && wireAxis(t)) { hint('A node alone cannot sit on a line: nodes connect only through components. Insert a component instead – the required node is created automatically.'); return; } return pn(r, c); };
+    S.undo = () => { un(); const top = W.colorUndo[W.colorUndo.length - 1]; if (top && JSON.stringify(D) === top.snap && typeof customColors !== 'undefined') { for (const k in customColors) delete customColors[k]; Object.assign(customColors, top.colors); W.colorUndo.pop(); if (typeof updateUI === 'function') updateUI(); } };
+  }
+
   function init() {
     if (!window.BohemeStudio) return;
     W.S = window.BohemeStudio;
     load();
     if (!build()) return;
     try { themeInit(); } catch (e) { console.warn('BOHEME theme', e); }
+    try { installLineInsert(); } catch (e) { console.warn('BOHEME line insert', e); }
     applyLayout();
     tabs();
     W.S.setColorMode(W.mode || 'p');
@@ -1102,5 +1221,5 @@
     setTimeout(() => { W.S.fit(); renderAll(); }, 120);
   }
 
-  window.BohemeWorkbench = { init, state: W, renderAll, circuits, checks, recolorTree, validate, renderValidation };
+  window.BohemeWorkbench = { init, state: W, renderAll, circuits, checks, recolorTree, validate, renderValidation, insertIntoLine };
 })();

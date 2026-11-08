@@ -408,3 +408,9 @@ body.bh-light #qr-canvas{border:1px solid #d3d0c9;background:#fff}
 .wb-st-val.ok{color:var(--ok)}.wb-st-val.warn{color:var(--warn)}.wb-st-val.bad{color:var(--bad)}
 .wb-leg{background:rgba(255,255,255,.82);border:1px solid #d0d0d0;padding:6px 10px 8px;text-shadow:none}
 .wb.wb-tgl-full .wb-left{grid-template-rows:minmax(0,1fr) 0 0}.wb.wb-tgl-full .wb-left>.wb-split,.wb.wb-tgl-full .wb-left>.wb-box:last-child{display:none}.wb.wb-tgl-full .wb-left>.wb-box:first-child{margin-bottom:3px}
+.wb-busy{position:absolute;inset:0;z-index:7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(240,240,240,.78);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);transition:opacity .25s;font-family:"Segoe UI",Tahoma,Arial,sans-serif}
+.wb-busy.out{opacity:0}
+.wb-ring{width:64px;height:64px;border-radius:50%;border:3px solid #dcdcdc;border-top-color:#d9a400;border-right-color:#5f6b7a;animation:wbsp 1s linear infinite;margin-bottom:4px}
+@keyframes wbsp{to{transform:rotate(360deg)}}
+.wb-busy b{font-size:15px;font-weight:600;color:#2b2a27;letter-spacing:.3px}
+.wb-busy span{font-size:12.5px;color:#555;max-width:420px;text-align:center}

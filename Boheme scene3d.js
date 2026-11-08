@@ -653,7 +653,8 @@
     cv.addEventListener('pointerup', e => {
       const S = st.S, t = S.state.tool;
       if (st.paint) {
-        const ops = st.paint.cells.filter(([r, c]) => !(typeof D !== 'undefined' && D[r + ',' + c])).map(([r, c]) => [r + ',' + c, 'I']);
+        const wch = st.paint.axis === 'h' ? '-' : 'I';
+        const ops = st.paint.cells.filter(([r, c]) => !(typeof D !== 'undefined' && D[r + ',' + c])).map(([r, c]) => [r + ',' + c, wch]);
         st.paint = null; ghostCells([]);
         if (ops.length) S.commit(ops, 'Drew a connection line (' + ops.length + ' cells)');
         return;
@@ -743,4 +744,3 @@
 
   window.BohemeScene3D = { init, setActive, setNav, gridMode, fit, view: n => { st.lastView = n; view(n); }, zoomBy, active: () => st.on, state: st, rebuild: () => { st.sig = ''; build(); } };
 })();
-                            

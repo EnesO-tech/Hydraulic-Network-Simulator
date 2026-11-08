@@ -333,6 +333,7 @@
         try { await orig.apply(this, arguments); } finally {
           W.solving = false;
           const r = (typeof loadedResults !== 'undefined') ? loadedResults : null;
+          setTimeout(() => { renderValidation(); const v = W.lastVal || []; addHistory('solve', `Validation after solve: ${v.length} checks, ${v.filter(x => x.st === 'fail').length} failed, ${v.filter(x => x.st === 'warn').length} warnings`); }, 400);
           if (r) addHistory('solve', `Solved: ${r.ncomp} components, ${r.nnode} nodes, ${r.iterations} iterations, residual ${Number(r.residual).toExponential(2)} (${((performance.now() - t0) / 1000).toFixed(1)} s)`);
           renderStatus();
         }
@@ -818,16 +819,157 @@
     vs.forEach(v => out.push({ lvl: 'info', key: keyOfName(v.name), text: `${v.name} is closed` }));
     return out;
   }
-  function renderCheck() {
+  const VGROUPS = [['input', 'Input data'], ['topo', 'Topology'], ['conv', 'Solver convergence'], ['mass', 'Mass conservation (ΣQ = 0 at every node)'], ['law', 'Component laws'], ['derived', 'Derived quantities'], ['plaus', 'Physical plausibility'], ['display', 'Display ↔ solver values']];
+  function validate() {
+    const out = [];
+    const add = (g, item, ok, detail, key, lvl) => out.push({ g, item, st: ok ? 'pass' : (lvl || 'fail'), detail, key });
+    const M = model();
+    const S = W.S;
+    if (!M) return out;
+    const num = id => Number(String(($('#' + id) || {}).value).replace(',', '.'));
+    const rho = num('pRho'), mue = num('pMue');
+    add('input', 'Fluid density ρ', rho > 500 && rho < 2000, `ρ = ${fmt(rho, 2)} kg/m³ (allowed 500 … 2000)`);
+    add('input', 'Fluid dynamic viscosity μ', mue > 1e-5 && mue < 20, `μ = ${fmt(mue, 6)} Pa·s (allowed 1e-5 … 20)`);
+    const names = {};
+    for (const c of M.comps) {
+      const info = S.KIND[c.kk];
+      names[c.name.toUpperCase()] = (names[c.name.toUpperCase()] || 0) + 1;
+      if (!info) { add('input', c.name, false, 'unknown component type', c.cell.key); continue; }
+      const v = S.fieldValues(c.kk, c.tok);
+      const bad = [];
+      info.fields.forEach((f, i) => {
+        const x = Number(v[i]), id = f[0];
+        if (!Number.isFinite(x)) { bad.push(`${f[1]} is not a number`); return; }
+        if (id === 'L' && !(x > 0 && x < 1000)) bad.push(`length ${x} m outside 0 … 1000 m`);
+        if (id === 'd' && x !== 999 && !(x > 0 && x <= 200)) bad.push(`diameter ${x} mm outside 0 … 200 mm (999 = no pipe diameter)`);
+        if (id === 'zeta' && x < 0) bad.push(`ζ = ${x} is negative`);
+        if (id === 'kv' && !(x > 0)) bad.push(`kv = ${x} must be > 0`);
+        if ((id === 'etaV' || id === 'etaHm') && !(x > 0 && x <= 1)) bad.push(`${f[1]} = ${x} outside (0, 1]`);
+        if (id === 'ratio' && !(x > 0)) bad.push(`displacement ratio ${x} must be > 0`);
+        if (id === 'R' && !(x > 0)) bad.push(`resistance ${x} must be > 0`);
+        if (id === 'R0' && x < 0) bad.push(`R0 = ${x} is negative`);
+        if ((id === 'pset' || id === 'Qmax') && !(x > 0)) bad.push(`${f[1]} = ${x} must be > 0`);
+        if (id === 'Q' && (c.kk === 'U' || c.kk === 'UCP') && x === 0) bad.push('Q = 0 makes r_d = −ΔP_oc/Q_sc infinite');
+      });
+      add('input', `${c.name} (${info.title})`, !bad.length, bad.length ? bad.join('; ') : info.fields.map((f, i) => `${f[0]} = ${+Number(v[i]).toPrecision(6)}`).join(', '), c.cell.key);
+      add('topo', `${c.name} connected to two nodes`, !c.error && c.ends.length === 2, c.error || c.ends.map(e => String(e.node.text).split(/\s+/)[0]).join(' ↔ '), c.cell.key);
+    }
+    Object.keys(names).filter(n => names[n] > 1).forEach(n => add('input', `Name ${n} unique`, false, `used ${names[n]} times – the solver cannot tell them apart`, keyOfName(n)));
+    const nn = {};
+    M.nodes.forEach(n => { nn[n.name.toUpperCase()] = (nn[n.name.toUpperCase()] || 0) + 1; });
+    Object.keys(nn).filter(n => nn[n] > 1 && n !== 'S').forEach(n => add('topo', `Node ${n} defined once`, true, `${nn[n]} cells share this node name (joined electrically)`));
+    const r = results();
+    if (!r) { add('conv', 'Solution available', false, W.S.state.stale ? 'model changed since the last solution – press Solve' : 'not solved yet – press Solve', null, 'warn'); return out; }
+    const nmax = num('itNiter'), dcrit = num('itDUcrit');
+    add('conv', 'Residual below dUcrit', Number(r.residual) <= dcrit, `residual ${Number(r.residual).toExponential(3)} ≤ ${dcrit}`);
+    add('conv', 'Iterations below niter', r.iterations < nmax, `${r.iterations} < ${nmax}`);
+    const P = {};
+    (r.nodes || []).forEach(n => { P[String(n.id).trim().toUpperCase()] = n; });
+    const comps = r.components || [];
+    const qmax = Math.max(...comps.map(c => Math.abs(Number(c.q)) || 0), 1e-9);
+    const pmax = Math.max(...(r.nodes || []).map(n => Math.abs(Number(n.ptot)) || 0), 1e-9);
+    const bal = {};
+    comps.forEach(c => { const a = String(c.n1).trim().toUpperCase(), b = String(c.n2).trim().toUpperCase(), q = Number(c.q); bal[a] = (bal[a] || 0) - q; bal[b] = (bal[b] || 0) + q; });
+    const tolQ = 1e-6 * qmax + 1e-9;
+    Object.keys(bal).sort((x, y) => x.localeCompare(y, undefined, { numeric: true })).forEach(n => {
+      if (/^S/.test(n) || /^NR/.test(n)) return;
+      const e = bal[n];
+      add('mass', `Node ${n}`, Math.abs(e) <= 1e-4 * qmax, `ΣQ = ${e.toExponential(2)} m³/h (pass ≤ ${(1e-4 * qmax).toExponential(1)}, ${(Math.abs(e) / qmax * 100).toExponential(1)} % of the largest flow)`, keyOfName(n), Math.abs(e) <= 1e-3 * qmax ? 'warn' : 'fail');
+    });
+    const tolP = 1e-6 * pmax + 1e-9;
+    const close = (a, b, scale) => Math.abs(a - b) <= 1e-5 * (Math.abs(scale) + Math.abs(b)) + 1e-9;
+    const T = q => q / 3600;
+    for (const c of comps) {
+      const k = keyOfName(String(c.name).trim());
+      const a = P[String(c.n1).trim().toUpperCase()], b = P[String(c.n2).trim().toUpperCase()];
+      const dp = Number(c.dp), q = Number(c.q);
+      if (a && b) { const d = Number(a.ptot) - Number(b.ptot); add('law', `${c.name}: Δp = p(${c.n1}) − p(${c.n2})`, Math.abs(dp - d) <= tolP * 10, `Δp = ${fmt(dp, 5)} bar, node difference ${fmt(d, 5)} bar`, k); }
+      const ty = String(c.type || '').toUpperCase();
+      if (/^(R|RZ|RR|RL|RK)$/.test(ty)) add('law', `${c.name}: Δp = R·Q`, close(dp, Number(c.rval) * q, dp), `Δp = ${fmt(dp, 5)} bar, R·Q = ${fmt(Number(c.rval) * q, 5)} bar`, k);
+      else if (ty === 'UCV') {
+        const closedV = Math.abs(q) <= tolQ * 100;
+        if (closedV) add('law', `${c.name}: closed check valve, Δp ≤ ΔP_oc`, dp <= Number(c.dpoc) + tolP * 10, `Q = 0, Δp = ${fmt(dp, 3)} bar below cracking pressure ${fmt(Number(c.dpoc), 3)} bar`, k);
+        else add('law', `${c.name}: open check valve, Δp = ΔP_oc + r_d·Q`, close(dp, Number(c.dpoc) + Number(c.rd) * q, dp), `Δp = ${fmt(dp, 5)} bar, ΔP_oc + r_d·Q = ${fmt(Number(c.dpoc) + Number(c.rd) * q, 5)} bar`, k);
+      }
+      else if (/^(U|UCP|UPR)$/.test(ty)) add('law', `${c.name}: Δp = ΔP_oc + r_d·Q`, close(dp, Number(c.dpoc) + Number(c.rd) * q, dp), `Δp = ${fmt(dp, 5)} bar, ΔP_oc + r_d·Q = ${fmt(Number(c.dpoc) + Number(c.rd) * q, 5)} bar`, k);
+      else if (/^(P|UPM)$/.test(ty)) add('law', `${c.name}: Q = Q_sc (delivered flow)`, close(q, Number(c.qsc), q), `Q = ${fmt(q, 5)} m³/h, Q_sc = ${fmt(Number(c.qsc), 5)} m³/h`, k);
+      const d = Number(c.d);
+      if (d > 0 && d < 0.5) {
+        const uc = T(Math.abs(q)) / (Math.PI * d * d / 4);
+        add('derived', `${c.name}: U = 4Q/(πd²)`, close(Math.abs(Number(c.u)), uc, uc), `U = ${fmt(Math.abs(Number(c.u)), 5)} m/s, recomputed ${fmt(uc, 5)} m/s`, k);
+        const re = uc * d * rho / mue;
+        add('derived', `${c.name}: Re = U·d·ρ/μ`, close(Number(c.reD), re, re), `Re = ${fmt(Number(c.reD), 3)}, recomputed ${fmt(re, 3)}`, k, 'warn');
+        const qd = rho * uc * uc / 2 / 1e5;
+        add('derived', `${c.name}: q = ρU²/2`, close(Number(c.qdyn), qd, qd), `q = ${Number(c.qdyn).toExponential(4)} bar, recomputed ${qd.toExponential(4)} bar`, k, 'warn');
+      }
+      const pw = Math.abs(dp * q) / 36;
+      add('derived', `${c.name}: P = |Δp·Q|`, close(Math.abs(Number(c.pow)), pw, pw), `P = ${fmt(Math.abs(Number(c.pow)), 6)} kW, recomputed ${fmt(pw, 6)} kW`, k, 'warn');
+      if (ty === 'UCV') add('plaus', `${c.name}: check valve without reverse flow`, q >= -tolQ, `Q = ${fmt(q, 6)} m³/h`, k);
+      if (ty === 'R') { const u = Math.abs(Number(c.u)); add('plaus', `${c.name}: velocity ≤ 9 m/s (pressure-line limit)`, u <= 9, `U = ${fmt(u, 3)} m/s`, k, 'warn'); }
+    }
+    const pamb = num('pamb');
+    (r.nodes || []).forEach(n => { const pa = Number(n.ptot) + (Number.isFinite(pamb) ? pamb : 1.013); add('plaus', `Node ${n.id}: absolute pressure > 0`, pa > 0, `p_abs = ${fmt(pa, 3)} bar`, keyOfName(String(n.id).trim())); });
+    if (r.ptu && r.ptu.present) { const on = r.ptu.active, need = Number(r.ptu.dpOffPsi) >= Number(r.ptu.thresholdPsi); add('plaus', 'PTU switching logic', !r.ptu.enabled || on === need, `PTU ${on ? 'active' : 'off'}, Δp without PTU ${fmt(Number(r.ptu.dpOffPsi), 0)} psi vs threshold ${fmt(Number(r.ptu.thresholdPsi), 0)} psi`); }
+    const s3 = window.BohemeScene3D && BohemeScene3D.state && BohemeScene3D.active() ? BohemeScene3D.state.labels : [];
+    let nl = 0, badL = [];
+    s3.forEach(l => {
+      const m = String(l.el.textContent).match(/^(.+?):\s*(-?[\d.]+)\s*(bar|m³\/h)/);
+      if (!m) return;
+      const name = m[1].trim(), v = Number(m[2]);
+      let ref = null;
+      if (m[3] === 'bar') { const n = P[name.toUpperCase()]; if (n) ref = Number(n.ptot); }
+      else { const c = comps.find(x => String(x.name).trim() === name); if (c) ref = Math.abs(Number(c.q)); }
+      if (ref == null) return;
+      nl++;
+      const dec = (m[2].split('.')[1] || '').length;
+      if (Math.abs(v - ref) > 0.51 * Math.pow(10, -dec)) badL.push(`${name}: shown ${m[2]}, solver ${ref}`);
+    });
+    if (nl) add('display', `3D annotations (${nl} values)`, !badL.length, badL.length ? badL.slice(0, 6).join('; ') : 'every label equals the rounded solver value');
+    const tb = $('#resultBody');
+    if (tb) {
+      const hd = [...document.querySelectorAll('#resultTable thead th')].map(t => t.childNodes[0] ? String(t.childNodes[0].textContent).trim() : '');
+      const iq = hd.indexOf('Q'), ip = hd.indexOf('Ptot');
+      let nt = 0; const badT = [];
+      [...tb.rows].forEach(tr => {
+        const name = (tr.cells[0] || {}).textContent;
+        const c = comps.find(x => String(x.name).trim() === String(name).trim());
+        if (c && iq >= 0) { nt++; const v = Number(tr.cells[iq].textContent); if (Math.abs(v - Number(c.q)) > 1e-4 + 1e-6 * Math.abs(v)) badT.push(`${name}: Q ${tr.cells[iq].textContent} vs ${Number(c.q).toFixed(6)}`); }
+      });
+      add('display', `Result table (${nt} rows)`, nt > 0 && !badT.length, badT.length ? badT.slice(0, 6).join('; ') : 'every Q cell equals the solver value');
+    }
+    const sc = W.S.state.scales;
+    if (sc) { const ps = (r.nodes || []).map(n => Number(n.ptot)); add('display', 'Legend range = pressure extremes', close(sc.pmax, Math.max(...ps), sc.pmax) && close(sc.pmin, Math.min(...ps), sc.pmax), `legend ${fmt(sc.pmin, 3)} … ${fmt(sc.pmax, 3)} bar, nodes ${fmt(Math.min(...ps), 3)} … ${fmt(Math.max(...ps), 3)} bar`); }
+    return out;
+  }
+  function renderValidation() {
     const box = $('#wbCheck');
     if (!box) return;
-    const list = checks();
-    const ne = list.filter(i => i.lvl === 'err').length, nw = list.filter(i => i.lvl === 'warn').length;
+    const list = validate();
+    W.lastVal = list;
+    const cnt = st => list.filter(x => x.st === st).length;
+    const nf = cnt('fail'), nw = cnt('warn'), np = cnt('pass');
     const badge = $('#wbCheckBadge');
-    if (badge) { badge.textContent = ne + nw ? String(ne + nw) : ''; badge.className = ne ? 'err' : nw ? 'warn' : ''; }
-    box.innerHTML = (list.length ? '' : `<div class="wb-okbox big">${icon('ok', 18)} No problems found: all ${model() ? model().comps.length : 0} components are connected to two nodes.</div>`) + list.map(i => `<button class="wb-issue ${i.lvl}" ${i.key ? `data-k="${i.key}"` : ''}>${icon(i.lvl === 'err' ? 'warn' : i.lvl === 'warn' ? 'warn' : 'info', 15)}<span>${esc(i.text)}</span>${i.key ? `<em>${cellName(i.key)}</em>` : ''}</button>`).join('');
-    $$('[data-k]', box).forEach(b => b.addEventListener('click', () => W.S.focusKey(b.dataset.k, 1.1)));
+    if (badge) { badge.textContent = nf + nw ? String(nf + nw) : ''; badge.className = nf ? 'err' : nw ? 'warn' : ''; }
+    const ico = { pass: STAT.ok, warn: STAT.need, fail: STAT.err };
+    let h = `<div class="wb-vhead"><span class="wb-vsum ${nf ? 'bad' : nw ? 'warn' : 'ok'}">${nf ? '✗' : '✓'} Validation: ${list.length} checks · ${np} passed · ${nw} warnings · ${nf} failed</span><span class="wb-vtime">${new Date().toLocaleTimeString()}</span><button class="wb-btn" id="wbValRun">Run validation</button></div>`;
+    for (const [g, title] of VGROUPS) {
+      const items = list.filter(x => x.g === g);
+      if (!items.length) continue;
+      const gf = items.filter(x => x.st === 'fail').length, gw = items.filter(x => x.st === 'warn').length;
+      const open = gf || gw || W.vOpen === g;
+      h += `<div class="wb-vg${open ? ' open' : ''}" data-vg="${g}"><div class="wb-vgh">${icon('chev', 12)}${gf ? STAT.err : gw ? STAT.need : STAT.ok}<b>${title}</b><em>${items.length - gf - gw}/${items.length} passed${gw ? ` · ${gw} warnings` : ''}${gf ? ` · ${gf} failed` : ''}</em></div><div class="wb-vgb">`;
+      items.sort((x, y) => ({ fail: 0, warn: 1, pass: 2 }[x.st] - { fail: 0, warn: 1, pass: 2 }[y.st]));
+      h += items.map(x => `<div class="wb-vr ${x.st}"${x.key ? ` data-k="${x.key}"` : ''}>${ico[x.st]}<span>${esc(x.item)}</span><em>${esc(x.detail || '')}</em></div>`).join('');
+      h += '</div></div>';
+    }
+    box.innerHTML = h;
+    $('#wbValRun').addEventListener('click', () => { renderValidation(); addHistory('edit', 'Validation run: ' + ($('#wbCheck .wb-vsum') || {}).textContent); });
+    $$('.wb-vgh', box).forEach(x => x.addEventListener('click', () => { const g = x.parentElement; g.classList.toggle('open'); W.vOpen = g.classList.contains('open') ? g.dataset.vg : null; }));
+    $$('.wb-vr[data-k]', box).forEach(x => x.addEventListener('click', () => W.S.focusKey(x.dataset.k, 1.1)));
+    renderStatus();
   }
+
+  function renderCheck() { renderValidation(); }
 
   function addHistory(kind, text) {
     W.history.unshift({ t: new Date(), kind, text });
@@ -868,7 +1010,7 @@
     const st = W.S.state;
     const T = ($('#fluidT') || {}).value;
     const state = W.solving ? ['busy', 'Solving…'] : st.stale ? ['warn', 'Model changed – solve again'] : K ? (K.conv ? ['ok', 'Solved'] : ['bad', 'Not converged']) : ['idle', 'Ready'];
-    s.innerHTML = `<span class="wb-st ${state[0]}"><i></i>${state[1]}</span><span>${M ? M.comps.length : 0} components</span><span>${M ? M.nodes.length : 0} nodes</span><span>${M ? circuits().length : 0} circuits</span><span>${icon('fluid', 13)} ${esc(fluidLabel())} · ${esc(T)} °C</span>${K ? `<span>iterations ${K.it}</span><span>residual ${K.res.toExponential(2)}</span>` : ''}<span class="wb-st-msg">${esc(W.lastStatus || '')}</span><span class="wb-st-r">Units: bar · m³/h · m/s · mm</span><span class="wb-st-v" title="Loaded version of the BOHEME modules">BOHEME v${esc(window.BOHEME_V || '?')}</span>`;
+    s.innerHTML = `<span class="wb-st ${state[0]}"><i></i>${state[1]}</span><span>${M ? M.comps.length : 0} components</span><span>${M ? M.nodes.length : 0} nodes</span><span>${M ? circuits().length : 0} circuits</span><span>${icon('fluid', 13)} ${esc(fluidLabel())} · ${esc(T)} °C</span>${K ? `<span>iterations ${K.it}</span><span>residual ${K.res.toExponential(2)}</span>` : ''}<span class="wb-st-msg">${esc(W.lastStatus || '')}</span>${W.lastVal && W.lastVal.length ? `<span class="wb-st-val ${W.lastVal.some(x => x.st === 'fail') ? 'bad' : W.lastVal.some(x => x.st === 'warn') ? 'warn' : 'ok'}" title="Result of the validation loop – details in Model Check">Validation ${W.lastVal.filter(x => x.st === 'pass').length}/${W.lastVal.length}</span>` : ''}<span class="wb-st-r">Units: bar · m³/h · m/s · mm</span><span class="wb-st-v" title="Loaded version of the BOHEME modules">BOHEME v${esc(window.BOHEME_V || '?')}</span>`;
     const sb = $('#wbSolve');
     if (sb) sb.classList.toggle('busy', W.solving);
   }
@@ -956,5 +1098,5 @@
     setTimeout(() => { W.S.fit(); renderAll(); }, 120);
   }
 
-  window.BohemeWorkbench = { init, state: W, renderAll, circuits, checks, recolorTree };
+  window.BohemeWorkbench = { init, state: W, renderAll, circuits, checks, recolorTree, validate, renderValidation };
 })();

@@ -407,3 +407,4 @@ body.bh-light #qr-canvas{border:1px solid #d3d0c9;background:#fff}
 .wb-status>span.wb-st-val{font-weight:600}
 .wb-st-val.ok{color:var(--ok)}.wb-st-val.warn{color:var(--warn)}.wb-st-val.bad{color:var(--bad)}
 .wb-leg{background:rgba(255,255,255,.82);border:1px solid #d0d0d0;padding:6px 10px 8px;text-shadow:none}
+.wb.wb-tgl-full .wb-left{grid-template-rows:minmax(0,1fr) 0 0}.wb.wb-tgl-full .wb-left>.wb-split,.wb.wb-tgl-full .wb-left>.wb-box:last-child{display:none}.wb.wb-tgl-full .wb-left>.wb-box:first-child{margin-bottom:3px}

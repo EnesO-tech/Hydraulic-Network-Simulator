@@ -385,3 +385,4 @@ body.bh-light #qr-canvas{border:1px solid #d3d0c9;background:#fff}
 .wb td.c.t-ptu{background:#fff1e8;color:#a1470b}
 .wb td.c.t-mpp{background:#fdeeee;color:#b3261e}
 .wb-is-grid .wb-zoom{display:none!important}
+.wb-status>span.wb-st-v{border-left:1px solid var(--line2);border-right:none;color:#5f6368;font-weight:600}
